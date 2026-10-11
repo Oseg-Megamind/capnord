@@ -9,6 +9,7 @@ import * as svc from './services.js';
 import { MapView, BASEMAPS } from './mapview.js';
 import * as cloud from './cloud.js';
 import { startPicto } from './picto.js';
+import * as collab from './collab.js';
 
 // =====================================================================
 // État de l'interface
@@ -25,8 +26,9 @@ const isMobile = () => matchMedia('(max-width: 899px)').matches;
 const MARK = '<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M96 500 L246 290 H266 L416 500 Z" fill="currentColor"/><path d="M256 30 C264 120 280 148 330 160 C280 172 264 200 256 290 C248 200 232 172 182 160 C232 148 248 120 256 30 Z" fill="#d9a441"/></svg>';
 const getTrip = (id) => state.trips.find((t) => t.id === id);
 const T = () => getTrip(ui.tripId);
-const touch = (t = T()) => { if (t) t.updatedAt = Date.now(); };
-const commit = (opts) => { touch(); save(); refresh(opts); scheduleSync(); };
+// Toute modification marque le voyage et part chez les compagnons (envoi groupé après 1,5 s)
+const touch = (t = T()) => { if (t) { t.updatedAt = Date.now(); if (t.collab) scheduleCollab(t); } };
+const commit = (opts) => { touch(); save(); refresh(opts); scheduleSync(); scheduleCollab(); };
 
 // =====================================================================
 // Calculs dérivés
@@ -341,6 +343,7 @@ function mountPlaceFields(scope, obj, onPick) {
 function route() {
   closeModal();
   const [, page, id, tab] = location.hash.slice(1).split('/');
+  if (page === 'join') { renderHome(); setTimeout(() => joinModal(id), 100); return; }
   if (page === 'trip' && getTrip(id)) renderTrip(id, tab === 'today' ? 'map' : tab || 'itin');
   else renderHome();
 }
@@ -378,6 +381,7 @@ function renderHome() {
       <div class="home-btns">
         ${ui.installEvt ? '<button class="btn sm" data-act="install">Installer</button>' : ''}
         <button class="icon-btn" data-act="settings" title="Réglages" aria-label="Réglages">⚙︎</button>
+        <button class="btn" data-act="join-trip">Rejoindre</button>
         <button class="btn primary" data-act="new-trip">＋ Nouveau</button>
       </div>
     </header>
@@ -390,7 +394,7 @@ function renderHome() {
         <img class="empty-logo" src="icons/icon.svg" alt="" width="96" height="96">
         <h2>Votre premier voyage commence ici</h2>
         <p>Itinéraire, trajets, hébergements, budget, documents et suivi GPS en direct. Gratuit, sans compte, fonctionne hors-ligne.</p>
-        <div class="row-btns wrap center-row"><button class="btn primary lg" data-act="new-trip">＋ Créer un voyage</button><button class="btn lg" data-act="demo">Voir un exemple</button></div>
+        <div class="row-btns wrap center-row"><button class="btn primary lg" data-act="new-trip">＋ Créer un voyage</button><button class="btn lg" data-act="join-trip">Rejoindre un voyage</button><button class="btn lg ghost" data-act="demo">Voir un exemple</button></div>
       </section>`}
     </main>
   </div>`;
@@ -534,6 +538,7 @@ function buildTripShell(t) {
   // Reprise automatique du suivi si l'app a été fermée pendant un enregistrement
   if (state.settings.recordingTripId === t.id && !ui.recording) startRecording(true);
   backfillCountries(t);
+  if (t.collab) { collab.registerFiles(t); collabSync(t); collab.watchCollab(t, () => collabSync(t)); }
   if (isShared(t)) { pullFeedback(t); if (t.share.dirty || t.photos.some((p) => !p.remote)) scheduleSync(t, 3000); }
   updateRecUI();
 }
@@ -547,7 +552,7 @@ function renderTripHeader(t) {
   el.innerHTML = `
     <div class="trip-title" data-act="trip-settings" title="Options du voyage">
       <span class="trip-badge" style="--c:${t.color}">${MARK}</span>
-      <div><h1>${esc(t.name)}</h1><small>${tripStart(t) ? fmtRange(tripStart(t), tripEnd(t)) + ' · ' : ''}<span class="st-${st.key}">${st.label}</span></small></div>
+      <div><h1>${esc(t.name)}</h1><small>${t.collab ? `<span class="with">avec ${esc((t.collab.members || []).filter((m) => !m.me).map((m) => m.name).join(', ') || 'vos compagnons')}</span> · ` : ''}${tripStart(t) ? fmtRange(tripStart(t), tripEnd(t)) + ' · ' : ''}<span class="st-${st.key}">${st.label}</span></small></div>
     </div>
     <button class="icon-btn share-btn ${isShared(t) ? 'on' : ''}" data-act="share" aria-label="Partager le voyage" title="Partager avec vos proches">📤${newComments(t) ? `<i class="nb">${newComments(t)}</i>` : ''}</button>
     <button class="icon-btn" data-act="trip-settings" aria-label="Options du voyage">⋯</button>
@@ -840,7 +845,11 @@ function openStepDrawer(id, focus = null) {
   if (focus?.startsWith('stay:') || focus?.startsWith('sub:')) ui.open.add(focus.split(':')[1]);
   const tabFor = { place: 'place', stays: 'stays', stay: 'stays', sub: 'subs', subs: 'subs', photos: 'photos', notes: 'notes' };
   if (focus) ui.dtab = tabFor[focus.split(':')[0]] || ui.dtab;
-  if (!['place', 'stays', 'subs', 'photos', 'notes'].includes(ui.dtab)) ui.dtab = 'place';
+  const st0 = t.steps.find((x) => x.id === id);
+  const days0 = stepDays(st0);
+  if (ui.drawer?.id !== id || ui.drawer?.type !== 'step') ui.dday = days0.includes(todayStr()) ? todayStr() : days0[0] || 'all';
+  if (focus === 'stays' || focus?.startsWith('stay:') || focus === 'place' || focus === 'notes') ui.dday = 'all';
+  if ((focus === 'subs' || focus === 'photos') && ui.dday === 'all' && days0.length) ui.dday = days0.includes(todayStr()) ? todayStr() : days0[0];
   ui.drawer = { type: 'step', id };
   renderDrawer(true);
   refresh({ header: false });
@@ -879,23 +888,41 @@ function stepDrawerHTML(t, s) {
   const n = nights(s), tr = s.transport;
   const done = s.subs.filter((x) => x.done).length;
   const info = legInfo(prev, s);
+  const days = stepDays(s);
+  if (ui.dday !== 'all' && !days.includes(ui.dday)) ui.dday = days[0] || 'all';
+  const D = ui.dday;
+  const dayMode = D !== 'all';
+  const okTabs = dayMode ? ['subs', 'photos', 'night', 'notes'] : ['place', 'stays', 'subs', 'photos', 'notes'];
+  if (!okTabs.includes(ui.dtab)) ui.dtab = dayMode ? 'subs' : 'place';
   const pane = (k) => (ui.dtab === k ? '' : 'hidden');
   const cover = t.photos.find((p) => p.id === s.coverId) || stepPhotos(t, s).at(-1);
+  const daySubs = dayMode ? s.subs.filter((x) => x.date === D) : s.subs;
+  const dayPh = dayMode ? stepPhotos(t, s).filter((p) => photoDay(p) === D) : stepPhotos(t, s);
+  const nightStays = dayMode ? s.stays.filter((st) => (st.checkIn && st.checkOut ? st.checkIn <= D && D < st.checkOut : true)) : s.stays;
+  const tabs = dayMode
+    ? [['subs', icon('list'), 'Activités', daySubs.length ? `${daySubs.filter((x) => x.done).length}/${daySubs.length}` : ''], ['photos', icon('camera'), 'Photos', dayPh.length || ''],
+      ['night', icon('bed'), 'Nuit', nightStays.length ? '✓' : (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.dayNotes?.[D] ? '•' : '']]
+    : [['place', icon('pin'), 'Lieu', ''], ['stays', icon('bed'), 'Hébergement', s.stays.length || (n ? '!' : '')],
+      ['subs', icon('list'), 'Activités', s.subs.length ? `${done}/${s.subs.length}` : ''], ['photos', icon('camera'), 'Photos', stepPhotos(t, s).length || ''], ['notes', icon('note'), 'Notes', s.notes ? '•' : '']];
+  const today = todayStr();
   return `
   <div class="drawer-head dest-head ${cover ? 'has-cover' : ''}" data-scope>
     ${cover ? `<img class="dh-cover" data-thumb="${cover.thumbId}" alt="">` : ''}
     <button class="icon-btn dh-close" data-act="close-drawer" aria-label="Fermer">✕</button>
     <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><input class="title-input" data-f="name" placeholder="Nom de l’étape" autocomplete="off" aria-label="Nom de l’étape"></div>
-    <p class="dh-sub">Étape ${i + 1} sur ${t.steps.length} · ${s.arrival ? fmtRange(s.arrival, s.departure) : 'dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'}</p>
+    <p class="dh-sub">${s.arrival ? (n ? `Du ${fmtDay(s.arrival, { day: 'numeric', month: 'long' })} au ${fmtDay(s.departure, { day: 'numeric', month: 'long' })}` : fmtDayLong(s.arrival)) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1} sur ${t.steps.length}</p>
   </div>
+  ${days.length > 1 || (days.length && n) ? `<div class="dayline" role="tablist" aria-label="Jours de l’étape">
+    <button class="dl-all ${!dayMode ? 'on' : ''}" data-act="dday" data-d="all" role="tab"><b>Étape</b><small>vue d’ensemble</small></button>
+    ${days.map((d, k) => `<button class="${D === d ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="dday" data-d="${d}" role="tab"><small>Jour ${k + 1}</small><b>${fmtDay(d, { day: 'numeric' })}</b><small>${fmtDay(d, { weekday: 'short' })}${d === today ? ' · auj.' : ''}</small></button>`).join('')}
+  </div>` : ''}
   <div class="drawer-nav">
     ${prev ? `<button class="btn sm" data-act="open-leg" data-id="${s.id}">‹ Trajet depuis ${esc(prev.name)}</button>` : '<button class="btn sm" disabled>‹ Départ</button>'}
     ${s.place ? `<button class="btn sm" data-act="focus-step" data-id="${s.id}">${icon('map')} Carte</button>` : ''}
     ${next ? `<button class="btn sm" data-act="open-leg" data-id="${next.id}">Trajet vers ${esc(next.name)} ›</button>` : '<button class="btn sm" disabled>Arrivée ›</button>'}
   </div>
   <nav class="dtabs" role="tablist">
-    ${[['place', icon('pin'), 'Lieu', ''], ['stays', icon('bed'), 'Hébergement', s.stays.length || (n ? '!' : '')],
-      ['subs', icon('list'), 'Activités', s.subs.length ? `${done}/${s.subs.length}` : ''], ['photos', icon('camera'), 'Photos', stepPhotos(t, s).length || ''], ['notes', icon('note'), 'Notes', s.notes ? '•' : '']]
+    ${tabs
       .map(([k, ic, l, b]) => `<button class="dtab ${ui.dtab === k ? 'active' : ''}" data-act="dtab" data-k="${k}" role="tab" aria-selected="${ui.dtab === k}"><span class="dt-ic">${ic}</span><span class="dt-l">${l}</span>${b !== '' ? `<i class="dt-b ${b === '!' ? 'warn' : ''}">${b}</i>` : ''}</button>`).join('')}
   </nav>
   <div class="drawer-body" id="drawer-body" data-scope>
@@ -937,18 +964,22 @@ function stepDrawerHTML(t, s) {
     </section>
 
     <section class="sec ${pane('subs')}">
-      <h4>Activités ${s.subs.length ? `<small>${done}/${s.subs.length} faites</small>` : ''}</h4>
-      <div class="subs" id="subs">${s.subs.map((x) => subHTML(t, s, x)).join('')}</div>
-      <form class="quick-add" id="sub-add"><input placeholder="Ajouter : musée, resto, rando…" data-keep="sub-add" enterkeyhint="done"><button class="btn sm primary">Ajouter</button></form>
+      ${dayMode ? '' : `<h4>Activités ${s.subs.length ? `<small>${done}/${s.subs.length} faites</small>` : ''}</h4>`}
+      ${dayMode ? subsOfDayHTML(t, s, D) : subsByDayHTML(t, s)}
     </section>
 
     <section class="sec ${pane('photos')}">
-      ${photosPaneHTML(t, s)}
+      ${photosPaneHTML(t, s, false, dayMode ? D : null)}
     </section>
 
+    ${dayMode ? `<section class="sec ${pane('night')}">
+      <h4>Nuit du ${fmtDayLong(D)}</h4>
+      ${nightStays.map((st) => stayHTML(t, s, st)).join('') || '<p class="hint">Aucun hébergement pour cette nuit.</p>'}
+      <button class="btn ghost full" data-act="add-stay-night" data-day="${D}">＋ Ajouter un hébergement ${s.stays.length ? 'pour cette nuit' : 'pour le séjour'}</button>
+    </section>` : ''}
     <section class="sec ${pane('notes')}">
-      <h4>Notes</h4>
-      <textarea data-f="notes" rows="12" placeholder="Infos pratiques, idées, codes, contacts…"></textarea>
+      <h4>${dayMode ? `Notes du ${fmtDayLong(D)}` : 'Notes de l’étape'}</h4>
+      <textarea data-f="${dayMode ? `dayNotes.${D}` : 'notes'}" rows="10" placeholder="${dayMode ? 'Programme, horaires, réservations, idées pour cette journée…' : 'Infos pratiques, idées, codes, contacts…'}"></textarea>
     </section>
   </div>`;
 }
@@ -998,6 +1029,47 @@ function stayHTML(t, s, st) {
   </details>`;
 }
 
+// Jours d'une étape : Jour 1 = jour d'arrivée, autant de jours que de nuits (au moins 1)
+function stepDays(s) {
+  if (!s.arrival) return [];
+  const n = Math.max(1, nights(s));
+  return Array.from({ length: n }, (_, k) => addDays(s.arrival, k));
+}
+
+const photoDay = (p) => p.day || toDayStr(p.t);
+
+function subsGroupHTML(t, s, key, title, sub, list, ph) {
+  return `
+    <div class="day-group ${key === todayStr() ? 'today' : ''}">
+      <div class="day-h"><span class="day-n">${title}</span><small>${sub}</small><span class="day-c">${list.length ? `${list.filter((x) => x.done).length}/${list.length}` : ''}</span></div>
+      <div class="subs" data-subs-day="${key}">${list.map((x) => subHTML(t, s, x)).join('')}</div>
+      <form class="quick-add sm" data-sub-add-day="${key}"><input placeholder="${ph}" enterkeyhint="done" aria-label="${ph}"><button class="btn sm">Ajouter</button></form>
+    </div>`;
+}
+// Vue d'une journée : ses activités, puis les idées pas encore placées (à glisser dans la journée)
+function subsOfDayHTML(t, s, d) {
+  const k = stepDays(s).indexOf(d) + 1;
+  const byTime = (a, b) => (a.time || '99:99').localeCompare(b.time || '99:99');
+  return subsGroupHTML(t, s, d, `Jour ${k}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), 'Ajouter une activité à cette journée…')
+    + subsGroupHTML(t, s, '', 'Idées à placer', 'faites-les glisser dans la journée', s.subs.filter((x) => !x.date), 'Une idée à caser pendant l’étape…');
+}
+
+function subsByDayHTML(t, s) {
+  const days = stepDays(s);
+  const byTime = (a, b) => (a.time || '99:99').localeCompare(b.time || '99:99');
+  const group = (...a) => subsGroupHTML(t, s, ...a);
+  if (!days.length) {
+    return `<p class="hint">Ajoutez les dates de l’étape (onglet Lieu) pour organiser les activités jour par jour.</p>
+      ${group('', 'Activités', '', s.subs, 'Ajouter : musée, resto, rando…')}`;
+  }
+  const inDays = new Set(days);
+  const loose = s.subs.filter((x) => !x.date);
+  const other = s.subs.filter((x) => x.date && !inDays.has(x.date));
+  return days.map((d, k) => group(d, `Jour ${k + 1}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), `Ajouter une activité au jour ${k + 1}…`)).join('')
+    + group('', 'À planifier', 'sans jour précis', loose, 'Une idée à caser pendant l’étape…')
+    + (other.length ? `<div class="day-group other"><div class="day-h"><span class="day-n">Autres dates</span><small>en dehors de l’étape</small></div><div class="subs" data-subs-day="${other[0].date}">${other.map((x) => subHTML(t, s, x)).join('')}</div></div>` : '');
+}
+
 function subHTML(t, s, x) {
   const open = ui.open.has(x.id);
   return `<div class="sub ${x.done ? 'done' : ''}" data-scope data-sub="${x.id}" data-id="${x.id}">
@@ -1007,7 +1079,7 @@ function subHTML(t, s, x) {
       <button type="button" class="sub-main" data-act="toggle-open" data-id="${x.id}">
         
         <span class="sub-name">${esc(x.name || 'Sans titre')}</span>
-        <span class="sub-meta">${x.date ? fmtDay(x.date) : ''}${x.time ? ' ' + x.time : ''}${x.place ? ' · ' + icon('pin') : ''}${x.cost ? ' · ' + fmtMoney(x.cost, t.currency) : ''}</span>
+        <span class="sub-meta">${x.time || ''}${x.place ? ' · ' + icon('pin') : ''}${x.cost ? ' · ' + fmtMoney(x.cost, t.currency) : ''}</span>
       </button>
     </div>
     <div class="sub-body ${open ? '' : 'hidden'}">
@@ -1098,29 +1170,35 @@ function mountStepDrawer(t, s, root) {
     mountPlaceFields(el, x, () => { renderDrawer(); light(); });
   });
 
-  if (window.Sortable && s.subs.length > 1) {
-    Sortable.create($('#subs', body), {
-      handle: '.drag', animation: 150, ghostClass: 'ghost',
-      onEnd: () => {
+  // Glisser une activité d'un jour à l'autre (ou vers « À planifier ») change sa date
+  if (window.Sortable) {
+    $$('[data-subs-day]', body).forEach((list) => Sortable.create(list, {
+      group: 'subs-' + s.id, handle: '.drag', animation: 150, ghostClass: 'ghost', emptyInsertThreshold: 24,
+      onEnd: (ev) => {
+        const moved = s.subs.find((x) => x.id === ev.item.dataset.sub);
+        if (moved && ev.from !== ev.to) moved.date = ev.to.dataset.subsDay;
         const order = $$('[data-sub]', body).map((el) => el.dataset.sub);
         s.subs.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
         commit({ map: false });
+        if (ev.from !== ev.to) renderDrawer();
       },
-    });
+    }));
   }
 
-  $('#sub-add', body).onsubmit = (e) => {
+  // Ajout rapide : chaque jour a son propre champ, l'activité prend la date du jour
+  $$('[data-sub-add-day]', body).forEach((f) => (f.onsubmit = (e) => {
     e.preventDefault();
-    const input = $('input', e.target);
+    const input = $('input', f);
     const name = input.value.trim();
     if (!name) return;
     const guess = /resto|restaurant|déj|dîner|diner|brunch|tapas/i.test(name) ? 'food' : /café|bar|cocktail/i.test(name) ? 'cafe' : /rando|trek|sentier/i.test(name) ? 'hike' : /plage/i.test(name) ? 'beach' : /musée|église|cathédrale|château|palais|monument/i.test(name) ? 'visit' : /vue|belvédère|miradouro|sunset|coucher/i.test(name) ? 'view' : 'activity';
-    s.subs.push(newSub({ name, type: guess }));
+    const day = f.dataset.subAddDay;
+    s.subs.push(newSub({ name, type: guess, date: day }));
     touch(); save();
     renderDrawer();
     refresh({ header: false, map: false });
-    $('#sub-add input')?.focus();
-  };
+    $(`[data-sub-add-day="${day}"] input`)?.focus();
+  }));
   if (s.place && ui.dtab === 'place') { loadWeather(s); loadNews(s); loadTips(s); }
 }
 
@@ -1306,6 +1384,16 @@ A['drawer-save'] = () => {
     if (d.type === 'leg' && prev?.place && s?.place) mapView?.fitLeg(prev.place, s.place);
     else if (s?.place) mapView?.focus(s.place, 12);
   }, 250);
+};
+A.dday = (el) => { ui.dday = el.dataset.d; renderDrawer(true); };
+A['add-stay-night'] = (el) => {
+  const s = curStep();
+  const d = el.dataset.day;
+  const st = s.stays.length ? newStay({ checkIn: d, checkOut: addDays(d, 1) }) : newStay({ checkIn: s.arrival, checkOut: s.departure });
+  s.stays.push(st);
+  ui.open.add(st.id);
+  commit({ map: false });
+  renderDrawer();
 };
 A.ltab = (el) => { ui.ltab = el.dataset.k; renderDrawer(true); };
 A['leg-modes'] = () => { ui.legModes = !ui.legModes; renderDrawer(); };
@@ -2122,6 +2210,7 @@ function docModal(d, isNew = false) {
         <label class="fld"><span>Date d’expiration</span><input type="date" data-f="expiry"></label>
       </div>
       <label class="fld"><span>Notes</span><textarea rows="2" data-f="notes"></textarea></label>
+      <label class="check doc-private"><input type="checkbox" data-f="private"> Visible uniquement par moi <small>(jamais envoyé à mes compagnons de voyage)</small></label>
     </div>
     <div class="actions">
       <button type="button" class="btn danger" data-act="del-doc" data-id="${d.id}">Supprimer</button>
@@ -2143,7 +2232,7 @@ function docModal(d, isNew = false) {
 
 A['add-doc'] = () => {
   const t = T();
-  const d = { id: uid(), name: '', type: 'passport', number: '', expiry: '', notes: '', files: [] };
+  const d = { id: uid(), name: '', type: 'passport', number: '', expiry: '', notes: '', files: [], private: true };
   t.documents.unshift(d);
   commit({ map: false });
   docModal(d, true);
@@ -2301,7 +2390,7 @@ async function videoThumb(file) {
 }
 const fmtClip = (sec) => (sec ? `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}` : '');
 
-async function addPhotos(files, { stepId = null, onLeg = false } = {}) {
+async function addPhotos(files, { stepId = null, onLeg = false, day = null } = {}) {
   const t = T();
   if (!files.length) return [];
   const added = [];
@@ -2328,6 +2417,7 @@ async function addPhotos(files, { stepId = null, onLeg = false } = {}) {
         p = { id: uid(), fileId: await putFile(full), thumbId: await putFile(th.blob), w: th.w, h: th.h, t: when, lat, lng, caption: '', stepId: null, addedAt: Date.now() };
       }
       if (onLeg) p.onLeg = true;
+      if (day && toDayStr(p.t) !== day) p.day = day; // ajoutée depuis une journée : rangée dans cette journée
       const s = stepId ? t.steps.find((x) => x.id === stepId) : stepForPhoto(t, p);
       p.stepId = s?.id || null;
       if (p.lat == null && s?.place) { p.lat = s.place.lat; p.lng = s.place.lng; p.approx = true; }
@@ -2355,7 +2445,7 @@ document.addEventListener('change', async (e) => {
   if (!input) return;
   const files = [...input.files];
   input.value = '';
-  await addPhotos(files, { stepId: input.dataset.step || null, onLeg: input.dataset.leg === '1' });
+  await addPhotos(files, { stepId: input.dataset.step || null, onLeg: input.dataset.leg === '1', day: input.dataset.day || null });
 });
 
 function photoStripHTML(t, s, max = 4) {
@@ -2364,11 +2454,11 @@ function photoStripHTML(t, s, max = 4) {
   return `<div class="ph-strip">${ph.slice(0, max).map((p, i) => `<button class="ph-mini ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}"><img data-thumb="${p.thumbId}" alt="">${i === max - 1 && ph.length > max ? `<b>+${ph.length - max}</b>` : ''}</button>`).join('')}</div>`;
 }
 
-function photosPaneHTML(t, s, leg = false) {
-  const ph = stepPhotos(t, s, leg);
+function photosPaneHTML(t, s, leg = false, day = null) {
+  const ph = stepPhotos(t, s, leg).filter((p) => !day || photoDay(p) === day);
   return `
     <div class="ph-grid">
-      <label class="ph add"><span>＋</span><small>Photo / vidéo</small><input type="file" accept="image/*,video/*" multiple data-ph-add data-step="${s.id}" data-leg="${leg ? 1 : 0}" hidden></label>
+      <label class="ph add"><span>＋</span><small>Photo / vidéo</small><input type="file" accept="image/*,video/*" multiple data-ph-add data-step="${s.id}" data-leg="${leg ? 1 : 0}" data-day="${day || ''}" hidden></label>
       ${ph.map((p) => `<button class="ph ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}" aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="${esc(p.caption)}">${isVideo(p) ? `<em>▶ ${fmtClip(p.duration)}</em>` : ''}${p.caption ? '<i>Aa</i>' : ''}</button>`).join('')}
     </div>
     <p class="hint">Touchez <b>＋</b> : choisissez dans votre photothèque, ou prenez une photo ou une vidéo.</p>
@@ -2615,14 +2705,17 @@ function renderShareModal() {
       <div class="pills">${[['off', '🙈 Masquée'], ['city', '🏙️ Ville de l’étape'], ['exact', '📍 Position GPS précise']].map(([k, l]) => `<label class="pill"><input type="radio" name="shpos" value="${k}" ${pos === k ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
       <small class="hint">${pos === 'exact' ? 'Vos amis voient votre point bleu et votre tracé. À éviter si le lien circule largement.' : pos === 'city' ? 'Recommandé : vos amis voient la ville où vous êtes, jamais votre adresse exacte.' : 'Vos amis voient les étapes passées, sans savoir où vous êtes maintenant.'}</small>
     </div>`;
+  const companions = companionsHTML(t, ready);
   if (!isShared(t)) {
     box.innerHTML = `
-      <h2>📤 Partager le voyage</h2>
+      <h2>Partager le voyage</h2>
+      ${companions}
+      <h3 class="share-sec">Amis et famille <small>regardent et commentent</small></h3>
       <p class="share-pitch">Vos proches suivent votre voyage depuis un simple lien : la carte, vos récits et vos photos. Ils peuvent <b>aimer</b> et <b>commenter</b>, et vous pouvez leur <b>répondre</b>. Ils n’ont <b>rien à installer</b> et aucun compte à créer.</p>
       ${ready ? settings : '<div class="note warn-box">Le service de partage n’est pas encore connecté. Il le sera dès que le projet Supabase sera configuré.</div>'}
       <a class="btn sm" href="share.html?demo=${t.id}" target="_blank" rel="noopener">👁 Voir ce que verront vos amis (aperçu)</a>
       <div class="share-what"><b>Partagé :</b> étapes, dates, récits, photos et légendes.<br><b>Jamais partagé :</b> budget, documents, réservations, listes, notes personnelles.</div>
-      <div class="actions"><button class="btn" data-act="close-modal">Plus tard</button><button class="btn primary" data-act="share-start" ${ready ? '' : 'disabled'}>Créer le lien de partage</button></div>`;
+      <div class="actions"><button class="btn" data-act="close-modal">Fermer</button><button class="btn primary" data-act="share-start" ${ready ? '' : 'disabled'}>Créer le lien pour les amis</button></div>`;
   } else {
     const url = cloud.shareUrl(sh.token);
     const f = fb[t.id] || { comments: [], likes: [] };
@@ -2636,7 +2729,9 @@ function renderShareModal() {
     };
     const targets = [...new Set(recent.map((c) => c.target))];
     box.innerHTML = `
-      <h2>📤 Voyage partagé</h2>
+      <h2>Partager le voyage</h2>
+      ${companions}
+      <h3 class="share-sec">Amis et famille <small>regardent et commentent</small></h3>
       <div class="share-link"><input id="share-url" value="${esc(url)}" readonly aria-label="Lien de partage"><button class="btn primary" data-act="share-copy">Copier</button></div>
       <div class="row-btns wrap">
         ${navigator.share ? '<button class="btn sm" data-act="share-native">📲 Envoyer…</button>' : ''}
@@ -2655,6 +2750,142 @@ function renderShareModal() {
   $('#sh-author', box)?.addEventListener('change', (e) => { t.share.author = e.target.value.trim(); save(); scheduleSync(t, 2000); });
   $$('[name=shpos]', box).forEach((r) => (r.onchange = () => { t.share.position = r.value; save(); scheduleSync(t, 2000); renderShareModal(); }));
 }
+
+
+// =====================================================================
+// Carnet partagé avec les compagnons de voyage (tout le monde modifie)
+// =====================================================================
+let collabTimer = null;
+function scheduleCollab(t = T(), delay = 1500) {
+  if (!t?.collab || !cloud.cloudReady()) return;
+  clearTimeout(collabTimer);
+  collabTimer = setTimeout(() => collabSync(t), delay);
+}
+async function collabSync(t) {
+  if (!t?.collab || !navigator.onLine || !cloud.cloudReady()) return;
+  // Pendant une saisie, on attend la fin pour ne pas déranger
+  if (document.activeElement?.matches?.('input, textarea, select')) {
+    document.addEventListener('focusout', () => setTimeout(() => collabSync(t), 300), { once: true });
+    return;
+  }
+  if (ui.collabBusy) { ui.collabAgain = true; return; }
+  ui.collabBusy = true;
+  try {
+    const res = await collab.syncCollab(t);
+    t.collab.error = null;
+    save();
+    if (res.changed && t.id === ui.tripId) {
+      refresh();
+      if (ui.drawer) renderDrawer();
+      if (res.by && res.by !== t.collab.me) toast(`${esc(res.by)} a modifié le voyage`);
+    }
+    if ($('#share-modal')) renderShareModal();
+  } catch (e) {
+    t.collab.error = e.message || 'réseau';
+  } finally {
+    ui.collabBusy = false;
+    if (ui.collabAgain) { ui.collabAgain = false; scheduleCollab(t, 500); }
+  }
+}
+setInterval(() => { const t = T(); if (t?.collab && document.visibilityState === 'visible') collabSync(t); }, 25000);
+document.addEventListener('visibilitychange', () => { const t = T(); if (t?.collab && document.visibilityState === 'visible') collabSync(t); });
+addEventListener('online', () => { const t = T(); if (t?.collab) collabSync(t); });
+
+function companionsHTML(t, ready) {
+  const c = t.collab;
+  if (!ready) return '';
+  if (!c) return `
+    <h3 class="share-sec">Compagnons de voyage <small>modifient le carnet avec vous</small></h3>
+    <div class="collab-card">
+      <p>Les personnes qui voyagent avec vous ajoutent elles aussi des étapes, des hébergements, des activités, des dépenses et des photos. Tout se met à jour chez chacun.</p>
+      <label class="fld"><span>Votre prénom</span><input id="collab-me" value="${esc(state.settings.myName || t.share?.author || '')}" placeholder="ex : Fanny" maxlength="40"></label>
+      <button class="btn primary full" data-act="collab-start">Inviter des compagnons de voyage</button>
+      <small class="hint">Vos documents marqués « Visible uniquement par moi » (passeport…) ne sont jamais partagés.</small>
+    </div>`;
+  const members = (c.members || []).map((m) => `<span class="member ${m.me ? 'me' : ''}">${esc(m.name)}${m.me ? ' (vous)' : ''}</span>`).join('');
+  return `
+    <h3 class="share-sec">Compagnons de voyage <small>modifient le carnet avec vous</small></h3>
+    <div class="collab-card on">
+      <div class="collab-code"><small>Code d’invitation</small><b>${c.code.slice(0, 3)}-${c.code.slice(3)}</b></div>
+      <div class="row-btns wrap">
+        <button class="btn primary" data-act="collab-invite">Envoyer l’invitation</button>
+        <button class="btn" data-act="collab-copy">Copier</button>
+      </div>
+      <div class="members">${members || '<span class="muted">Personne n’a encore rejoint le voyage.</span>'}</div>
+      <small class="hint">${c.error ? `Synchronisation impossible (${esc(c.error)}). Nouvel essai automatique.` : c.syncedAt ? `Synchronisé ${new Date(c.syncedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : 'Synchronisation…'}</small>
+    </div>`;
+}
+
+A['collab-start'] = async (el) => {
+  const t = T();
+  const name = $('#collab-me')?.value.trim();
+  if (!name) { $('#collab-me')?.focus(); return toast('Indiquez votre prénom'); }
+  state.settings.myName = name;
+  el.disabled = true;
+  el.textContent = 'Création du carnet partagé…';
+  try {
+    await collab.createCollab(t, name);
+    save();
+    collab.watchCollab(t, () => collabSync(t));
+    await collabSync(t);
+    renderShareModal();
+    renderTripHeader(t);
+    toast('Carnet partagé créé : envoyez le code à vos compagnons');
+  } catch (e) {
+    el.disabled = false;
+    el.textContent = 'Inviter des compagnons de voyage';
+    toast(`Impossible : ${esc(e.message || 'réseau')}`);
+  }
+};
+const appUrl = () => cloud.shareUrl('x').replace(/share\.html\?t=x$/, '');
+A['collab-invite'] = async () => {
+  const t = T();
+  const text = collab.inviteText(t, appUrl());
+  if (navigator.share) { try { await navigator.share({ title: `Voyage ${t.name}`, text }); return; } catch { /* annulé */ } }
+  A['collab-copy']();
+};
+A['collab-copy'] = async () => {
+  const t = T();
+  try { await navigator.clipboard.writeText(collab.inviteText(t, appUrl())); toast('Invitation copiée'); }
+  catch { toast(`Code : ${t.collab.code}`); }
+};
+
+function joinModal(code = '') {
+  if (!cloud.cloudReady()) return toast('Service en ligne indisponible');
+  openModal(`
+    <h2>Rejoindre un voyage</h2>
+    <p class="hint">Un compagnon de voyage vous a envoyé un code ? Entrez-le ici : le voyage apparaîtra dans « Mes voyages » et vous pourrez le compléter ensemble.</p>
+    <form class="form" id="join-form">
+      <label class="fld"><span>Code d’invitation</span><input id="join-code" value="${esc(code)}" placeholder="ex : TUN-K7P" autocapitalize="characters" autocomplete="off" required></label>
+      <label class="fld"><span>Votre prénom</span><input id="join-name" value="${esc(state.settings.myName || '')}" placeholder="ex : Léa" maxlength="40" required></label>
+      <div class="actions"><button type="button" class="btn" data-act="close-modal">Annuler</button><button class="btn primary">Rejoindre</button></div>
+    </form>`, (m) => {
+    $('#join-form', m).onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = $('button.primary', m);
+      const name = $('#join-name', m).value.trim();
+      btn.disabled = true;
+      btn.textContent = 'Connexion…';
+      try {
+        const trip = await collab.joinCollab($('#join-code', m).value, name);
+        state.settings.myName = name;
+        const existing = getTrip(trip.id);
+        if (existing) Object.assign(existing, normalizeTrip(trip));
+        else state.trips.push(normalizeTrip(trip));
+        collab.registerFiles(getTrip(trip.id));
+        await flush();
+        closeModal();
+        toast(`Vous avez rejoint « ${esc(trip.name)} »`);
+        go(`#/trip/${trip.id}/itin`);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Rejoindre';
+        toast(/introuvable/i.test(err.message || '') ? 'Code introuvable : vérifiez-le auprès de votre compagnon' : `Impossible : ${esc(err.message || 'réseau')}`);
+      }
+    };
+  });
+}
+A['join-trip'] = () => joinModal();
 
 A['share-start'] = async (el) => {
   const t = T();
@@ -2820,7 +3051,8 @@ A['clear-track'] = () => {
 };
 A['del-trip'] = async () => {
   const t = T();
-  if (!confirm(`Supprimer définitivement « ${t.name} » ? Pensez à le sauvegarder avant.`)) return;
+  if (!confirm(t.collab ? `Retirer « ${t.name} » de ce téléphone ? Vous quitterez le voyage partagé ; vos compagnons le gardent.` : `Supprimer définitivement « ${t.name} » ? Pensez à le sauvegarder avant.`)) return;
+  if (t.collab) { try { await collab.leaveCollab(t); } catch { /* hors-ligne : on retire quand même localement */ } }
   [...t.documents.flatMap((d) => docFiles(d).map((f) => f.id)), ...t.photos.flatMap((p) => [p.fileId, p.thumbId])].forEach((id) => delFile(id));
   state.trips = state.trips.filter((x) => x !== t);
   if (state.settings.recordingTripId === t.id) stopRecording();

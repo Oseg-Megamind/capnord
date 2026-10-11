@@ -1,9 +1,9 @@
 // Service worker : app utilisable hors-ligne + cache des tuiles de carte consultées
-const APP = 'capnord-app-v19';
+const APP = 'capnord-app-v27';
 const TILES = 'voyage-tiles-v1';
 const SHELL = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png',
-  'js/app.js', 'js/utils.js', 'js/constants.js', 'js/store.js', 'js/services.js', 'js/mapview.js', 'js/cloud.js', 'js/config.js', 'js/share.js', 'js/picto.js',
+  'js/app.js', 'js/utils.js', 'js/constants.js', 'js/store.js', 'js/services.js', 'js/mapview.js', 'js/cloud.js', 'js/config.js', 'js/share.js', 'js/picto.js', 'js/collab.js',
   'share.html', 'css/share.css', 'vendor/supabase.js',
   'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.js', 'vendor/sortable.min.js',
 ];

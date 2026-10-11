@@ -21,6 +21,9 @@
   --r: 18px;
   --trip: var(--brand);
   --spring: cubic-bezier(.2, .9, .25, 1.12);
+  /* Typographie minimaliste : la police système (SF Pro sur iPhone), serrée et nette */
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
   --ease: cubic-bezier(.22, .8, .3, 1);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
@@ -778,11 +781,11 @@ body.show-map .fab { display: none; }
 .own-ic { font-size: 28px; }
 
 /* ---------- Identité Cap Nord */
-.brandmark { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 Georgia, 'Times New Roman', serif; letter-spacing: .26em; text-transform: uppercase; color: var(--brand); }
+.brandmark { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 var(--font-display); letter-spacing: .26em; text-transform: uppercase; color: var(--brand); }
 .brandmark svg { width: 16px; height: 16px; color: var(--brand); }
 .boot { background: #0e3b3a; }
 .boot img { border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-.home-top h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; }
+.home-top h1 { font-family: var(--font-display); font-weight: 700; }
 
 .home-top h1 { white-space: nowrap; }
 .home-top > div:first-child { min-width: 0; }
@@ -827,7 +830,7 @@ html, body { overflow-x: hidden; }
 .leg-head { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--mc) 16%, var(--surface)) 0 14px, color-mix(in srgb, var(--mc) 10%, var(--surface)) 14px 28px); color: var(--text); border-bottom: 3px dashed var(--mc); }
 .leg-head .kind-tag { color: var(--mc); filter: brightness(.75); }
 .leg-route { display: flex; align-items: center; gap: 10px; }
-.lr-end { font: 700 19px/1.2 Georgia, serif; max-width: 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lr-end { font: 700 19px/1.2 var(--font-display); max-width: 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lr-line { flex: 1; position: relative; height: 34px; display: grid; place-items: center; }
 .lr-line::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 3px dashed var(--mc); }
 .lr-line i { position: relative; font-style: normal; font-size: 18px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); border: 2px solid var(--mc); }
@@ -931,7 +934,7 @@ body { font-feature-settings: "ss01", "cv11"; }
 .dest-head.has-cover::after { content: ''; position: absolute; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.05) 35%, rgba(0,0,0,.7)); }
 .dest-head > *:not(.dh-cover) { position: relative; z-index: 1; }
 .dest-head .kind-chip { background: rgba(255, 255, 255, .92); color: var(--brand); }
-.dest-head .title-input { font: 700 28px/1.15 Georgia, 'Times New Roman', serif !important; letter-spacing: -.01em; text-shadow: 0 2px 12px rgba(0,0,0,.25); margin-top: 34px; }
+.dest-head .title-input { font: 700 28px/1.15 var(--font-display) !important; letter-spacing: -.01em; text-shadow: 0 2px 12px rgba(0,0,0,.25); margin-top: 34px; }
 .dh-meta { display: flex; gap: 8px; flex-wrap: wrap; }
 .dh-meta span { font-size: 12.5px; font-weight: 600; background: rgba(255, 255, 255, .18); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 4px 10px; border-radius: 99px; }
 .dest-head.fresh .pin { display: inline-block; animation: pinDrop .7s var(--spring) both; }
@@ -1039,3 +1042,59 @@ body { font-feature-settings: "ss01", "cv11"; }
 .tr-emoji.trip-badge { width: 44px; height: 44px; font-size: 0; }
 .share-btn .pic .ico, .my-trips .pic .ico { width: 22px; height: 22px; }
 .my-trips .mt-ic { font-size: 0; }
+
+/* ---------- Activités classées par jour ---------- */
+.day-group { border: 1px solid var(--line); border-radius: 16px; padding: 10px 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--surface); }
+.day-group.today { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+.day-h { display: flex; align-items: baseline; gap: 8px; padding: 0 2px; }
+.day-n { font: 700 17px/1.2 var(--font-display); color: var(--c, var(--brand)); }
+.day-group.today .day-n { color: var(--accent); }
+.day-h small { color: var(--muted); font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.day-c { font-size: 12px; font-weight: 700; color: var(--muted); }
+.day-group .subs { min-height: 6px; }
+.day-group .subs:empty::before { content: 'Rien de prévu pour l’instant'; display: block; color: var(--muted); font-size: 13px; padding: 2px 4px; }
+.day-group.other { background: var(--surface-2); }
+.drawer-body .sec > .day-group + .day-group { margin-top: 2px; }
+
+/* ---------- Partage : compagnons de voyage */
+.share-sec { font-size: 16px; margin: 16px 0 8px; display: flex; flex-direction: column; gap: 2px; }
+.share-sec small { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+.collab-card { border: 1.5px solid color-mix(in srgb, var(--brand) 30%, var(--line)); background: color-mix(in srgb, var(--brand) 5%, var(--surface)); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.collab-card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.collab-code { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px; border-radius: 12px; background: var(--surface); border: 1.5px dashed var(--brand); }
+.collab-code small { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.collab-code b { font: 800 30px/1.1 ui-monospace, Menlo, monospace; letter-spacing: .12em; color: var(--brand); }
+.members { display: flex; flex-wrap: wrap; gap: 6px; }
+.member { padding: 4px 10px; border-radius: 99px; background: var(--surface-2); font-size: 13px; font-weight: 600; }
+.member.me { background: color-mix(in srgb, var(--brand) 14%, var(--surface)); color: var(--brand); }
+.trip-title .with { color: var(--brand); font-weight: 700; }
+.doc-private small { color: var(--muted); }
+.home-btns .btn:not(.primary) { padding: 8px 12px; }
+
+/* ---------- Typographie minimaliste ---------- */
+body { font-family: var(--font); letter-spacing: -.005em; }
+h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1, .sh-step-head h3 { font-family: var(--font-display); letter-spacing: -.025em; }
+.home-top h1 { font-weight: 700; font-size: 32px; letter-spacing: -.035em; }
+.brandmark { font: 600 11px/1 var(--font); letter-spacing: .32em; color: var(--muted); }
+.brandmark svg { color: var(--brand); }
+.dest-head .title-input, .dest-head .dh-title .title-input { font-family: var(--font-display) !important; font-weight: 700 !important; letter-spacing: -.035em; text-shadow: 0 1px 10px rgba(0, 0, 0, .2); }
+.day-n { font-weight: 700; letter-spacing: -.02em; font-size: 16px; }
+.lr-end, .tk-end b { font-family: var(--font-display); letter-spacing: -.01em; }
+.tk-end b { font-weight: 700; letter-spacing: .02em; }
+.step-top h3 { font-weight: 650; }
+.trip-title h1 { font-weight: 700; }
+
+/* ---------- Destination jour par jour ---------- */
+.dayline { display: flex; gap: 6px; padding: 2px 16px 10px; overflow-x: auto; scrollbar-width: none; }
+.dayline::-webkit-scrollbar { display: none; }
+.dayline button { flex: none; min-width: 58px; display: flex; flex-direction: column; align-items: center; gap: 0; padding: 7px 10px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--text); transition: background .25s, color .25s, transform .2s var(--spring), box-shadow .25s; }
+.dayline button b { font-size: 20px; line-height: 1.1; font-weight: 700; letter-spacing: -.02em; }
+.dayline button small { font-size: 11px; color: var(--muted); font-weight: 600; }
+.dayline .dl-all { min-width: 92px; align-items: flex-start; }
+.dayline .dl-all b { font-size: 15px; }
+.dayline button.today { border-color: var(--accent); }
+.dayline button.on { background: var(--c, var(--brand)); border-color: var(--c, var(--brand)); color: #fff; box-shadow: 0 6px 14px color-mix(in srgb, var(--c, var(--brand)) 30%, transparent); transform: translateY(-1px); }
+.dayline button.on small { color: rgba(255, 255, 255, .85); }
+.dayline button:active { transform: scale(.95); }
+
+.day-h small::first-letter { text-transform: uppercase; }

@@ -81,7 +81,19 @@ export async function putFile(blob, id = uid()) {
   await tx('files', 'readwrite', (s) => s.put(blob, id));
   return id;
 }
-export const getFile = (id) => (db ? tx('files', 'readonly', (s) => s.get(id)) : Promise.resolve(null));
+const localFile = (id) => (db ? tx('files', 'readonly', (s) => s.get(id)) : Promise.resolve(null));
+// Fichiers ajoutés par un compagnon de voyage : téléchargés à la première ouverture, puis gardés hors-ligne
+const remoteFiles = new Map();
+const fetching = new Map();
+export const registerRemoteFile = (id, loader) => remoteFiles.set(id, loader);
+export async function getFile(id) {
+  const f = await localFile(id);
+  if (f || !remoteFiles.has(id)) return f;
+  if (!fetching.has(id)) {
+    fetching.set(id, remoteFiles.get(id)().then(async (blob) => { await putFile(blob, id).catch(() => {}); return blob; }).catch(() => null).finally(() => setTimeout(() => fetching.delete(id), 5000)));
+  }
+  return fetching.get(id);
+}
 export const delFile = (id) => (db && id ? tx('files', 'readwrite', (s) => s.delete(id)) : Promise.resolve());
 
 // ---------- Fabriques
@@ -123,6 +135,7 @@ export function normalizeTrip(t) {
   t.kind ||= 'mixed';
   t.vehicle ||= 'car';
   t.documents.forEach((d) => {
+    d.private ??= ['passport', 'license', 'health'].includes(d.type);
     if (!d.files) d.files = d.fileId ? [{ id: d.fileId, name: d.fileName || 'document', type: '' }] : [];
     delete d.fileId; delete d.fileName;
   });
