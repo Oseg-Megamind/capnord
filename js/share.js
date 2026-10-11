@@ -61,7 +61,7 @@ const iLike = (target) => S.likes.some((l) => l.target === target && l.device ==
 // ---------- Rendu
 function render() {
   const D = S.data;
-  document.title = `${D.emoji || ''} ${D.name} · Cap Nord`;
+  document.title = `${D.name} · Cap Nord`;
   document.documentElement.style.setProperty('--trip', D.color || '#0f766e');
   const st = status(D);
   const steps = D.steps || [];
