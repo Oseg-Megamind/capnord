@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ouvrir sur le téléphone</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0e3b3a; color: #eef3f1; font: 16px/1.5 -apple-system, system-ui, sans-serif; padding: 24px 16px; box-sizing: border-box; }
+  .card { background: #fff; color: #1b2b2a; border-radius: 24px; padding: 28px; max-width: 420px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  h1 { margin: 0 0 6px; font-size: 22px; }
+  p { margin: 0 0 16px; color: #5b6b69; }
+  #qr { display: grid; place-items: center; margin: 8px auto 16px; }
+  .url { font: 600 17px ui-monospace, Menlo, monospace; background: #eef3f1; border-radius: 10px; padding: 8px 12px; display: inline-block; user-select: all; }
+  ol { text-align: left; color: #3d4c4a; padding-left: 20px; margin: 16px 0 0; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>📱 Ouvrir Cap Nord sur ton téléphone</h1>
+  <p>Ton téléphone doit être connecté au <b>même Wi-Fi</b> que ce Mac.</p>
+  <div id="qr"></div>
+  <div class="url" id="url"></div>
+  <ol>
+    <li>Ouvre l’appareil photo de l’iPhone et vise le QR code.</li>
+    <li>Touche le lien qui apparaît : l’app s’ouvre dans Safari.</li>
+    <li>Partager → « Sur l’écran d’accueil » pour l’avoir comme une app.</li>
+  </ol>
+</div>
+<script src="vendor/qrcode.min.js"></script>
+<script>
+  const url = new URLSearchParams(location.search).get('u') || location.origin + '/';
+  document.getElementById('url').textContent = url;
+  new QRCode(document.getElementById('qr'), { text: url, width: 220, height: 220, colorDark: '#0e3b3a', colorLight: '#ffffff' });
+</script>
+</body>
+</html>

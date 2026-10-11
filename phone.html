@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voyage · aperçu téléphone</title>
+<style>
+  :root { color-scheme: light dark; }
+  html, body { margin: 0; height: 100%; }
+  body { background: #e7ebef; font: 13px -apple-system, system-ui, sans-serif; color: #475569; overflow: hidden; }
+  @media (prefers-color-scheme: dark) { body { background: #0b1220; color: #94a3b8; } }
+  .bar { position: fixed; top: 0; left: 0; right: 0; z-index: 5; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 10px 12px; flex-wrap: wrap; }
+  .seg { display: inline-flex; background: rgba(255, 255, 255, .7); border: 1px solid #cbd5e1; border-radius: 12px; padding: 3px; gap: 2px; }
+  @media (prefers-color-scheme: dark) { .seg { background: #1a2438; border-color: #243049; } }
+  .seg button { font: 600 13px -apple-system, system-ui, sans-serif; border: 0; background: none; color: inherit; padding: 7px 12px; border-radius: 9px; cursor: pointer; }
+  .seg button.on { background: #0f766e; color: #fff; }
+  .tool { font: 600 13px -apple-system, system-ui, sans-serif; padding: 7px 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; cursor: pointer; }
+  .stage { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: flex-start; gap: 24px; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 6px; transform-origin: top center; }
+  .col[hidden] { display: none; }
+  .label { font-weight: 700; font-size: 13px; }
+  .phone { position: relative; width: 390px; height: 844px; border-radius: 54px; padding: 12px; background: #111; box-shadow: 0 30px 60px rgba(0,0,0,.35), inset 0 0 0 2px #333; box-sizing: border-box; }
+  .phone::before { content: ''; position: absolute; top: 22px; left: 50%; transform: translateX(-50%); width: 110px; height: 30px; background: #000; border-radius: 20px; z-index: 2; }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 42px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+  .status { height: 48px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0; font: 600 15px -apple-system, system-ui, sans-serif; color: #000; background: #f6f7f9; }
+  @media (prefers-color-scheme: dark) { .status { background: #0b1220; color: #fff; } }
+  iframe { width: 100%; flex: 1; border: 0; background: #fff; display: block; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="seg" role="tablist" aria-label="Écran affiché">
+    <button data-mode="app" role="tab">🧳 Mon voyage</button>
+    <button data-mode="friends" role="tab">👀 Vue de mes amis</button>
+    <button data-mode="both" role="tab">↔︎ Les deux</button>
+  </div>
+  <button class="tool" id="reload" title="Recharger pour voir les dernières modifications">↻ Recharger</button>
+</div>
+<div class="stage" id="stage">
+  <div class="col" id="col-app">
+    <span class="label">🧳 Mon voyage</span>
+    <div class="phone"><div class="screen"><div class="status"><span class="clock">9:41</span><span>●●● 5G ▮</span></div><iframe id="app" title="Mon voyage"></iframe></div></div>
+  </div>
+  <div class="col" id="col-friends">
+    <span class="label">👀 Ce que voient mes amis</span>
+    <div class="phone"><div class="screen"><div class="status"><span class="clock">9:41</span><span>●●● 5G ▮</span></div><iframe id="friends" title="Vue des amis"></iframe></div></div>
+  </div>
+</div>
+<script>
+  const $ = (s) => document.querySelector(s);
+  const app = $('#app'), friends = $('#friends');
+  const store = { get: (k) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+  let mode = store.get('phone-mode') || 'app';
+
+  // Le voyage ouvert dans l'app est celui montré dans la vue des amis
+  const currentTrip = () => {
+    try { const m = app.contentWindow.location.hash.match(/#\/trip\/([^/]+)/); if (m) { store.set('phone-trip', m[1]); return m[1]; } } catch {}
+    return store.get('phone-trip') || '';
+  };
+  const friendsSrc = () => `share.html?demo=${encodeURIComponent(currentTrip())}&r=${Date.now()}`;
+
+  function apply() {
+    document.querySelectorAll('.seg button').forEach((b) => b.classList.toggle('on', b.dataset.mode === mode));
+    $('#col-app').hidden = mode === 'friends';
+    $('#col-friends').hidden = mode === 'app';
+    if (mode !== 'app') friends.src = friendsSrc();
+    fit();
+  }
+  document.querySelectorAll('.seg button').forEach((b) => (b.onclick = () => { currentTrip(); mode = b.dataset.mode; store.set('phone-mode', mode); apply(); }));
+  $('#reload').onclick = () => {
+    if (mode !== 'friends') app.contentWindow.location.reload();
+    if (mode !== 'app') friends.src = friendsSrc();
+  };
+
+  // Le téléphone se réduit pour tenir dans la fenêtre (deux téléphones en mode « les deux »)
+  function fit() {
+    const n = mode === 'both' ? 2 : 1;
+    const k = Math.min(1, (innerHeight - 90) / 868, (innerWidth - 24 - (n - 1) * 24) / (390 * n));
+    const gap = 24 * k;
+    $('#stage').style.gap = `${gap}px`;
+    document.querySelectorAll('.col').forEach((c) => { c.style.transform = `scale(${k})`; c.style.margin = `0 ${-(390 * (1 - k)) / 2}px`; });
+  }
+  addEventListener('resize', fit);
+
+  // Quand on ouvre un voyage dans l'app, la vue des amis suit automatiquement
+  let lastTrip = '';
+  setInterval(() => {
+    const id = currentTrip();
+    if (mode === 'both' && id && id !== lastTrip) { lastTrip = id; friends.src = friendsSrc(); }
+    if (id) lastTrip = id;
+  }, 1500);
+
+  // Mode « les deux » : chaque modification dans l'app rafraîchit la vue des amis (en gardant le défilement)
+  let refreshTimer = null, keepScroll = 0;
+  const refreshFriends = () => {
+    if (mode !== 'both') return;
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(() => {
+      try { keepScroll = friends.contentWindow.scrollY; } catch { keepScroll = 0; }
+      friends.src = friendsSrc();
+    }, 2000);
+  };
+  friends.addEventListener('load', () => { if (keepScroll) setTimeout(() => { try { friends.contentWindow.scrollTo(0, keepScroll); } catch {} keepScroll = 0; }, 900); });
+  app.addEventListener('load', () => { try { app.contentDocument.addEventListener('change', refreshFriends, true); } catch {} });
+
+  const tick = () => document.querySelectorAll('.clock').forEach((c) => (c.textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })));
+  tick(); setInterval(tick, 30000);
+
+  app.src = 'index.html' + (store.get('phone-trip') ? `#/trip/${store.get('phone-trip')}/itin` : '');
+  apply();
+</script>
+</body>
+</html>

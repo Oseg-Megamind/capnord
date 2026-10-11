@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cap Nord · pistes de logo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fir: #0e3b3a;      /* vert sapin profond */
+    --night: #13233a;    /* bleu nuit polaire */
+    --brass: #d9a441;    /* laiton */
+    --ice: #eef3f1;      /* glace */
+    --ink: #1b2b2a;
+    --paper: #f6f4ef;
+    --muted: #6b7a78;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 Inter, -apple-system, system-ui, sans-serif; padding: 24px 16px 60px; }
+  h1 { font: 600 28px/1.1 Fraunces, Georgia, serif; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; max-width: 1200px; }
+  .card { background: #fff; border-radius: 20px; padding: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(14,59,58,.07); display: flex; flex-direction: column; gap: 14px; }
+  .card h2 { margin: 0; font: 600 18px Fraunces, Georgia, serif; display: flex; gap: 10px; align-items: baseline; }
+  .card h2 span { font: 600 12px Inter, sans-serif; color: var(--brass); letter-spacing: .12em; }
+  .card p { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .hero { display: flex; align-items: center; gap: 18px; }
+  .hero svg.icon { width: 120px; height: 120px; border-radius: 27px; box-shadow: 0 10px 24px rgba(0,0,0,.18); flex: none; }
+  .sizes { display: flex; align-items: flex-end; gap: 12px; }
+  .sizes svg { box-shadow: 0 3px 8px rgba(0,0,0,.15); }
+  .s60 { width: 60px; height: 60px; border-radius: 14px; }
+  .s40 { width: 40px; height: 40px; border-radius: 9px; }
+  .s24 { width: 24px; height: 24px; border-radius: 6px; }
+  .lockup { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 14px; }
+  .lockup.light { background: var(--ice); }
+  .lockup.dark { background: var(--fir); color: var(--ice); }
+  .lockup svg { width: 44px; height: 44px; flex: none; }
+  .word { font: 600 26px/1 Fraunces, Georgia, serif; letter-spacing: .14em; text-transform: uppercase; }
+  .word small { display: block; font: 600 9.5px Inter, sans-serif; letter-spacing: .34em; color: var(--brass); margin-top: 5px; }
+  .pick { margin-top: auto; font: 600 13px Inter, sans-serif; color: var(--fir); }
+</style>
+</head>
+<body>
+<h1>Cap Nord · 4 pistes de logo</h1>
+<p class="lead">Chaque piste : l’icône d’app, sa lisibilité en petit (écran d’accueil, onglet), et le nom en logotype clair / sombre.</p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- A · L'Aiguille : aiguille de boussole, nord plein en laiton, sud en filet -->
+    <symbol id="a" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#0e3b3a"/>
+      <circle cx="256" cy="256" r="172" fill="none" stroke="#eef3f1" stroke-opacity=".22" stroke-width="5"/>
+      <path d="M256 92 L300 256 H212 Z" fill="#d9a441"/>
+      <path d="M212 256 H300 L256 420 Z" fill="none" stroke="#eef3f1" stroke-width="10" stroke-linejoin="round"/>
+      <circle cx="256" cy="256" r="13" fill="#eef3f1"/>
+    </symbol>
+    <symbol id="a-mark" viewBox="0 0 512 512">
+      <path d="M256 40 L318 256 H194 Z" fill="#d9a441"/>
+      <path d="M194 256 H318 L256 472 Z" fill="none" stroke="currentColor" stroke-width="22" stroke-linejoin="round"/>
+    </symbol>
+
+    <!-- B · Étoile polaire : étoile à 4 branches, la branche nord plus longue -->
+    <symbol id="b" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#13233a"/>
+      <path d="M256 72 C266 206 290 252 372 274 C290 296 266 318 256 412 C246 318 222 296 140 274 C222 252 246 206 256 72 Z" fill="#d9a441"/>
+      <circle cx="372" cy="138" r="7" fill="#eef3f1" opacity=".8"/>
+      <circle cx="142" cy="176" r="4.5" fill="#eef3f1" opacity=".55"/>
+      <circle cx="392" cy="392" r="4" fill="#eef3f1" opacity=".4"/>
+    </symbol>
+    <symbol id="b-mark" viewBox="0 0 512 512">
+      <path d="M256 24 C268 196 298 252 412 280 C298 308 268 336 256 488 C244 336 214 308 100 280 C214 252 244 196 256 24 Z" fill="#d9a441"/>
+    </symbol>
+
+    <!-- C · Le Cap : un C ouvert vers le nord, traversé par l'aiguille -->
+    <symbol id="c" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#0e3b3a"/>
+      <path d="M318 126 A148 148 0 1 0 318 386" fill="none" stroke="#eef3f1" stroke-width="34" stroke-linecap="round" transform="rotate(-90 256 256)"/>
+      <path d="M256 70 L286 250 H226 Z" fill="#d9a441"/>
+      <circle cx="256" cy="268" r="12" fill="#d9a441"/>
+    </symbol>
+    <symbol id="c-mark" viewBox="0 0 512 512">
+      <path d="M336 100 A176 176 0 1 0 336 412" fill="none" stroke="currentColor" stroke-width="44" stroke-linecap="round" transform="rotate(-90 256 256)"/>
+      <path d="M256 22 L296 250 H216 Z" fill="#d9a441"/>
+    </symbol>
+
+    <!-- D · Horizon Nord : la route qui file vers l'horizon, l'étoile du nord au-dessus -->
+    <symbol id="d" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#0e3b3a"/>
+      <path d="M118 512 L250 300 H262 L394 512 Z" fill="#eef3f1" opacity=".95"/>
+      <path d="M256 330 V352 M256 384 V418 M256 452 V512" stroke="#0e3b3a" stroke-width="9" stroke-linecap="round"/>
+      <path d="M60 300 H452" stroke="#eef3f1" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/>
+      <path d="M256 104 C261 160 272 178 304 186 C272 194 261 212 256 268 C251 212 240 194 208 186 C240 178 251 160 256 104 Z" fill="#d9a441"/>
+    </symbol>
+    <symbol id="d-mark" viewBox="0 0 512 512">
+      <path d="M96 500 L246 290 H266 L416 500 Z" fill="currentColor"/>
+      <path d="M256 30 C264 120 280 148 330 160 C280 172 264 200 256 290 C248 200 232 172 182 160 C232 148 248 120 256 30 Z" fill="#d9a441"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="grid">
+  <section class="card">
+    <h2><span>A</span> L’Aiguille</h2>
+    <div class="hero">
+      <svg class="icon" viewBox="0 0 512 512"><use href="#a"/></svg>
+      <p>L’aiguille de boussole réduite à l’essentiel : le nord en laiton, plein ; le sud en simple filet. Intemporel, très lisible, l’esprit « instrument de navigation ».</p>
+    </div>
+    <div class="sizes"><svg class="s60" viewBox="0 0 512 512"><use href="#a"/></svg><svg class="s40" viewBox="0 0 512 512"><use href="#a"/></svg><svg class="s24" viewBox="0 0 512 512"><use href="#a"/></svg></div>
+    <div class="lockup light"><svg viewBox="0 0 512 512" style="color:#0e3b3a"><use href="#a-mark"/></svg><div class="word">Cap Nord<small>carnet de route</small></div></div>
+    <div class="lockup dark"><svg viewBox="0 0 512 512" style="color:#eef3f1"><use href="#a-mark"/></svg><div class="word">Cap Nord<small>carnet de route</small></div></div>
+  </section>
+
+  <section class="card">
+    <h2><span>B</span> Étoile polaire</h2>
+    <div class="hero">
+      <svg class="icon" viewBox="0 0 512 512"><use href="#b"/></svg>
+      <p>L’étoile qui guide les voyageurs depuis toujours. La branche nord s’étire vers le haut. Plus poétique et lumineux, sur un bleu de nuit polaire.</p>
+    </div>
+    <div class="sizes"><svg class="s60" viewBox="0 0 512 512"><use href="#b"/></svg><svg class="s40" viewBox="0 0 512 512"><use href="#b"/></svg><svg class="s24" viewBox="0 0 512 512"><use href="#b"/></svg></div>
+    <div class="lockup light"><svg viewBox="0 0 512 512"><use href="#b-mark"/></svg><div class="word" style="color:#13233a">Cap Nord<small>carnet de route</small></div></div>
+    <div class="lockup dark" style="background:#13233a"><svg viewBox="0 0 512 512"><use href="#b-mark"/></svg><div class="word">Cap Nord<small>carnet de route</small></div></div>
+  </section>
+
+  <section class="card">
+    <h2><span>C</span> Le Cap</h2>
+    <div class="hero">
+      <svg class="icon" viewBox="0 0 512 512"><use href="#c"/></svg>
+      <p>Un monogramme : le « C » de Cap s’ouvre vers le haut et l’aiguille du Nord le traverse. Le plus « marque », celui qui a le plus de caractère.</p>
+    </div>
+    <div class="sizes"><svg class="s60" viewBox="0 0 512 512"><use href="#c"/></svg><svg class="s40" viewBox="0 0 512 512"><use href="#c"/></svg><svg class="s24" viewBox="0 0 512 512"><use href="#c"/></svg></div>
+    <div class="lockup light"><svg viewBox="0 0 512 512" style="color:#0e3b3a"><use href="#c-mark"/></svg><div class="word">Cap Nord<small>carnet de route</small></div></div>
+    <div class="lockup dark"><svg viewBox="0 0 512 512" style="color:#eef3f1"><use href="#c-mark"/></svg><div class="word">Cap Nord<small>carnet de route</small></div></div>
+  </section>
+
+  <section class="card">
+    <h2><span>D</span> Horizon Nord</h2>
+    <div class="hero">
+      <svg class="icon" viewBox="0 0 512 512"><use href="#d"/></svg>
+      <p>La route qui file vers l’horizon, l’étoile du nord au-dessus. Raconte le road trip et le cap à suivre ; le plus « aventure ».</p>
+    </div>
+    <div class="sizes"><svg class="s60" viewBox="0 0 512 512"><use href="#d"/></svg><svg class="s40" viewBox="0 0 512 512"><use href="#d"/></svg><svg class="s24" viewBox="0 0 512 512"><use href="#d"/></svg></div>
+    <div class="lockup light"><svg viewBox="0 0 512 512" style="color:#0e3b3a"><use href="#d-mark"/></svg><div class="word">Cap Nord<small>carnet de route</small></div></div>
+    <div class="lockup dark"><svg viewBox="0 0 512 512" style="color:#eef3f1"><use href="#d-mark"/></svg><div class="word">Cap Nord<small>carnet de route</small></div></div>
+  </section>
+</div>
+</body>
+</html>

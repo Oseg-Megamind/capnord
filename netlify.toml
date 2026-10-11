@@ -1,0 +1,21 @@
+# Mise en ligne sur Netlify : le dossier entier est publié tel quel
+[build]
+  publish = "."
+
+# Le service worker et la page doivent toujours être vérifiés, pour recevoir les mises à jour
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "no-cache"
