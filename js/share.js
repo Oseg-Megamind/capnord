@@ -62,7 +62,7 @@ const iLike = (target) => S.likes.some((l) => l.target === target && l.device ==
 function render() {
   const D = S.data;
   document.title = `${D.name} · Cap Nord`;
-  document.documentElement.style.setProperty('--trip', D.color || '#0f766e');
+  document.documentElement.style.setProperty('--trip', D.color || '#7a2436');
   const st = status(D);
   const steps = D.steps || [];
   const idx = currentIdx(steps);

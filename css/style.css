@@ -6,9 +6,10 @@
   --text: #0c1b1a;
   --muted: #5d6f6b;
   --line: #dfe7e4;
-  --brand: #0e3b3a;
-  --brand-2: #17675f;
-  --accent: #ff7a59;
+  --brand: #7a2436;
+  --brand-2: #7a2436;
+  --accent: #d9a441;
+  --accent-ink: #3b2508;
   --brass: #d9a441;
   --brand-ink: #ffffff;
   --ok: #0f9f62;
@@ -32,13 +33,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0a1312; --surface: #11201e; --surface-2: #182b28; --text: #e7f0ed; --muted: #8ea39f; --line: #22362f;
-    --brand: #5fd0b8; --brand-2: #8be3cf; --accent: #ff8e70; --brand-ink: #04211d; --ok: #3ddc97; --ok-bg: #0f2f22; --warn: #ffb547; --warn-bg: #33240a; --danger: #ff6b70;
+    --brand: #e68a9b; --brand-2: #e68a9b; --accent: #e3b55c; --accent-ink: #2b1a05; --brand-ink: #2a0b12; --ok: #3ddc97; --ok-bg: #0f2f22; --warn: #ffb547; --warn-bg: #33240a; --danger: #ff6b70;
     --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .3); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0a1312; --surface: #11201e; --surface-2: #182b28; --text: #e7f0ed; --muted: #8ea39f; --line: #22362f;
-  --brand: #5fd0b8; --brand-2: #8be3cf; --accent: #ff8e70; --brand-ink: #04211d; --ok: #3ddc97; --ok-bg: #0f2f22; --warn: #ffb547; --warn-bg: #33240a; --danger: #ff6b70;
+  --brand: #e68a9b; --brand-2: #e68a9b; --accent: #e3b55c; --accent-ink: #2b1a05; --brand-ink: #2a0b12; --ok: #3ddc97; --ok-bg: #0f2f22; --warn: #ffb547; --warn-bg: #33240a; --danger: #ff6b70;
   --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .3); color-scheme: dark;
 }
 
@@ -783,7 +784,7 @@ body.show-map .fab { display: none; }
 /* ---------- Identité Cap Nord */
 .brandmark { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 var(--font-display); letter-spacing: .26em; text-transform: uppercase; color: var(--brand); }
 .brandmark svg { width: 16px; height: 16px; color: var(--brand); }
-.boot { background: #0e3b3a; }
+.boot { background: #7a2436; }
 .boot img { border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 .home-top h1 { font-family: var(--font-display); font-weight: 700; }
 
@@ -1098,3 +1099,30 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 .dayline button:active { transform: scale(.95); }
 
 .day-h small::first-letter { text-transform: uppercase; }
+
+/* =====================================================================
+   Couleurs « passeport » : bordeaux + or, en aplats (aucun dégradé)
+   ===================================================================== */
+.btn.primary, .drawer-foot .btn.primary { background: var(--brand); box-shadow: 0 4px 12px color-mix(in srgb, var(--brand) 25%, transparent); }
+.tc-band { background: var(--c); }
+.feat-card { background: var(--c); }
+.road-banner { background: color-mix(in srgb, var(--trip) 10%, var(--surface)); }
+.step::before { background: var(--trip); }
+.drawer-head.dest-head { background: var(--c); }
+.dest-head.has-cover::after { background: rgba(20, 8, 12, .42); }
+.drawer-head.leg-head { background: color-mix(in srgb, var(--mc) 12%, var(--surface)); }
+.lb-info { background: rgba(0, 0, 0, .55); }
+/* Texte foncé sur l'or (lisibilité) */
+.now-badge, .step.now .num, .day-group.today .day-n, .dayline button.today small { color: var(--accent-ink); }
+.now-badge, .step.now .num { background: var(--accent); }
+.day-group.today .day-n { color: color-mix(in srgb, var(--accent) 55%, var(--accent-ink)); }
+.feat-card .live-chip { color: var(--brand); }
+.mp-dot.now, .lgd.now { background: var(--trip); }
+.bn.active { color: var(--brand); }
+.bn::before { background: color-mix(in srgb, var(--brand) 10%, transparent); }
+/* Accueil : le titre garde sa place, les boutons passent dessous si l'écran est étroit */
+.home-top { flex-wrap: wrap; row-gap: 10px; }
+.home-top > div:first-child { flex: 1 1 auto; }
+.home-btns { margin-left: auto; }
+.brandmark { white-space: nowrap; }
+@media (max-width: 480px) { .home-top { align-items: center; } .home-top > div:first-child { flex-basis: 100%; } .home-btns { width: 100%; justify-content: flex-end; } }

@@ -63,7 +63,7 @@ export const BOOK_STATUS = {
   paid: { label: 'Payé', cls: 'ok' },
 };
 
-export const COLORS = ['#0f766e', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#ca8a04', '#16a34a', '#0891b2', '#475569'];
+export const COLORS = ['#7a2436', '#1f4f9e', '#b8532e', '#2f6f62', '#8a6a2f', '#4b3f72', '#1d6f8a', '#5a5f66'];
 
 export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY', 'AUD', 'NZD', 'THB', 'MAD', 'TND', 'MXN', 'BRL', 'IDR', 'VND', 'INR',
   'CNY', 'KRW', 'ZAR', 'TRY', 'SEK', 'NOK', 'DKK', 'ISK', 'PLN', 'CZK', 'HUF', 'RON', 'AED', 'SGD', 'HKD', 'PHP', 'MYR', 'PEN', 'COP',

@@ -2383,7 +2383,7 @@ async function videoThumb(file) {
   const c = document.createElement('canvas');
   c.width = Math.round(w * k); c.height = Math.round(h * k);
   const g = c.getContext('2d');
-  g.fillStyle = '#0e3b3a'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#7a2436'; g.fillRect(0, 0, c.width, c.height);
   try { g.drawImage(v, 0, 0, c.width, c.height); } catch { /* format non lisible ici */ }
   URL.revokeObjectURL(url);
   return { blob: await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.72)), w, h, duration: isFinite(v.duration) ? v.duration : null };
@@ -3118,7 +3118,7 @@ function applyTheme() {
   const th = state.settings.theme;
   if (th === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.dataset.theme = th;
-  $('meta[name=theme-color]').content = isDark() ? '#0b1220' : '#0e3b3a';
+  $('meta[name=theme-color]').content = isDark() ? '#0a1312' : '#7a2436';
   applyBasemap();
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
@@ -3151,7 +3151,7 @@ A.settings = async () => {
 A.demo = () => {
   const d0 = addDays(todayStr(), -2);
   const P = (lat, lng, label) => ({ lat, lng, label });
-  const t = newTrip({ name: 'Road trip au Portugal', emoji: '🇵🇹', color: '#0f766e', budget: 2200, travelers: 2, notes: 'Bonjour : Olá · Merci : Obrigado/a · L’addition : A conta, por favor' });
+  const t = newTrip({ name: 'Road trip au Portugal', emoji: '', color: '#7a2436', budget: 2200, travelers: 2, notes: 'Bonjour : Olá · Merci : Obrigado/a · L’addition : A conta, por favor' });
   const steps = [
     { name: 'Paris', type: 'home', place: P(48.8566, 2.3522, 'Paris, Île-de-France, France'), arrival: d0, departure: d0 },
     { name: 'Lisbonne', type: 'city', place: P(38.7223, -9.1393, 'Lisbonne, Portugal'), arrival: d0, departure: addDays(d0, 3),

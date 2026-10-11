@@ -133,6 +133,7 @@ export function normalizeTrip(t) {
   t.currency ||= 'EUR';
   t.travelers ||= 1;
   t.kind ||= 'mixed';
+  if (!t.color || t.color === '#0f766e' || t.color === '#0e3b3a') t.color = '#7a2436';
   t.vehicle ||= 'car';
   t.documents.forEach((d) => {
     d.private ??= ['passport', 'license', 'health'].includes(d.type);
