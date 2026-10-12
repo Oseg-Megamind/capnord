@@ -682,7 +682,7 @@ function renderMapProgress(t) {
       body = `<button class="mp-row live" data-act="open-leg" data-id="${lv.id}"><span class="mp-veh">${icon(to.transport?.mode || 'route')}</span><span><small>En route · ${Math.round(lv.f * 100)} % du trajet</small><b>Vers ${esc(to.name)}</b><span class="mp-legbar"><i style="width:${Math.round(lv.f * 100)}%"></i></span></span><i>›</i></button>`;
     } else
     body = `${cur ? `<button class="mp-row" data-act="open-step" data-id="${cur.id}"><span class="mp-dot now"></span><span><small>Vous êtes à</small><b>${esc(cur.name)}</b>${night ? `<small>🛏️ ${esc(night.stay.name || 'Hébergement')}</small>` : ''}</span><i>›</i></button>` : ''}
-      ${next ? `<button class="mp-row" data-act="open-step" data-id="${next.id}"><span class="mp-dot"></span><span><small>Ensuite${next.arrival ? ' · ' + fmtWeekday(next.arrival) : ''}</small><b>${esc(next.name)}</b></span><i>›</i></button>` : ''}`;
+      ${next ? `<button class="mp-row next" data-act="open-step" data-id="${next.id}"><span class="mp-dot"></span><span><small>Ensuite${next.arrival ? ' · ' + fmtWeekday(next.arrival) : ''}</small><b>${esc(next.name)}</b></span><i>›</i></button>` : ''}`;
   } else if (st.key === 'soon' && t.steps[0]) {
     body = `<button class="mp-row" data-act="open-step" data-id="${t.steps[0].id}"><span class="mp-dot"></span><span><small>Première étape</small><b>${esc(t.steps[0].name)}</b></span><i>›</i></button>`;
   }
@@ -690,7 +690,7 @@ function renderMapProgress(t) {
     <div class="mp-head" data-act="mp-toggle" title="Réduire / agrandir">${head}<span class="mp-count">${done}/${n} étapes faites</span></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     ${body}
-    <div class="mp-legend"><span><i class="lgd done"></i>Fait</span><span><i class="lgd now"></i>Aujourd’hui</span><span><i class="lgd todo"></i>À venir</span></div>`;
+    <div class="mp-legend"><span><i class="lgd done"></i>Fait</span><span><i class="lgd now"></i>Aujourd’hui</span><span><i class="lgd next"></i>Ensuite</span><span><i class="lgd todo"></i>À venir</span></div>`;
 }
 
 function applyBasemap() {

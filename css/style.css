@@ -18,6 +18,11 @@
   --warn-bg: #f3e4d7;
   --danger: #ab3626;
   --eau: #3d6fb6;
+  /* Soleil : ce qu'on met en avant (jour, prochaine étape, photos, astuces) */
+  --soleil: #e9a23b;
+  --soleil-ink: #3b2508;
+  --soleil-texte: #8a5a0e;
+  --soleil-bg: #fbedd3;
   --shadow: 0 1px 2px rgba(16, 35, 31, .05), 0 4px 14px rgba(16, 35, 31, .05);
   --shadow-lg: 0 18px 44px rgba(16, 35, 31, .22);
   --r: 12px;
@@ -35,13 +40,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0b1916; --surface: #10231f; --surface-2: #17302a; --text: #e6ece6; --muted: #9fb3ad; --line: #24403a;
-    --brand: #5fd0c8; --brand-2: #5fd0c8; --accent: #5fd0c8; --accent-ink: #10231f; --brass: #d98a55; --brand-ink: #10231f; --ok: #5fd0c8; --ok-bg: #123a35; --warn: #d98a55; --warn-bg: #33220f; --danger: #ff7a66; --eau: #7fa8e0;
+    --brand: #5fd0c8; --brand-2: #5fd0c8; --accent: #5fd0c8; --accent-ink: #10231f; --brass: #d98a55; --brand-ink: #10231f; --ok: #5fd0c8; --ok-bg: #123a35; --warn: #d98a55; --warn-bg: #33220f; --danger: #ff7a66; --eau: #7fa8e0; --soleil: #f0b257; --soleil-ink: #2b1a05; --soleil-texte: #f0b257; --soleil-bg: #3a2a12;
     --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .3); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0b1916; --surface: #10231f; --surface-2: #17302a; --text: #e6ece6; --muted: #9fb3ad; --line: #24403a;
-    --brand: #5fd0c8; --brand-2: #5fd0c8; --accent: #5fd0c8; --accent-ink: #10231f; --brass: #d98a55; --brand-ink: #10231f; --ok: #5fd0c8; --ok-bg: #123a35; --warn: #d98a55; --warn-bg: #33220f; --danger: #ff7a66; --eau: #7fa8e0;
+    --brand: #5fd0c8; --brand-2: #5fd0c8; --accent: #5fd0c8; --accent-ink: #10231f; --brass: #d98a55; --brand-ink: #10231f; --ok: #5fd0c8; --ok-bg: #123a35; --warn: #d98a55; --warn-bg: #33220f; --danger: #ff7a66; --eau: #7fa8e0; --soleil: #f0b257; --soleil-ink: #2b1a05; --soleil-texte: #f0b257; --soleil-bg: #3a2a12;
   --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .3); color-scheme: dark;
 }
 
@@ -1694,3 +1699,29 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .ph-rx { position: absolute; top: 4px; right: 6px; left: auto; bottom: auto; display: inline-flex; gap: 4px; padding: 0; background: none; }
 .ph-rx span { width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .92); }
 .ph-rx svg { width: 14px; height: 14px; }
+
+
+/* =====================================================================
+   SOLEIL — la couleur des choses à mettre en avant
+   Glacier = ici / maintenant · Soleil = à voir, à venir, important · Bistre = à faire
+   ===================================================================== */
+.feat-card .fc-day { color: var(--soleil); opacity: 1; }
+.feat-card .bar i { background: var(--soleil); }
+.trip-title .st-now { color: var(--soleil-texte); }
+.mp-head b { color: var(--text); }
+.map-progress .bar i { background: var(--soleil); }
+.mp-row.next { background: var(--soleil-bg); }
+.mp-row.next .mp-dot { border: 0; background: var(--soleil); box-shadow: 0 0 0 3px color-mix(in srgb, var(--soleil) 30%, transparent); }
+.mp-row.next small { color: var(--soleil-texte); font-weight: 700; }
+/* Prochaine étape sur la carte : anneau soleil */
+.mk.next { border-color: var(--soleil); box-shadow: 0 0 0 4px rgba(233, 162, 59, .3), 0 1px 4px rgba(16, 35, 31, .3); }
+/* Photos posées sur la carte : cadre soleil */
+.mk-photo { border-color: var(--soleil) !important; }
+/* Astuces : l'étoile en soleil */
+.tips-title .ico, .tip-compose-btn .ico, .dest-head .dh-tips .ico { color: var(--soleil); }
+.dest-head .dh-tips.on { color: var(--soleil); }
+/* Stats clés du voyage */
+.stats > div:first-child b { color: var(--text); }
+/* Compte à rebours avant le départ */
+.chip.st-soon, .st-soon { background: var(--soleil-bg); color: var(--soleil-texte); }
+.lgd.next { background: var(--soleil); border: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--soleil) 30%, transparent); }
