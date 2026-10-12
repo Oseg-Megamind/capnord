@@ -1614,3 +1614,7 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .ts-mates { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .ts-mate { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); font-weight: 600; font-size: 14px; }
 .ts-mate i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 11px; background: var(--brand); color: #5fd0c8; }
+.join-hello { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--r); background: var(--brand); color: #e6ece6; margin-bottom: 12px; animation: rise .4s var(--ease) both; }
+.join-hello .ico { width: 26px; height: 26px; color: #5fd0c8; flex: none; margin-top: 2px; }
+.join-hello p { margin: 0; font-size: 14px; line-height: 1.45; color: #c9d6d1; }
+.join-hello b { color: #fff; font-size: 15.5px; }

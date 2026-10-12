@@ -3196,7 +3196,7 @@ function companionsHTML(t, ready) {
   const members = (c.members || []).filter((m) => !m.me);
   return `
     <div class="collab-card on">
-      <div class="share-link"><input id="invite-url" value="${esc(collab.inviteLink(t, appUrl()))}" readonly aria-label="Lien d’invitation"></div>
+      <div class="share-link"><input id="invite-url" value="${esc(collab.inviteLink(t, appUrl(), state.settings.myName || ''))}" readonly aria-label="Lien d’invitation"></div>
       <div class="row-btns wrap">${navigator.share ? '<button class="btn primary" data-act="invite-send">Envoyer le lien</button>' : ''}<button class="btn" data-act="invite-copy">Copier le lien</button></div>
       <div class="inv-list">${members.length ? members.map((m) => `<div class="inv-row joined"><span class="tip-av">${esc((m.name || '?').slice(0, 1).toUpperCase())}</span><b>${esc(m.name)}</b><small>a rejoint</small></div>`).join('') : '<p class="muted">Personne n’a encore rejoint le voyage.</p>'}</div>
       <small class="hint">${c.error ? `Synchronisation impossible (${esc(c.error)}). Nouvel essai automatique.` : c.syncedAt ? `Synchronisé à ${new Date(c.syncedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : 'Synchronisation…'}</small>
@@ -3220,18 +3220,18 @@ async function inviteLinkModal(t) {
   openModal(`
     <h2>Lien pour vos compagnons</h2>
     <p class="hint">Envoyez ce lien à toutes les personnes qui voyagent avec vous. En le touchant, chacune indique son prénom et arrive dans le voyage.</p>
-    <div class="share-link"><input id="invite-url" value="${esc(collab.inviteLink(t, appUrl()))}" readonly aria-label="Lien d’invitation"></div>
+    <div class="share-link"><input id="invite-url" value="${esc(collab.inviteLink(t, appUrl(), state.settings.myName || ''))}" readonly aria-label="Lien d’invitation"></div>
     <div class="row-btns wrap" style="margin-top:10px">${navigator.share ? '<button class="btn primary" data-act="invite-send">Envoyer le lien</button>' : ''}<button class="btn" data-act="invite-copy">Copier le lien</button></div>
     <div class="actions"><button class="btn" data-act="close-modal">Terminé</button></div>`);
 }
 A['invite-send'] = async () => {
   const t = T();
-  if (navigator.share) { try { await navigator.share({ title: `Voyage ${t.name}`, text: collab.inviteText(t, appUrl()) }); return; } catch { /* annulé */ } }
+  if (navigator.share) { try { await navigator.share({ title: `Voyage ${t.name}`, text: collab.inviteText(t, appUrl(), state.settings.myName || '') }); return; } catch { /* annulé */ } }
   A['invite-copy']();
 };
 A['invite-copy'] = async () => {
   const t = T();
-  try { await navigator.clipboard.writeText(collab.inviteText(t, appUrl())); toast('Lien copié'); }
+  try { await navigator.clipboard.writeText(collab.inviteText(t, appUrl(), state.settings.myName || '')); toast('Lien copié'); }
   catch { const i = $('#invite-url'); i?.select(); toast('Lien sélectionné : copiez-le'); }
 };
 A['collab-link'] = () => inviteLinkModal(T());
@@ -3260,21 +3260,22 @@ A['collab-start'] = async (el) => {
 const appUrl = () => cloud.shareUrl('x').replace(/share\.html\?t=x$/, '');
 A['collab-invite'] = async () => {
   const t = T();
-  const text = collab.inviteText(t, appUrl());
+  const text = collab.inviteText(t, appUrl(), state.settings.myName || '');
   if (navigator.share) { try { await navigator.share({ title: `Voyage ${t.name}`, text }); return; } catch { /* annulé */ } }
   A['collab-copy']();
 };
 A['collab-copy'] = async () => {
   const t = T();
-  try { await navigator.clipboard.writeText(collab.inviteText(t, appUrl())); toast('Invitation copiée'); }
+  try { await navigator.clipboard.writeText(collab.inviteText(t, appUrl(), state.settings.myName || '')); toast('Invitation copiée'); }
   catch { toast(`Code : ${t.collab.code}`); }
 };
 
 function joinModal(code = '', name = '') {
+  const qs = new URLSearchParams(location.search), inv = { de: qs.get('de') || '', v: qs.get('v') || '' };
   if (!cloud.cloudReady()) return toast('Service en ligne indisponible');
   openModal(`
-    <h2>Rejoindre un voyage</h2>
-    <p class="hint">${code ? 'Vous êtes invité à rejoindre un voyage. Indiquez votre prénom : vos compagnons le verront, et vous pourrez compléter le carnet ensemble.' : 'Un compagnon de voyage vous a envoyé un code ? Entrez-le ici : le voyage apparaîtra dans « Mes voyages ».'}</p>
+    <h2>${code ? 'Bienvenue à bord' : 'Rejoindre un voyage'}</h2>
+    ${code ? `<div class="join-hello">${icon('users')}<p><b>${esc(inv.de ? `${inv.de} t’a choisi comme compagnon de voyage` : 'Tu es invité comme compagnon de voyage')}${inv.v ? ` pour « ${esc(inv.v)} »` : ''} !</b><br>Préparez ensemble votre aventure : étapes, hébergements, budget, photos… Indique ton prénom pour rejoindre le voyage.</p></div>` : '<p class="hint">Un compagnon de voyage vous a envoyé un code ? Entrez-le ici : le voyage apparaîtra dans « Mes voyages ».</p>'}
     <form class="form" id="join-form">
       <label class="fld ${code ? 'hidden' : ''}"><span>Code d’invitation</span><input id="join-code" value="${esc(code)}" placeholder="ex : TUN-K7P" autocapitalize="characters" autocomplete="off" required></label>
       <label class="fld"><span>Votre prénom</span><input id="join-name" value="${esc(name || state.settings.myName || '')}" placeholder="ex : Léa" maxlength="40" required></label>
@@ -3335,13 +3336,14 @@ A['share-start'] = async (el) => {
   }
 };
 A['share-copy'] = async () => {
-  const input = $('#share-url');
-  try { await navigator.clipboard.writeText(input.value); toast('Lien copié ✓'); }
+  const input = $('#share-url'), t = T();
+  const text = `${t.share?.author || state.settings.myName || 'Je'} vous invite à suivre son voyage « ${t.name} » : la carte, les étapes et les photos au fil de la route. Vous pourrez aimer et commenter chaque moment !\n\n${input.value}`;
+  try { await navigator.clipboard.writeText(text); toast('Lien copié'); }
   catch { input.select(); toast('Sélectionné : copiez-le avec ⌘C / appui long'); }
 };
 A['share-native'] = async () => {
   const t = T();
-  try { await navigator.share({ title: t.name, text: `Suivez notre voyage « ${t.name} » !`, url: cloud.shareUrl(t.share.token) }); } catch { /* annulé */ }
+  try { await navigator.share({ title: t.name, text: `${t.share.author || state.settings.myName || 'Je'} vous invite à suivre son voyage « ${t.name} » : la carte, les étapes et les photos au fil de la route. Vous pourrez aimer et commenter chaque moment !`, url: cloud.shareUrl(t.share.token) }); } catch { /* annulé */ }
 };
 A['share-stop'] = async () => {
   const t = T();

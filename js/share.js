@@ -144,6 +144,7 @@ function homeView() {
     </button>`;
   };
   return `
+    <div class="shx-hello"><b>${esc(D.author || 'Vos proches')} vous invite à suivre son voyage « ${esc(D.name)} ».</b> Explorez la carte, ouvrez les étapes, et aimez ou commentez chaque photo.</div>
     <div class="shx-sec-h"><h2>Étapes</h2><small>${steps.length} étapes · ${photos.length} photos</small></div>
     <div class="shx-strip" id="strip">${steps.map(card).join('')}</div>
 

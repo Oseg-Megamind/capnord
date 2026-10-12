@@ -225,3 +225,5 @@
 .shx-grid.n2 { grid-template-columns: 1fr 1fr; }
 .shx-grid.n2 .shx-g { aspect-ratio: 3 / 4; grid-column: auto; grid-row: auto; }
 .shx-viewer .link { color: #5fd0c8; }
+.shx-hello { margin: 2px 0 6px; padding: 12px 14px; border-radius: 14px; background: #d9f2ef; color: #10231f; font-size: 14px; line-height: 1.45; animation: shxUp .5s both .2s; }
+.shx-hello b { display: block; font: 800 15.5px var(--font-display); margin-bottom: 2px; }

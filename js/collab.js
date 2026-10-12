@@ -207,7 +207,12 @@ export function unwatchAll() {
   for (const ch of channels.values()) client()?.removeChannel(ch);
   channels.clear();
 }
-// Lien personnel : il ouvre directement le voyage, avec le prénom déjà rempli
-export const inviteLink = (trip, url, name = '') => `${url}#/join/${trip.collab.code}${name ? '/' + encodeURIComponent(name) : ''}`;
-export const inviteText = (trip, url, name = '') => `${name ? name + ', r' : 'R'}ejoins notre voyage « ${trip.name} » sur Etapa : on prépare et on complète le carnet de route ensemble.\n\nTouche ce lien pour nous rejoindre :\n${inviteLink(trip, url, name)}`;
+// Lien d'invitation : il porte le prénom de celui qui invite et le nom du voyage, pour l'accueil
+export const inviteLink = (trip, url, from = '') => {
+  const q = new URLSearchParams();
+  if (from) q.set('de', from);
+  q.set('v', trip.name || '');
+  return `${url}?${q}#/join/${trip.collab.code}`;
+};
+export const inviteText = (trip, url, from = '') => `${from ? from + ' t’a choisi' : 'Tu es choisi'} comme compagnon de voyage pour « ${trip.name} » ! Préparez ensemble votre aventure sur Etapa : étapes, hébergements, budget, photos… chacun peut tout compléter.\n\nTouche ce lien pour nous rejoindre :\n${inviteLink(trip, url, from)}`;
 export const SUPA = SUPABASE_URL;
