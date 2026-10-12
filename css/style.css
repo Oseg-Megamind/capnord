@@ -1971,3 +1971,13 @@ button.step-rx { background: none; border: 0; padding: 2px; cursor: pointer; fon
 .feat-card .fc-dates { font: 600 13px var(--mono, 'JetBrains Mono', monospace); opacity: .85; margin-top: 2px !important; }
 .feat-card .fc-route { font-size: 14px; font-weight: 600; margin-top: 3px !important; }
 .feat-card .fc-route .fc-arrow { font-style: normal; color: #5fd0c8; padding: 0 2px; }
+.cm-like { display: inline-flex; align-items: center; gap: 3px; border: 0; background: none; color: inherit; opacity: .75; font: 600 11.5px var(--mono, 'JetBrains Mono', monospace); cursor: pointer; padding: 0 2px; vertical-align: middle; }
+.cm-like svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+.cm-like.on { color: #ff5a43; opacity: 1; }
+.cm-like.on svg { fill: #ff5a43; stroke: #ff5a43; }
+.cm-like.pop svg { animation: rxPop .5s var(--spring) both; }
+/* Badge rouge par photo (commentaires non lus) */
+.ph-dot { position: absolute; top: -6px; right: -6px; z-index: 2; min-width: 20px; height: 20px; padding: 0 5px; display: grid; place-items: center; border-radius: 10px; background: #ff3b30; color: #fff; font: 800 11px/1 var(--font-display, 'Archivo', sans-serif); border: 2px solid #10231f; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); animation: rxPop .5s var(--spring) both; pointer-events: none; }
+.ph-dot svg { width: 10px; height: 10px; fill: #fff; stroke: none; }
+.ph-grid .ph .ph-dot { top: 4px; right: 4px; border-color: #fff; }
+.ph-strip .ph-mini.has-rx img { box-shadow: none; }

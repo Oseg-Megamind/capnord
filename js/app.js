@@ -2897,7 +2897,7 @@ function photoStripHTML(t, s) {
   const ph = [...t.photos.filter((p) => p.stepId === s.id && p.onLeg), ...stepPhotos(t, s)].filter((p, i, a) => a.indexOf(p) === i);
   if (!ph.length) return '';
   rxSort(t, ph);
-  return `<div class="ph-strip ${ph.length > 4 ? 'scroll' : ''}">${ph.map((p) => { const r = reactions(t, [`photo:${p.id}`]); return `<button class="ph-mini ${isVideo(p) ? 'vid' : ''} ${r ? 'has-rx' : ''}" data-act="view-photo" data-id="${p.id}" ${r ? 'data-cm="1"' : ''} aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="">${isVideo(p) ? '<em class="ph-play">▶</em>' : ''}${r ? `<span class="ph-rx">${rxHTML(r)}</span>` : ''}</button>`; }).join('')}</div>`;
+  return `<div class="ph-strip ${ph.length > 4 ? 'scroll' : ''}">${ph.map((p) => { const r = reactions(t, [`photo:${p.id}`]); return `<button class="ph-mini ${isVideo(p) ? 'vid' : ''} ${r ? 'has-rx' : ''}" data-act="view-photo" data-id="${p.id}" ${r ? 'data-cm="1"' : ''} aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="">${isVideo(p) ? '<em class="ph-play">▶</em>' : ''}${phBadge(r)}</button>`; }).join('')}</div>`;
 }
 
 function photosPaneHTML(t, s, leg = false, day = null) {
@@ -2905,7 +2905,7 @@ function photosPaneHTML(t, s, leg = false, day = null) {
   return `
     <div class="ph-grid">
       <label class="ph add"><span>＋</span><small>Photo / vidéo</small><input type="file" accept="image/*,video/*" multiple data-ph-add data-step="${s.id}" data-leg="${leg ? 1 : 0}" data-day="${day || ''}" hidden></label>
-      ${ph.map((p) => `<button class="ph ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}" aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="${esc(p.caption)}">${isVideo(p) ? `<em>▶ ${fmtClip(p.duration)}</em>` : ''}${p.caption ? '<i>Aa</i>' : ''}${(() => { const r = reactions(t, [`photo:${p.id}`]); return r ? `<span class="ph-rx">${rxHTML(r)}</span>` : ''; })()}</button>`).join('')}
+      ${ph.map((p) => `<button class="ph ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}" aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="${esc(p.caption)}">${isVideo(p) ? `<em>▶ ${fmtClip(p.duration)}</em>` : ''}${p.caption ? '<i>Aa</i>' : ''}${(() => { const r = reactions(t, [`photo:${p.id}`]); return phBadge(r); })()}</button>`).join('')}
     </div>
     <p class="hint">Touchez <b>＋</b> : choisissez dans votre photothèque, ou prenez une photo ou une vidéo.</p>
     <label class="fld"><span>${leg ? 'Récit du trajet' : 'Récit de l’étape'}</span><textarea data-f="${leg ? 'transport.story' : 'story'}" rows="6" placeholder="${leg ? 'La route, les paysages, les pauses, les galères…' : 'Racontez ce moment : ce que vous avez vu, mangé, ressenti…'} Vos amis le verront avec les photos."></textarea></label>`;
@@ -3028,7 +3028,8 @@ function reactions(t, targets) {
   const f = fb[t.id];
   if (!f) return null;
   const set = new Set(targets), seen0 = t.share?.notifSeenAt || 0, seenPh = t.share?.seenPhotos || {};
-  const seenOf = (target) => Math.max(seen0, seenPh[target.slice(6)] || 0);
+  // Photos : seule l'ouverture de la photo compte comme « vu » (pas l'ouverture de la cloche)
+  const seenOf = (target) => seenPh[target.slice(6)] || 0;
   const likes = f.likes.filter((l) => set.has(l.target));
   const comments = f.comments.filter((c) => set.has(c.target) && !c.is_owner);
   if (!likes.length && !comments.length) return null;
@@ -3036,17 +3037,17 @@ function reactions(t, targets) {
   const nl = likes.filter(isNew).length, nc = comments.filter(isNew).length;
   return nl || nc ? { likes: nl, comments: nc } : null;
 }
-// Photos triées par réactions : d'abord celles avec des j'aime / commentaires non vus, puis par réaction la plus récente, puis ordre d'ajout
+// Ordre des miniatures : celles avec une notification non lue d'abord (la plus récente en tête), toutes les autres dans l'ordre d'ajout
 function rxSort(t, ph) {
   const f = fb[t.id];
   if (!f) return ph;
   const last = {};
   for (const x of [...f.likes, ...f.comments.filter((c) => !c.is_owner)]) if (x.target?.startsWith('photo:') && x.created_at) { const k = x.target.slice(6), v = new Date(x.created_at).getTime(); if (!(last[k] >= v)) last[k] = v; }
-  const key = (p) => [reactions(t, [`photo:${p.id}`]) ? 1 : 0, last[p.id] || 0];
-  return ph.sort((a, b) => { const ka = key(a), kb = key(b); return kb[0] - ka[0] || kb[1] - ka[1]; });
+  const key = (p) => (reactions(t, [`photo:${p.id}`]) ? last[p.id] || 1 : 0);
+  return ph.sort((a, b) => key(b) - key(a));
 }
-// Petit cœur rouge (nouveaux j'aime) et petit stylo (nouveaux commentaires), avec leur nombre
-const RX_PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
+// Miniature : petit rond rouge en haut à droite = nombre de commentaires pas encore lus (cœur si seulement des j'aime)
+const phBadge = (r) => (r ? `<span class="ph-dot" aria-label="${r.comments ? `${r.comments} nouveaux commentaires` : 'Nouveaux j’aime'}">${r.comments ? (r.comments > 9 ? '9+' : r.comments) : RX_HEART}</span>` : '');
 const rxHTML = (r) => (r ? `${r.likes ? `<span class="rx-l" aria-label="${r.likes} nouveaux j’aime">${RX_HEART}<b>${r.likes}</b></span>` : ''}${r.comments ? `<span class="rx-c" aria-label="${r.comments} nouveaux commentaires">${RX_PEN}<b>${r.comments}</b></span>` : ''}` : '');
 
 // Notifications : j'aime et commentaires des proches, du plus récent au plus ancien
@@ -3056,7 +3057,7 @@ function notifList(t) {
   if (!f) return [];
   const items = [
     ...f.comments.filter((c) => !c.is_owner).map((c) => ({ kind: 'comment', who: c.author, body: c.body, target: c.target, at: c.created_at, reply: !!c.parent_id })),
-    ...f.likes.filter((l) => l.created_at).map((l) => ({ kind: 'like', who: l.author || 'Quelqu’un', target: l.target, at: l.created_at })),
+    ...f.likes.filter((l) => l.created_at && l.device !== cloud.deviceId()).map((l) => ({ kind: 'like', who: l.author || 'Quelqu’un', target: l.target, at: l.created_at })),
   ];
   return items.sort((a, b) => b.at.localeCompare(a.at));
 }
@@ -3231,13 +3232,33 @@ function renderShareStatus() {
 }
 A['sync-now'] = () => syncNow(T(), { silent: false });
 
+// J'aime sur le commentaire d'un proche (cœur rouge quand on l'a aimé)
+function cmLikeBtn(t, c) {
+  const likes = (fb[t.id]?.likes || []).filter((l) => l.target === `comment:${c.id}`);
+  const on = likes.some((l) => l.device === cloud.deviceId());
+  return `<button class="cm-like ${on ? 'on' : ''}" data-act="cm-like" data-id="${c.id}" aria-pressed="${on}" aria-label="${on ? 'Je n’aime plus' : 'J’aime ce commentaire'}">${RX_HEART}${likes.length ? `<span>${likes.length}</span>` : ''}</button>`;
+}
+A['cm-like'] = async (el) => {
+  const t = T(), f = fb[t.id];
+  if (!f || !isShared(t)) return;
+  const target = `comment:${el.dataset.id}`, me = cloud.deviceId();
+  const on = !f.likes.some((l) => l.target === target && l.device === me);
+  if (on) f.likes.push({ target, device: me, author: state.settings.myName || t.share.author || 'Moi', created_at: new Date().toISOString(), mine: true });
+  else f.likes = f.likes.filter((l) => !(l.target === target && l.device === me));
+  const refresh = () => { if ($('#lb-thread')) renderLbThread(); renderStepThread(); if ($('#share-modal')) renderShareModal(); };
+  refresh();
+  if (on) $(`[data-act="cm-like"][data-id="${el.dataset.id}"]`)?.classList.add('pop');
+  try { await cloud.toggleLike(t.share.token, target, state.settings.myName || t.share.author || null); }
+  catch { toast('J’aime non enregistré : vérifiez votre connexion.'); pullFeedback(t); }
+};
+
 function threadHTML(t, target, { compact = false } = {}) {
   const f = fb[t.id];
   const list = (f?.comments || []).filter((c) => c.target === target);
   const roots = list.filter((c) => !c.parent_id);
   const one = (c) => `<div class="cm ${c.is_owner ? 'own' : ''}">
     <div class="cm-b"><b>${esc(c.author)}${c.is_owner ? ' (vous)' : ''}</b><p>${esc(c.body)}</p></div>
-    <small>${ago(c.created_at)} · <button class="cm-reply-btn" data-act="cm-reply" data-id="${c.id}" data-who="${esc(c.author)}">Répondre</button>${c.is_owner ? '' : ` · <button class="link muted" data-act="cm-del" data-id="${c.id}">Supprimer</button>`}</small>
+    <small>${ago(c.created_at)} · <button class="cm-reply-btn" data-act="cm-reply" data-id="${c.id}" data-who="${esc(c.author)}">Répondre</button>${c.is_owner ? '' : ` · ${cmLikeBtn(t, c)}`}${c.is_owner ? '' : ` · <button class="link muted" data-act="cm-del" data-id="${c.id}">Supprimer</button>`}</small>
   </div>`;
   return `<div class="thread">
     ${roots.map((c) => `<div class="cm-th">${one(c)}${list.filter((r) => r.parent_id === c.id).map((r) => `<div class="cm-rep">${one(r)}</div>`).join('')}</div>`).join('') || (compact ? '' : '<p class="muted">Aucun commentaire pour l’instant.</p>')}
