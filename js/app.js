@@ -419,7 +419,7 @@ function renderHome() {
   state.trips.forEach((t) => groups[tripStatus(t).key].push(t));
   groups.soon.sort((a, b) => tripStart(a).localeCompare(tripStart(b)));
   groups.past.sort((a, b) => tripStart(b).localeCompare(tripStart(a)));
-  const sec = (title, list) => (list.length ? `<section class="h-group"><h2 class="h-sec">${title} <small>${list.length}</small></h2><div class="trip-list">${list.map(tripRow).join('')}</div></section>` : '');
+  const sec = (title, list) => (list.length ? `<section class="h-group"><h2 class="h-sec">${title} <small>${list.length}</small></h2><div class="trip-cards">${list.map(featuredCard).join('')}</div></section>` : '');
   const all = state.trips;
   const km = all.reduce((n, t) => n + trackKm(t.track), 0);
   app.innerHTML = `
@@ -448,15 +448,21 @@ function renderHome() {
   </div>`;
 }
 
+// Grande carte de voyage, pour tous les voyages (en cours, à venir, à planifier, terminés)
 function featuredCard(t) {
-  const st = tripStatus(t), c = tripCosts(t);
+  const st = tripStatus(t), c = tripCosts(t), a = tripStart(t), b = tripEnd(t);
   const idx = currentStepIdx(t), s = t.steps[idx];
-  const pct = st.tot ? Math.min(100, (st.day / st.tot) * 100) : 0;
-  return `<div class="trip-wrap tw-feat"><button class="trip-more" data-act="trip-settings" data-id="${t.id}" aria-label="Paramètres du voyage ${esc(t.name)}">⋯</button><button class="feat-card" data-act="open-trip" data-id="${t.id}" data-tab="map" style="--c:${t.color}">
-    <div class="fc-top"><span class="chip live-chip">● En cours</span><span class="fc-day">Jour ${st.day}${st.tot ? ' / ' + st.tot : ''}</span></div>
-    <div class="fc-main"><span class="fc-emoji trip-badge light">${MARK}</span><div><h2>${esc(t.name)}</h2><p>${s ? `Vous êtes à <b>${esc(s.name)}</b>` : fmtRange(tripStart(t), tripEnd(t))}</p></div></div>
-    <div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="fc-meta"><span>📍 ${t.steps.length} étapes</span><span>🌙 ${totalNights(t)} nuits</span>${c.total ? `<span>💶 ${fmtMoney(c.total, t.currency)}</span>` : ''}</div>
+  const chip = { now: '● En cours', soon: st.n === 1 ? 'Demain' : `Dans ${st.n} jours`, draft: 'À planifier', past: 'Terminé' }[st.key];
+  const right = st.key === 'now' ? `Jour ${st.day}${st.tot ? ' / ' + st.tot : ''}` : st.key === 'soon' ? fmtDay(a, { day: 'numeric', month: 'short' }) : '';
+  const sub = st.key === 'now' && s ? `Vous êtes à <b>${esc(s.name)}</b>`
+    : a ? `${fmtRange(a, b)}${t.steps.length > 1 ? ` · ${esc(t.steps[0].name || '')} → ${esc(t.steps.at(-1).name || '')}` : ''}` : t.steps.length ? `${esc(t.steps[0].name || '')}${t.steps.length > 1 ? ' → ' + esc(t.steps.at(-1).name || '') : ''} · dates à définir` : 'Ajoutez votre première étape';
+  const pct = st.key === 'now' && st.tot ? Math.min(100, (st.day / st.tot) * 100) : st.key === 'past' ? 100 : 0;
+  const money = c.total || t.budget;
+  return `<div class="trip-wrap tw-feat st-${st.key}"><button class="trip-more" data-act="trip-settings" data-id="${t.id}" aria-label="Paramètres du voyage ${esc(t.name)}">⋯</button><button class="feat-card fc-${st.key}" data-act="open-trip" data-id="${t.id}" data-tab="${st.key === 'now' ? 'map' : 'itin'}" style="--c:${t.color}">
+    <div class="fc-top"><span class="chip live-chip">${chip}</span><span class="fc-day">${right}</span></div>
+    <div class="fc-main"><span class="fc-emoji trip-badge light">${MARK}</span><div><h2>${esc(t.name)}</h2><p>${sub}</p></div></div>
+    ${st.key === 'now' || st.key === 'past' ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ''}
+    <div class="fc-meta"><span>📍 ${plural(t.steps.length, 'étape')}</span><span>🌙 ${plural(totalNights(t), 'nuit')}</span>${money ? `<span>💶 ${fmtMoney(money, t.currency)}</span>` : ''}${t.collab ? `<span>${icon('users')} ${(t.collab.members || []).length || 1}</span>` : ''}</div>
   </button></div>`;
 }
 
