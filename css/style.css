@@ -1160,9 +1160,8 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 /* Nom de destination : affiché, non modifiable à la main (vient du lieu choisi) */
 .dest-head .dh-name { margin: 0; color: #fff; font: 700 28px/1.1 var(--font-display); letter-spacing: -.035em; text-shadow: 0 1px 10px rgba(0, 0, 0, .2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; cursor: default; user-select: none; border: 0 !important; background: none !important; padding: 0 !important; }
 
-/* Petit onglet « Astuces de voyageurs » dans le bandeau */
-.dest-head .dh-tips { position: absolute; right: 14px; bottom: 0; z-index: 2; display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px 6px; border: 0; border-radius: 10px 10px 0 0; background: rgba(255, 255, 255, .16); color: #fff; font: 600 12px var(--font); cursor: pointer; }
-.dest-head .dh-tips .ico { width: 14px; height: 14px; color: var(--accent); }
-.dest-head .dh-tips.on { background: var(--accent); color: var(--accent-ink); }
-.dest-head .dh-tips.on .ico { color: var(--accent-ink); }
-.dest-head { padding-bottom: 34px !important; }
+/* Lien discret « Astuces de voyageurs » en haut, à côté de la croix */
+.dest-head .dh-tips { position: absolute; top: calc(18px + var(--safe-t)); right: 60px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 4px 2px; border: 0; background: none; color: rgba(255, 255, 255, .78); font: 500 12px var(--font); cursor: pointer; }
+.dest-head .dh-tips .ico { width: 14px; height: 14px; color: currentColor; }
+.dest-head .dh-tips.on { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.dest-head:has(.dh-tips) .dh-title { padding-right: 132px; }

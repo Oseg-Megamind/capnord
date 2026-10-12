@@ -1,7 +1,7 @@
 <title>Cap Nord · Benchmark DA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Archivo:wdth,wght@62..125,500;62..125,800&family=JetBrains+Mono:wght@500&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&family=Dela+Gothic+One&family=Instrument+Sans:wght@500;700&family=Barlow+Condensed:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Archivo:wdth,wght@62..125,500;62..125,800&family=JetBrains+Mono:wght@500&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,800&family=Figtree:wght@500;700;800&family=Instrument+Sans:wght@500;700&family=Barlow+Condensed:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
 /* Mise en page : rapport d'analyste, colonne de lecture + planches de pistes (texte | écran) */
 :root {
@@ -12,17 +12,18 @@
   --line: #d9ddd7;
   --accent: #b4442c;
   --soft: #e9ece6;
+  --good: #2f7a52;
   --display: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
   --body: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; color-scheme: dark;
+    --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; --good: #6cc496; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; color-scheme: dark;
+  --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; --good: #6cc496; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body); padding-inline: 20px; padding-block: 40px 80px; }
@@ -30,28 +31,24 @@ body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body);
 h1, h2, h3, h4 { font-family: var(--display); text-wrap: balance; margin: 0; }
 p { margin: 0; }
 a { color: var(--accent); }
-a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
 .lead { font-size: 19px; line-height: 1.55; color: var(--muted); max-width: 68ch; }
-.read { max-width: 68ch; }
-.muted { color: var(--muted); }
-.small { font-size: 14px; }
-.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 section { display: flex; flex-direction: column; gap: 28px; }
 section > header { display: flex; flex-direction: column; gap: 10px; border-top: 2px solid var(--ink); padding-top: 18px; }
 section > header h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; font-weight: 800; letter-spacing: -.02em; }
 
 /* Hero */
 .hero { display: flex; flex-direction: column; gap: 22px; }
-.hero h1 { font-size: clamp(40px, 7vw, 76px); line-height: .98; font-weight: 800; letter-spacing: -.035em; max-width: 15ch; }
+.hero h1 { font-size: clamp(40px, 7vw, 76px); line-height: .98; font-weight: 800; letter-spacing: -.035em; max-width: 16ch; }
 .meta { display: flex; flex-wrap: wrap; gap: 8px 24px; font: 400 13px var(--mono); color: var(--muted); }
 .thesis { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
 .thesis div { background: var(--surface); padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
 .thesis b { font: 800 30px/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .thesis span { font-size: 14px; color: var(--muted); line-height: 1.45; }
 
-/* Benchmark cards */
-.brands { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--line); }
+/* Benchmark */
+.brands { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
 .brand { display: grid; grid-template-columns: 230px 1fr; gap: 28px; padding-block: 28px; border-bottom: 1px solid var(--line); }
 .brand > * { min-width: 0; }
 .brand-id { display: flex; flex-direction: column; gap: 12px; }
@@ -61,20 +58,24 @@ section > header h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; font-
 .chip { display: flex; flex-direction: column; gap: 4px; width: 64px; }
 .chip i { display: block; height: 40px; border-radius: 6px; border: 1px solid rgba(127,127,127,.25); }
 .chip small { font: 400 10.5px/1.2 var(--mono); color: var(--muted); }
-.brand-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; }
-.kv { display: flex; flex-direction: column; gap: 4px; }
+.brand-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 28px; margin: 0; }
+.kv { display: flex; flex-direction: column; gap: 4px; margin: 0; }
 .kv dt { font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .kv dd { margin: 0; font-size: 15px; line-height: 1.5; }
 .verdict { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-.verdict p { padding: 12px 14px; background: var(--soft); font-size: 14.5px; line-height: 1.5; border-radius: 4px; }
-.verdict b { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
-.plus b { color: #2f7a52; }
+.verdict p, .risk p { padding: 12px 14px; background: var(--soft); font-size: 14.5px; line-height: 1.5; border-radius: 4px; }
+.verdict b, .risk b { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.plus b { color: var(--good); }
 .minus b { color: var(--accent); }
 .note { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 12px; max-width: 80ch; }
+.watch { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.watch div { border: 1px solid var(--line); background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--muted); }
+.watch b { color: var(--ink); font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.watch b i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 
 /* Market strip + map */
 .strip { display: flex; height: 64px; border-radius: 6px; overflow: hidden; }
-.strip i { flex: 1; position: relative; }
+.strip i { flex: 1; }
 .strip-legend { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; font: 400 12px var(--mono); color: var(--muted); }
 .mapbox { background: var(--surface); border: 1px solid var(--line); padding: 16px; overflow-x: auto; }
 .mapbox svg { display: block; width: 100%; min-width: 560px; height: auto; }
@@ -84,16 +85,16 @@ section > header h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; font-
 .mapbox .sub { fill: var(--muted); font: 400 11px var(--mono); }
 .mapbox .target { fill: none; stroke: var(--accent); stroke-dasharray: 5 5; stroke-width: 1.5; }
 .mapbox .tlabel { fill: var(--accent); font: 700 13px var(--body); }
-.mapbox .arr { stroke: var(--muted); stroke-width: 1.2; fill: none; }
 
 /* Insights */
 .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .ins { background: var(--surface); border: 1px solid var(--line); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-.ins .fig { font: 800 34px/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.ins .fig { font: 800 30px/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .ins h3 { font-size: 18px; font-weight: 700; }
 .ins p { font-size: 14.5px; color: var(--muted); line-height: 1.5; }
 .ins .so { font-size: 14px; color: var(--ink); border-top: 1px solid var(--line); padding-top: 10px; }
 .ins .so b { color: var(--accent); }
+.ins.minor { background: var(--soft); }
 
 /* Proposals */
 .prop { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 40px; padding-block: 36px; border-top: 1px solid var(--line); }
@@ -115,78 +116,82 @@ section > header h2 { font-size: clamp(28px, 4vw, 40px); line-height: 1.1; font-
 .typo-demo .b { font-size: 14px; color: var(--muted); }
 .typo-demo .intl { font-size: 13px; color: var(--muted); font-family: var(--mono); }
 .risk { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
-.risk p { padding: 12px 14px; background: var(--soft); font-size: 14px; border-radius: 4px; line-height: 1.5; }
-.risk b { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.fit { font: 500 12px var(--mono); color: var(--muted); }
+.fit b { color: var(--ink); }
 .reco-tag { align-self: flex-start; font: 600 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--surface); background: var(--accent); padding: 5px 9px; border-radius: 3px; }
 
-/* Phone mockups (literal colors: they are the specimens of each proposal) */
+/* Phone mockups (couleurs littérales : ce sont les spécimens de chaque piste) */
 .phone-col { display: flex; flex-direction: column; gap: 10px; align-items: center; }
 .phone { width: 260px; max-width: 100%; aspect-ratio: 9 / 19; border-radius: 36px; border: 8px solid #0d0f10; overflow: hidden; position: relative; box-shadow: 0 24px 50px -24px rgba(0,0,0,.45); display: flex; flex-direction: column; }
 .phone-cap { font: 400 12px var(--mono); color: var(--muted); text-align: center; }
 .notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 70px; height: 20px; background: #0d0f10; border-radius: 12px; z-index: 3; }
 .ph-in { flex: 1; padding: 40px 16px 16px; display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1; }
+.tabbar { margin-top: auto; display: flex; justify-content: space-around; padding-top: 10px; font: 600 10px 'Instrument Sans', sans-serif; }
 
-/* A Passeport */
+/* A Relevé */
+.pR { background: #ecefe8; color: #10231f; }
+.pR .topo { position: absolute; inset: 0; z-index: 0; }
+.pR .coord { font: 500 10px 'JetBrains Mono', monospace; color: #3c5650; letter-spacing: .04em; }
+.pR h4 { font: 800 28px/.95 'Archivo', sans-serif; font-stretch: 112%; color: #10231f; text-transform: uppercase; }
+.pR .card { background: #10231f; color: #ecefe8; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 9px; margin-top: auto; }
+.pR .leg { display: grid; grid-template-columns: 30px 1fr auto; gap: 6px; align-items: center; font: 500 12px 'Archivo', sans-serif; }
+.pR .leg .h { font: 500 10px 'JetBrains Mono', monospace; color: #9fb3ad; }
+.pR .tag { font: 500 9px 'JetBrains Mono', monospace; padding: 2px 5px; border-radius: 3px; background: #5fd0c8; color: #10231f; }
+.pR .tag.o { background: transparent; color: #c98a5b; border: 1px solid #c98a5b; }
+.pR .scale { display: flex; align-items: center; gap: 6px; font: 500 9px 'JetBrains Mono', monospace; color: #3c5650; }
+.pR .scale i { width: 60px; height: 5px; background: linear-gradient(90deg, #10231f 50%, transparent 50%); border: 1px solid #10231f; }
+.pR .pin { position: absolute; z-index: 2; left: 158px; top: 196px; width: 20px; height: 20px; border-radius: 50%; background: #5fd0c8; border: 3px solid #10231f; box-shadow: 0 0 0 6px rgba(95,208,200,.35); }
+
+/* B Ligne */
+.pL { background: #fbfbf8; color: #16181d; }
+.pL h4 { font: 800 24px/1.05 'Figtree', sans-serif; letter-spacing: -.02em; }
+.pL .sub { font: 500 11px 'JetBrains Mono', monospace; color: #6b6f78; }
+.pL .net { position: relative; height: 270px; }
+.pL .net svg { width: 100%; height: 100%; }
+.pL .lg { display: flex; gap: 10px; flex-wrap: wrap; font: 700 10px 'Figtree', sans-serif; }
+.pL .lg span { display: flex; align-items: center; gap: 4px; }
+.pL .lg i { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
+
+/* C Tableau des départs */
+.pE { background: #121314; color: #f4f1e8; }
+.pE .hd { display: flex; align-items: center; gap: 8px; font: 800 20px 'Barlow Condensed', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #ffb000; }
+.pE .hd i { width: 26px; height: 26px; background: #ffb000; color: #121314; display: grid; place-items: center; font-style: normal; font-size: 16px; border-radius: 3px; }
+.pE .board { display: flex; flex-direction: column; gap: 4px; }
+.pE .flap { display: grid; grid-template-columns: 38px 1fr 56px; gap: 6px; align-items: center; background: #1d1f21; padding: 8px; border-radius: 3px; font: 600 14px 'Barlow Condensed', sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+.pE .flap .t { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #ffb000; }
+.pE .flap .s { font-size: 11px; text-align: right; color: #7ee0a1; }
+.pE .flap .s.w { color: #ff9b6a; }
+.pE .docs { display: flex; flex-direction: column; gap: 5px; font: 400 13px 'Atkinson Hyperlegible', sans-serif; color: #d6d2c8; }
+.pE .docs div { display: flex; justify-content: space-between; border-bottom: 1px solid #2a2c2e; padding-bottom: 5px; }
+.pE .docs b { color: #7ee0a1; font-weight: 700; }
+.pE .docs b.w { color: #ff9b6a; }
+.pE .picto { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: auto; }
+.pE .picto span { aspect-ratio: 1; background: #ffb000; color: #121314; display: grid; place-items: center; border-radius: 4px; }
+.pE .picto svg { width: 22px; height: 22px; }
+
+/* D Passeport */
 .pA { background: #f2efe9; color: #241316; }
-.pA .top { background: #6b1d2c; color: #e9c77b; margin: -40px -16px 0; padding: 44px 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.pA .top { background: #4a1621; color: #e9c77b; margin: -40px -16px 0; padding: 44px 16px 18px; display: flex; flex-direction: column; gap: 4px; }
 .pA .top small { font: 500 9px 'IBM Plex Mono', monospace; letter-spacing: .14em; color: #d8b56a; }
-.pA .top b { font: 700 26px/1 'Fraunces', serif; letter-spacing: -.01em; color: #f4dfae; }
-.pA .stamp { align-self: flex-end; margin-top: -26px; width: 92px; height: 92px; border-radius: 50%; border: 2px solid #2f5d8a; color: #2f5d8a; display: grid; place-items: center; text-align: center; font: 500 8.5px/1.3 'IBM Plex Mono', monospace; transform: rotate(-12deg); background: rgba(242,239,233,.9); }
+.pA .top b { font: 700 26px/1 'Fraunces', serif; color: #f4dfae; }
+.pA .stamp { align-self: flex-end; margin-top: -26px; width: 88px; height: 88px; border-radius: 50%; border: 2px solid #2f5d8a; color: #2f5d8a; display: grid; place-items: center; text-align: center; font: 500 8.5px/1.3 'IBM Plex Mono', monospace; transform: rotate(-12deg); background: rgba(242,239,233,.92); }
 .pA .stamp b { display: block; font: 700 13px 'Fraunces', serif; }
 .pA .row { display: flex; justify-content: space-between; border-bottom: 1px solid #ddd5c8; padding-bottom: 8px; font: 500 13px 'Instrument Sans', sans-serif; }
-.pA .row small { color: #7d6d6f; font-weight: 500; }
+.pA .row small { color: #2f6f4f; font-weight: 700; }
+.pA .row small.w { color: #a2462d; }
 .pA .mrz { margin-top: auto; font: 500 9.5px/1.5 'IBM Plex Mono', monospace; color: #6b5c5e; letter-spacing: .06em; word-break: break-all; }
 
-/* B Relevé */
-.pB { background: #ecefe8; color: #10231f; }
-.pB .topo { position: absolute; inset: 0; z-index: 0; }
-.pB .coord { font: 500 10px 'JetBrains Mono', monospace; color: #3c5650; letter-spacing: .04em; }
-.pB h4 { font: 800 30px/.95 'Archivo', sans-serif; font-stretch: 112%; letter-spacing: -.01em; color: #10231f; text-transform: uppercase; }
-.pB .card { background: #10231f; color: #ecefe8; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
-.pB .leg { display: flex; align-items: center; gap: 8px; font: 500 12px 'Archivo', sans-serif; }
-.pB .leg i { width: 8px; height: 8px; border-radius: 50%; background: #ff5b1f; flex: none; }
-.pB .leg span { margin-left: auto; font: 500 10px 'JetBrains Mono', monospace; color: #9fb3ad; }
-.pB .scale { display: flex; align-items: center; gap: 6px; font: 500 9px 'JetBrains Mono', monospace; color: #3c5650; }
-.pB .scale i { width: 60px; height: 5px; background: linear-gradient(90deg, #10231f 50%, transparent 50%); border: 1px solid #10231f; }
-.pB .pin { position: absolute; z-index: 2; left: 150px; top: 205px; width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #ff5b1f; box-shadow: 0 0 0 4px rgba(255,91,31,.25); }
-
-/* C Lumière locale */
-.pC { background: linear-gradient(180deg, #1d2a4d 0%, #6a4c7a 34%, #ee8b5e 64%, #f7c98b 82%, #fbe8cf 100%); color: #fff9f1; }
-.pC .clock { font: 800 64px/0.9 'Bricolage Grotesque', sans-serif; letter-spacing: -.04em; }
-.pC .city { font: 400 15px 'Bricolage Grotesque', sans-serif; opacity: .9; }
-.pC .sun { display: flex; justify-content: space-between; font: 500 10px 'JetBrains Mono', monospace; letter-spacing: .06em; opacity: .85; }
-.pC .arc { height: 70px; position: relative; }
+/* E Lumière locale */
+.pC { background: linear-gradient(180deg, #24335c 0%, #6a4c7a 34%, #ee8b5e 64%, #f7c98b 82%, #fbe8cf 100%); color: #fff9f1; }
+.pC .clock { font: 800 60px/0.9 'Bricolage Grotesque', sans-serif; letter-spacing: -.04em; }
+.pC .city { font: 400 15px 'Bricolage Grotesque', sans-serif; opacity: .92; }
+.pC .sun { display: flex; justify-content: space-between; font: 500 10px 'JetBrains Mono', monospace; letter-spacing: .06em; opacity: .9; }
+.pC .arc { height: 64px; }
 .pC .arc svg { width: 100%; height: 100%; }
-.pC .glass { margin-top: auto; background: rgba(255,255,255,.28); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.45); border-radius: 18px; padding: 12px; color: #2a1d24; display: flex; flex-direction: column; gap: 4px; }
-.pC .glass b { font: 800 16px 'Bricolage Grotesque', sans-serif; }
+.pC .glass { background: rgba(255,255,255,.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.45); border-radius: 16px; padding: 10px 12px; color: #2a1d24; display: flex; flex-direction: column; gap: 2px; }
+.pC .glass b { font: 800 14px 'Bricolage Grotesque', sans-serif; }
 .pC .glass small { font: 400 12px 'Bricolage Grotesque', sans-serif; }
-
-/* D Carnet collé */
-.pD { background: #fff4e2; color: #1b1b3a; overflow: hidden; }
-.pD h4 { font: 400 32px/1 'Dela Gothic One', sans-serif; color: #2d3cff; letter-spacing: -.01em; }
-.pD .stk { position: absolute; z-index: 2; font: 700 12px 'Instrument Sans', sans-serif; padding: 8px 10px; border-radius: 10px; box-shadow: 0 3px 0 rgba(27,27,58,.85); border: 2px solid #1b1b3a; }
-.pD .s1 { background: #ff4d3d; color: #fff4e2; top: 112px; right: 14px; transform: rotate(8deg); }
-.pD .s2 { background: #9be7c4; color: #1b1b3a; top: 196px; left: 18px; transform: rotate(-6deg); }
-.pD .s3 { background: #ffd23f; color: #1b1b3a; top: 278px; right: 22px; transform: rotate(4deg); border-radius: 50%; width: 66px; height: 66px; display: grid; place-items: center; text-align: center; line-height: 1.1; }
-.pD .photo { position: absolute; z-index: 1; top: 150px; left: 50px; width: 150px; height: 120px; background: linear-gradient(160deg, #2d3cff, #9be7c4); border: 6px solid #fff; box-shadow: 0 6px 16px rgba(0,0,0,.18); transform: rotate(-3deg); }
-.pD .tape { position: absolute; z-index: 2; top: 140px; left: 100px; width: 56px; height: 18px; background: rgba(255,210,63,.75); transform: rotate(-8deg); }
-.pD .foot { margin-top: auto; display: flex; gap: 6px; }
-.pD .foot span { flex: 1; text-align: center; font: 700 11px 'Instrument Sans', sans-serif; padding: 8px 0; border-radius: 999px; border: 2px solid #1b1b3a; }
-.pD .foot .on { background: #1b1b3a; color: #fff4e2; }
-
-/* E Tableau des départs */
-.pE { background: #121314; color: #f4f1e8; }
-.pE .hd { display: flex; align-items: center; gap: 8px; font: 800 20px 'Barlow Condensed', sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #ffc629; }
-.pE .hd i { width: 26px; height: 26px; background: #ffc629; color: #121314; display: grid; place-items: center; font-style: normal; font-size: 16px; border-radius: 3px; }
-.pE .board { display: flex; flex-direction: column; gap: 4px; }
-.pE .flap { display: grid; grid-template-columns: 40px 1fr 54px; gap: 6px; align-items: center; background: #1d1f21; padding: 8px; border-radius: 3px; font: 600 15px 'Barlow Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase; }
-.pE .flap .t { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #ffc629; }
-.pE .flap .s { font-size: 11px; text-align: right; color: #7ee0a1; }
-.pE .flap .s.late { color: #ff8a5c; }
-.pE .picto { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: auto; }
-.pE .picto span { aspect-ratio: 1; background: #ffc629; color: #121314; display: grid; place-items: center; border-radius: 4px; }
-.pE .picto svg { width: 22px; height: 22px; }
-.pE .bigtxt { font: 400 13px/1.45 'Atkinson Hyperlegible', sans-serif; color: #c9c5bb; }
+.pC .stack { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
 
 /* Matrix */
 .tablewrap { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
@@ -224,15 +229,15 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 
 <!-- ============ HERO ============ -->
 <div class="hero">
-  <span class="eyebrow">Direction artistique · état des lieux & pistes</span>
-  <h1>Les apps de voyage parlent toutes de réserver. Personne ne parle du voyage.</h1>
-  <p class="lead">Benchmark des cinq marques qui dominent le voyage mobile, synthèse des retours utilisateurs publiés en ligne, puis cinq directions artistiques pour Cap Nord, le carnet de route hors-ligne, sans compte, qui garde les données sur le téléphone. Une piste sera ensuite approfondie écran par écran.</p>
-  <div class="meta"><span>Projet : Cap Nord (nom de travail)</span><span>Version 1 · 12 octobre 2026</span><span>Statut : à valider, une piste à retenir</span></div>
+  <span class="eyebrow">Direction artistique · état des lieux & pistes · v2</span>
+  <h1>Gérer un voyage ne devrait pas ressembler à remplir un tableur.</h1>
+  <p class="lead">Cap Nord est d'abord un outil pour gérer son voyage : étapes, nuits, trajets, réservations, documents, budget, carte, météo, change, GPS. Le partage et le souvenir passent au second plan. Ce document compare Cap Nord aux apps de gestion de voyage, synthétise leurs retours utilisateurs et propose cinq directions artistiques.</p>
+  <div class="meta"><span>Projet : Cap Nord, carnet de route (nom de travail)</span><span>Version 2 · 12 octobre 2026</span><span>Périmètre : apps de planification et de gestion de voyage</span></div>
   <div class="thesis">
-    <div><b>3 sur 5</b><span>des leaders sont bleus (Booking, Expedia, Skyscanner). Le bleu ne distingue plus personne.</span></div>
-    <div><b>200 000+</b><span>personnes inscrites à l'action collective néerlandaise contre Booking.com pour fausse rareté et prix trompeurs (allégations contestées par Booking).</span></div>
-    <div><b>2,7 M</b><span>faux avis bloqués par Tripadvisor sur la seule année 2024, soit environ 8 % des avis soumis.</span></div>
-    <div><b>64 %</b><span>des Gen Z américains ont déjà pris une décision de voyage à partir d'un contenu vu sur les réseaux (Phocuswright 2025).</span></div>
+    <div><b>4 sur 5</b><span>des apps de gestion de voyage étudiées utilisent un rouge-orange et/ou un bleu comme couleur principale.</span></div>
+    <div><b>≈ 40 $/an</b><span>l'abonnement Pro de Wanderlog et de Tripsy. Cap Nord est gratuit et sans compte.</span></div>
+    <div><b>1 milliard</b><span>de points de localisation Polarsteps accessibles via une API mal protégée (enquête Follow the Money, 2026). Cap Nord garde les données sur le téléphone.</span></div>
+    <div><b>0</b><span>de ces apps n'a une identité visuelle qui tienne sans son logo. Il y a de la place pour un outil qui a du caractère.</span></div>
   </div>
 </div>
 
@@ -240,216 +245,221 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 <section id="benchmark">
   <header>
     <span class="eyebrow">01 · État des lieux</span>
-    <h2>Les cinq références du marché et leur direction artistique</h2>
-    <p class="lead">Sélection sur trois critères : volume de téléchargements mondial, poids de marque, et intérêt du travail d'identité. Booking.com a été l'app de voyage la plus téléchargée en 2023 (plus de 80 M), Airbnb l'a dépassée en 2024 (75,8 M). Trip.com et Skyscanner sont les plus fortes croissances 2025 (+37,4 % et +26,1 %, AppTweak).</p>
+    <h2>Les cinq apps qui font le même métier que Cap Nord</h2>
+    <p class="lead">Sélection : apps grand public qui servent à organiser un voyage (itinéraire, étapes, réservations, carte), classées de la plus proche de Cap Nord à la plus éloignée. Couleurs et polices relevées directement dans le code de leurs sites, sauf mention ≈.</p>
   </header>
 
   <div class="brands">
-    <!-- Booking -->
+    <!-- Wanderlog -->
     <article class="brand">
       <div class="brand-id">
-        <span class="rank">Réservation · hébergement</span>
-        <h3>Booking.com</h3>
+        <span class="rank">Planificateur collaboratif · États-Unis</span>
+        <h3>Wanderlog</h3>
         <div class="chips">
-          <div class="chip"><i style="background:#003580"></i><small>#003580 marine</small></div>
-          <div class="chip"><i style="background:#febb02"></i><small>#FEBB02 jaune</small></div>
-          <div class="chip"><i style="background:#ffffff"></i><small>#FFFFFF</small></div>
+          <div class="chip"><i style="background:#3f52e3"></i><small>#3F52E3 indigo</small></div>
+          <div class="chip"><i style="background:#e23e57"></i><small>#E23E57 rouge</small></div>
+          <div class="chip"><i style="background:#17b978"></i><small>#17B978 vert</small></div>
         </div>
       </div>
       <dl class="brand-body">
-        <div class="kv"><dt>Logo</dt><dd>Wordmark « Booking.com » en sans-serif blanc sur marine. Le « .com » est conservé : marque née sur le web, assumée.</dd></div>
-        <div class="kv"><dt>Typographie</dt><dd>Linéale propriétaire variable (graisses 500 à 700), corps 14 px, titres 24 à 32 px. Nom exact non confirmé publiquement.</dd></div>
-        <div class="kv"><dt>Interface</dt><dd>Dense, orientée conversion. Rayons 4 à 8 px, boutons rectangulaires, grilles de tarifs serrées, bandeaux jaunes pour les promos et le programme Genius.</dd></div>
-        <div class="kv"><dt>Ton</dt><dd>Utilitaire, transactionnel, messages d'urgence (« plus qu'une chambre »).</dd></div>
+        <div class="kv"><dt>Positionnement</dt><dd>Itinéraire jour par jour sur une carte, édition à plusieurs « comme un Google Docs », budget, optimisation de trajets. Plus de 8 millions de voyages planifiés. Issue de Y Combinator, 1,5 M$ levés en 2021.</dd></div>
+        <div class="kv"><dt>Identité</dt><dd>Source Sans Pro (police système d'Adobe), gris par défaut de Bootstrap. Interface d'outil web, peu de signature propre.</dd></div>
+        <div class="kv"><dt>Modèle</dt><dd>Gratuit, Pro à 39,99 $/an (hors-ligne, optimisation, export).</dd></div>
         <div class="verdict">
-          <p class="plus"><b>Ce qui marche</b>Efficacité, reconnaissance immédiate, système cohérent et testé à grande échelle.</p>
-          <p class="minus"><b>Ce que les utilisateurs reprochent</b>Pression commerciale. L'association de consommateurs néerlandaise attaque Booking pour fausse rareté et fausses remises (allégations niées par Booking).</p>
+          <p class="plus"><b>Ce que les utilisateurs aiment</b>Tout au même endroit, la carte liée à l'itinéraire, la collaboration.</p>
+          <p class="minus"><b>Ce qu'ils reprochent</b>Pop-ups fréquents, suggestions IA envahissantes, écran d'itinéraire surchargé, lenteurs.</p>
         </div>
       </dl>
     </article>
 
-    <!-- Airbnb -->
+    <!-- TripIt -->
     <article class="brand">
       <div class="brand-id">
-        <span class="rank">Hébergement · expériences · services</span>
-        <h3>Airbnb</h3>
+        <span class="rank">Itinéraire par e-mails · SAP Concur</span>
+        <h3>TripIt</h3>
         <div class="chips">
-          <div class="chip"><i style="background:#ff385c"></i><small>#FF385C Rausch</small></div>
-          <div class="chip"><i style="background:#222222"></i><small>#222222</small></div>
+          <div class="chip"><i style="background:#f37021"></i><small>≈ orange</small></div>
+          <div class="chip"><i style="background:#0f4c81"></i><small>≈ bleu</small></div>
+          <div class="chip"><i style="background:#ffffff"></i><small>blanc</small></div>
+        </div>
+      </div>
+      <dl class="brand-body">
+        <div class="kv"><dt>Positionnement</dt><dd>On transfère ses confirmations par e-mail, l'app construit l'itinéraire. Référence des voyageurs d'affaires.</dd></div>
+        <div class="kv"><dt>Identité</dt><dd>Trio orange, blanc, bleu conservé lors de la refonte de l'« atome » (logo) vers 2018. En 2012, The Next Web reprochait à l'app un « manque total de personnalité ».</dd></div>
+        <div class="kv"><dt>Modèle</dt><dd>Gratuit, Pro payant (alertes temps réel).</dd></div>
+        <div class="verdict">
+          <p class="plus"><b>Ce que les utilisateurs aiment</b>L'automatisme : on ne saisit presque rien.</p>
+          <p class="minus"><b>Ce qu'ils reprochent (2025)</b>E-mails transférés qui n'apparaissent jamais, partage qui ne marche pas, planner « lourd et peu intuitif », abonnement Pro difficile à quitter.</p>
+        </div>
+      </dl>
+    </article>
+
+    <!-- Tripsy -->
+    <article class="brand">
+      <div class="brand-id">
+        <span class="rank">Planificateur natif Apple</span>
+        <h3>Tripsy</h3>
+        <div class="chips">
+          <div class="chip"><i style="background:#df6426"></i><small>#DF6426 orange</small></div>
+          <div class="chip"><i style="background:#ffab7d"></i><small>#FFAB7D pêche</small></div>
           <div class="chip"><i style="background:#f7f7f7"></i><small>#F7F7F7</small></div>
         </div>
       </div>
       <dl class="brand-body">
-        <div class="kv"><dt>Logo</dt><dd>Le « Bélo », symbole d'appartenance (2014). Dessinable par n'importe qui, ce qui en fait l'un des signes les plus mémorisables du secteur.</dd></div>
-        <div class="kv"><dt>Typographie</dt><dd>Airbnb Cereal, famille propriétaire unique du 8 px légal au 56 px éditorial.</dd></div>
-        <div class="kv"><dt>Interface</dt><dd>Photo en grand, coins arrondis, gris neutres, corail réservé aux actions. Refonte de mai 2025 : icônes 3D animées (la porte de la maison s'ouvre, la lampe s'allume), interface plus douce et plus tactile.</dd></div>
-        <div class="kv"><dt>Ton</dt><dd>Chaleureux, inclusif, « Belong anywhere ».</dd></div>
+        <div class="kv"><dt>Positionnement</dt><dd>Organiser vols, hôtels, activités et documents d'un voyage, en suivant au plus près les codes iOS. Saluée par MacStories pour son intégration à l'écosystème Apple.</dd></div>
+        <div class="kv"><dt>Identité</dt><dd>Inter, fonds gris très clairs, accent orange. Propre et « familier », c'est-à-dire proche de n'importe quelle app iOS.</dd></div>
+        <div class="kv"><dt>Modèle</dt><dd>Gratuit, Pro ≈ 40 $/an (synchro, partage, documents).</dd></div>
         <div class="verdict">
-          <p class="plus"><b>Ce qui marche</b>Brian Chesky revendique la sortie du « flat design générique » vers la texture et la matière. Bloomberg y voit la fin du design plat chez les géants.</p>
-          <p class="minus"><b>Ce que les utilisateurs reprochent</b>Les frais cachés : prix par nuit bas, total gonflé en fin de parcours. Airbnb a dû ajouter l'affichage du prix total après une vague de plaintes.</p>
+          <p class="plus"><b>Ce que les utilisateurs aiment</b>Un rendu net, une app « solide » et intuitive pour beaucoup.</p>
+          <p class="minus"><b>Ce qu'ils reprochent</b>Pas de bouton Enregistrer clair, recherche de lieux aléatoire, plantages sur macOS 26, carte imposée par défaut.</p>
         </div>
       </dl>
     </article>
 
-    <!-- Expedia -->
+    <!-- Stippl -->
     <article class="brand">
       <div class="brand-id">
-        <span class="rank">Agence en ligne · vols + hôtels</span>
-        <h3>Expedia</h3>
+        <span class="rank">Planificateur + IA · Pays-Bas</span>
+        <h3>Stippl</h3>
         <div class="chips">
-          <div class="chip"><i style="background:#191e3b"></i><small>≈ marine</small></div>
-          <div class="chip"><i style="background:#fddb32"></i><small>≈ jaune</small></div>
-          <div class="chip"><i style="background:#1668e3"></i><small>≈ bleu action</small></div>
+          <div class="chip"><i style="background:#ffc14a"></i><small>#FFC14A jaune</small></div>
+          <div class="chip"><i style="background:#0f3e4a"></i><small>#0F3E4A pétrole</small></div>
+          <div class="chip"><i style="background:#e84d7e"></i><small>#E84D7E rose</small></div>
         </div>
       </div>
       <dl class="brand-body">
-        <div class="kv"><dt>Logo</dt><dd>Côté groupe : « e » minuscule aérodynamique dessiné par Pentagram (Paula Scher, 2018), avec une police sur mesure de Jeremy Mickel. Côté app : marine et jaune, avion stylisé.</dd></div>
-        <div class="kv"><dt>Typographie</dt><dd>Linéale propriétaire, contraste fort, conçue pour fonctionner sur fond clair et sombre.</dd></div>
-        <div class="kv"><dt>Interface</dt><dd>Moteur de recherche multi-produits (vols, hôtels, voitures), cartes d'offres, assistant IA conversationnel.</dd></div>
-        <div class="kv"><dt>Ton</dt><dd>Rassurant, corporate, axé fidélité (One Key).</dd></div>
+        <div class="kv"><dt>Positionnement</dt><dd>Itinéraire, budget, liste de bagages, réservations importées (Airbnb, Booking, Viator), et un planificateur IA payant.</dd></div>
+        <div class="kv"><dt>Identité</dt><dd>Rubik (police arrondie), jaune très présent, illustrations colorées. Ton jeune et enjoué.</dd></div>
+        <div class="kv"><dt>Modèle</dt><dd>Gratuit réellement utilisable, Pro pour l'IA.</dd></div>
         <div class="verdict">
-          <p class="plus"><b>Ce qui marche</b>Système de groupe solide qui fédère des dizaines de marques (Hotels.com, Vrbo…).</p>
-          <p class="minus"><b>Faiblesse d'identité</b>Palette marine + jaune quasi identique à Booking. Sur un écran d'accueil, les deux se confondent.</p>
+          <p class="plus"><b>Ce que les utilisateurs aiment</b>Les imports de réservation et le suivi des dépenses.</p>
+          <p class="minus"><b>Ce qu'ils reprochent</b>Écran blanc au démarrage, étapes qui disparaissent, pas de modification possible d'un voyage une fois saisi.</p>
         </div>
       </dl>
     </article>
 
-    <!-- Tripadvisor -->
+    <!-- Polarsteps -->
     <article class="brand">
       <div class="brand-id">
-        <span class="rank">Avis · inspiration · réservation</span>
-        <h3>Tripadvisor</h3>
+        <span class="rank">Suivi GPS + planification · Pays-Bas</span>
+        <h3>Polarsteps</h3>
         <div class="chips">
-          <div class="chip"><i style="background:#3cf06e"></i><small>≈ Trip Green lime</small></div>
-          <div class="chip"><i style="background:#0b3b2e"></i><small>≈ Trip Pine</small></div>
-          <div class="chip"><i style="background:#000000"></i><small>#000000</small></div>
+          <div class="chip"><i style="background:#f11f4c"></i><small>#F11F4C framboise</small></div>
+          <div class="chip"><i style="background:#00293d"></i><small>#00293D marine</small></div>
+          <div class="chip"><i style="background:#fff2e5"></i><small>#FFF2E5 crème</small></div>
         </div>
       </div>
       <dl class="brand-body">
-        <div class="kv"><dt>Logo</dt><dd>Ollie la chouette, redessinée en 2025 par Koto pour les 25 ans : yeux animés qui suivent le contenu, la mascotte peut regarder, pointer, faire un clin d'œil.</dd></div>
-        <div class="kv"><dt>Typographie</dt><dd>Trip Sans, police sur mesure, associée à des cadres « carte postale » et des marqueurs graphiques.</dd></div>
-        <div class="kv"><dt>Interface</dt><dd>Le vert turquoise « pharmaceutique » passe à un lime électrique, élargi par Trip Pine et Trip White. Photos de vrais voyageurs et extraits d'avis en campagne.</dd></div>
-        <div class="kv"><dt>Ton</dt><dd>Plus chaleureux et accueillant qu'avant.</dd></div>
+        <div class="kv"><dt>Positionnement</dt><dd>Leader du secteur (≈ 23 M d'utilisateurs). Né pour suivre et raconter le voyage, il ajoute un planificateur IA sur carte (2025) puis la planification sur le web (2026). C'est le concurrent qui se rapproche de Cap Nord.</dd></div>
+        <div class="kv"><dt>Identité</dt><dd>Police propriétaire « Polarsteps Fellix » + Inter. Carte au centre, tracé rouge, grandes photos. La plus aboutie de la niche, mais tournée vers l'émotion.</dd></div>
+        <div class="kv"><dt>Modèle</dt><dd>Gratuit, revenus via les livres photo imprimés.</dd></div>
         <div class="verdict">
-          <p class="plus"><b>Ce qui marche</b>Une mascotte animable, donc une marque qui vit en motion, en sticker, en notification.</p>
-          <p class="minus"><b>Ce que les utilisateurs reprochent</b>La fiabilité des avis : 2,7 M faux avis bloqués en 2024, dont 54 % d'auto-promotion par les établissements.</p>
-        </div>
-      </dl>
-    </article>
-
-    <!-- Skyscanner -->
-    <article class="brand">
-      <div class="brand-id">
-        <span class="rank">Comparateur vols · hôtels · voitures</span>
-        <h3>Skyscanner</h3>
-        <div class="chips">
-          <div class="chip"><i style="background:#0770e3"></i><small>#0770E3 Sky Blue</small></div>
-          <div class="chip"><i style="background:#05203c"></i><small>≈ bleu nuit</small></div>
-          <div class="chip"><i style="background:#ffffff"></i><small>#FFFFFF</small></div>
-        </div>
-      </div>
-      <dl class="brand-body">
-        <div class="kv"><dt>Logo</dt><dd>Soleil levant (Koto, 2019) : courbe de la Terre, encoche d'épingle sur une carte, rayons au-dessus de l'horizon. Remplace l'ancien nuage à lignes de scan, jugé trop littéral.</dd></div>
-        <div class="kv"><dt>Typographie</dt><dd>Relative (fonderie Colophon), adaptée pour la marque.</dd></div>
-        <div class="kv"><dt>Interface</dt><dd>Sobre, très lisible. Illustrations à ombres longues qui rappellent la source lumineuse du logo.</dd></div>
-        <div class="kv"><dt>Ton</dt><dd>Optimiste. Objectif déclaré de l'agence : passer d'une marque « fonctionnelle » à une marque « émotionnelle ».</dd></div>
-        <div class="verdict">
-          <p class="plus"><b>Ce qui marche</b>Un symbole qui raconte une idée (l'aube, le départ) plutôt qu'une fonction.</p>
-          <p class="minus"><b>Leçon à retenir</b>Creative Bloq a moqué la forme sous le soleil (« un slip de bain »). Tout symbole doit être testé hors contexte avant lancement.</p>
+          <p class="plus"><b>Ce que les utilisateurs aiment</b>Simplicité, suivi automatique, livres photo. 4,8 sur l'App Store.</p>
+          <p class="minus"><b>Ce qu'ils reprochent</b>Tracé automatique faux (« vols mystère », voyages coupés en deux), permissions de localisation, et en 2026 l'exposition de données révélée par Follow the Money (Polarsteps a depuis renforcé ses contrôles).</p>
         </div>
       </dl>
     </article>
   </div>
 
-  <p class="note">À surveiller hors top 5 : <b>Hopper</b> (lapin, corail ≈ #FA6866, ton ludique), <b>Trip.com</b> (+37,4 % de téléchargements en 2025), et les concurrents directs de Cap Nord sur le carnet de voyage : <b>Polarsteps</b> et <b>Wanderlog</b>. Les codes hexadécimaux marqués ≈ viennent de relevés tiers et non de chartes officielles. À vérifier avant toute citation en comité.</p>
+  <div class="watch">
+    <div><b><i style="background:#ff4f12"></i>FindPenguins</b>Suivi + journal de voyage. Police Sailec, orange vif. Appréciée pour la batterie, critiquée pour des erreurs de livres photo.</div>
+    <div><b><i style="background:#00a63d"></i>Roadtrippers</b>Road trips aux États-Unis, arrêts le long de la route. Vert, police rétro Souvenir. Intéressant pour l'usage van et moto.</div>
+    <div><b><i style="background:#5a87d6"></i>Journi</b>Ancien blog de voyage devenu imprimeur de livres photo. Confirme que le souvenir est un débouché, pas un cœur de produit.</div>
+    <div><b><i style="background:#2a6fdb"></i>Booking, Airbnb, Expedia</b>Hors périmètre : ils vendent des nuits, Cap Nord organise le voyage. Ce sont des sources de réservations à importer.</div>
+  </div>
+  <p class="note">Les hex marqués ≈ sont des approximations : TripIt ne publie pas ses valeurs et son site ne les expose pas. Les chiffres d'utilisateurs viennent des entreprises elles-mêmes ou de la presse et n'ont pas été audités.</p>
 </section>
 
 <!-- ============ 2. LECTURE DU MARCHÉ ============ -->
 <section id="carte">
   <header>
     <span class="eyebrow">02 · Lecture du marché</span>
-    <h2>Un océan bleu, un territoire libre</h2>
-    <p class="lead">Mis côte à côte, les leaders occupent tous le même terrain : réserver vite. Les apps qui accompagnent le voyage lui-même (le vivre, le raconter, s'en souvenir) restent peu nombreuses et visuellement faibles.</p>
+    <h2>Rouge-orange et bleu partout, un coin vide en haut à gauche</h2>
+    <p class="lead">Les apps de gestion sont fonctionnelles mais génériques (Inter, Source Sans, gris Bootstrap). Celles qui ont une vraie identité (Polarsteps) misent sur l'émotion. Toutes demandent un compte et stockent le voyage sur leurs serveurs.</p>
   </header>
 
   <div style="display:flex;flex-direction:column;gap:8px">
-    <div class="strip" role="img" aria-label="Couleurs principales des marques du secteur">
-      <i style="background:#003580"></i><i style="background:#191e3b"></i><i style="background:#0770e3"></i><i style="background:#1668e3"></i><i style="background:#ff385c"></i><i style="background:#fa6866"></i><i style="background:#3cf06e"></i>
+    <div class="strip" role="img" aria-label="Couleurs principales des apps de gestion de voyage">
+      <i style="background:#3f52e3"></i><i style="background:#e23e57"></i><i style="background:#f37021"></i><i style="background:#df6426"></i><i style="background:#ffc14a"></i><i style="background:#f11f4c"></i><i style="background:#00293d"></i><i style="background:#ff4f12"></i>
     </div>
-    <div class="strip-legend"><span>Booking</span><span>Expedia</span><span>Skyscanner</span><span>Expedia action</span><span>Airbnb</span><span>Hopper</span><span>Tripadvisor</span></div>
+    <div class="strip-legend"><span>Wanderlog</span><span>Wanderlog</span><span>TripIt ≈</span><span>Tripsy</span><span>Stippl</span><span>Polarsteps</span><span>Polarsteps</span><span>FindPenguins</span></div>
   </div>
 
   <div class="mapbox">
-    <svg viewBox="0 0 680 440" role="img" aria-label="Carte de positionnement : axe fonctionnel vers émotionnel, axe réserver vers vivre et raconter">
+    <svg viewBox="0 0 680 440" role="img" aria-label="Carte de positionnement : axe gérer vers raconter, axe compte et cloud vers données sur l'appareil">
       <line class="ax" x1="40" y1="220" x2="660" y2="220" stroke-width="1"/>
       <line class="ax" x1="350" y1="20" x2="350" y2="410" stroke-width="1"/>
-      <text class="axt" x="40" y="238">FONCTIONNEL</text>
-      <text class="axt" x="660" y="238" text-anchor="end">ÉMOTIONNEL</text>
-      <text class="axt" x="358" y="30">VIVRE · RACONTER</text>
-      <text class="axt" x="358" y="406">RÉSERVER</text>
+      <text class="axt" x="40" y="238">GÉRER LE VOYAGE</text>
+      <text class="axt" x="660" y="238" text-anchor="end">RACONTER LE VOYAGE</text>
+      <text class="axt" x="358" y="30">SANS COMPTE · SUR L'APPAREIL</text>
+      <text class="axt" x="358" y="406">COMPTE · DONNÉES SUR SERVEUR</text>
 
-      <circle cx="95" cy="360" r="9" fill="#003580"/><text class="lbl" x="110" y="364">Booking</text>
-      <circle cx="140" cy="320" r="9" fill="#fddb32" stroke="#191e3b" stroke-width="3"/><text class="lbl" x="155" y="324">Expedia</text>
-      <path class="arr" d="M150 290 Q 200 270 250 278" marker-end="url(#ah)"/>
-      <circle cx="262" cy="280" r="9" fill="#0770e3"/><text class="lbl" x="276" y="284">Skyscanner</text><text class="sub" x="276" y="298">rebrand 2019 →</text>
-      <circle cx="405" cy="335" r="9" fill="#fa6866"/><text class="lbl" x="420" y="339">Hopper</text>
-      <circle cx="500" cy="300" r="9" fill="#ff385c"/><text class="lbl" x="515" y="304">Airbnb</text>
-      <circle cx="315" cy="245" r="9" fill="#3cf06e" stroke="#0b3b2e" stroke-width="2"/><text class="lbl" x="200" y="254">Tripadvisor</text>
-      <circle cx="210" cy="120" r="9" fill="#5b6cff"/><text class="lbl" x="225" y="124">Wanderlog</text><text class="sub" x="225" y="138">planif. · avis « encombré »</text>
-      <circle cx="470" cy="140" r="9" fill="#e5484d"/><text class="lbl" x="485" y="144">Polarsteps</text><text class="sub" x="485" y="158">souvenirs · livres photo</text>
+      <circle cx="80" cy="345" r="9" fill="#f37021"/><text class="lbl" x="95" y="349">TripIt</text>
+      <circle cx="150" cy="300" r="9" fill="#3f52e3"/><text class="lbl" x="165" y="304">Wanderlog</text>
+      <circle cx="215" cy="360" r="9" fill="#ffc14a"/><text class="lbl" x="230" y="364">Stippl</text>
+      <circle cx="120" cy="262" r="9" fill="#df6426"/><text class="lbl" x="135" y="266">Tripsy</text><text class="sub" x="135" y="280">synchro iCloud en Pro</text>
+      <circle cx="430" cy="320" r="9" fill="#f11f4c"/><text class="lbl" x="445" y="324">Polarsteps</text><text class="sub" x="445" y="338">glisse vers la planification ←</text>
+      <circle cx="530" cy="290" r="9" fill="#ff4f12"/><text class="lbl" x="545" y="294">FindPenguins</text>
+      <circle cx="600" cy="365" r="9" fill="#5a87d6"/><text class="lbl" x="560" y="388">Journi</text>
 
-      <ellipse class="target" cx="430" cy="78" rx="150" ry="44"/>
-      <text class="tlabel" x="430" y="74" text-anchor="middle">Territoire visé par Cap Nord</text>
-      <text class="sub" x="430" y="92" text-anchor="middle">utile sur la route + émotion du souvenir</text>
-      <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="currentColor" style="color:var(--muted)"/></marker></defs>
+      <ellipse class="target" cx="185" cy="96" rx="150" ry="48"/>
+      <text class="tlabel" x="185" y="90" text-anchor="middle">Cap Nord</text>
+      <text class="sub" x="185" y="108" text-anchor="middle">outil de gestion, privé, hors-ligne</text>
+      <text class="sub" x="185" y="122" text-anchor="middle">+ un volet souvenir léger</text>
     </svg>
   </div>
-  <p class="note">Positionnement qualitatif établi à partir des identités et des fonctionnalités observées, pas d'une mesure. Les couleurs de Wanderlog et Polarsteps sont indicatives.</p>
+  <p class="note">Positionnement qualitatif, établi à partir des fonctionnalités et des politiques de données publiques de chaque app.</p>
 </section>
 
 <!-- ============ 3. RETOURS UTILISATEURS ============ -->
 <section id="retours">
   <header>
     <span class="eyebrow">03 · Ce que disent les utilisateurs</span>
-    <h2>Six constats, six conséquences pour la marque</h2>
-    <p class="lead">Synthèse de rapports publics, d'avis Trustpilot, App Store et Google Play, d'études sectorielles et de la presse design. Chaque constat se traduit par une règle de direction artistique.</p>
+    <h2>Sept constats, sept règles de direction artistique</h2>
+    <p class="lead">Synthèse d'avis App Store, Google Play, Trustpilot et Setapp, de tests presse (MacStories, TapSmart) et d'enquêtes. Les six premiers portent sur la gestion du voyage, le dernier sur le souvenir.</p>
   </header>
   <div class="insights">
     <div class="ins">
-      <span class="fig">Confiance</span>
-      <h3>La méfiance est devenue le premier sentiment</h3>
-      <p>Fausse rareté (Booking), frais révélés tard (Airbnb), faux avis (Tripadvisor). Les trois géants ont chacun un problème de confiance documenté.</p>
-      <p class="so"><b>Règle :</b> zéro code visuel d'urgence. Pas de rouge alarme, pas de compte à rebours. La transparence devient un parti pris graphique.</p>
+      <span class="fig">Fiabilité</span>
+      <h3>La peur de perdre ses données</h3>
+      <p>Étapes qui disparaissent (Stippl), e-mails qui n'arrivent jamais dans l'itinéraire (TripIt), tracé faux (Polarsteps), plantages (Tripsy). L'angoisse principale : « est-ce que c'est bien enregistré ? »</p>
+      <p class="so"><b>Règle :</b> chaque état doit se voir. Réservé, payé, fait, enregistré sur l'appareil : un code de forme et de couleur stable, jamais ambigu.</p>
     </div>
     <div class="ins">
-      <span class="fig">Encombrement</span>
-      <h3>Les pop-ups tuent les planificateurs</h3>
-      <p>Wanderlog est critiqué pour ses pop-ups, ses suggestions IA envahissantes et un écran d'itinéraire surchargé.</p>
-      <p class="so"><b>Règle :</b> un écran, une tâche. Hiérarchie typographique forte plutôt que des cartes empilées.</p>
+      <span class="fig">Saisie</span>
+      <h3>Organiser ne doit pas être une corvée</h3>
+      <p>Pas de bouton Enregistrer clair (Tripsy), impossible de modifier un voyage saisi (Stippl), planner « lourd » (TripIt).</p>
+      <p class="so"><b>Règle :</b> contrôles explicites et directs (+1 nuit, glisser pour réordonner), grandes cibles tactiles, retour visuel immédiat.</p>
     </div>
     <div class="ins">
+      <span class="fig">Densité</span>
+      <h3>Trop d'informations tue l'information</h3>
+      <p>Wanderlog est critiqué pour ses pop-ups, ses suggestions IA et un itinéraire surchargé.</p>
+      <p class="so"><b>Règle :</b> une identité de type « information design » : hiérarchie typographique forte, chiffres alignés, légendes, plutôt que des cartes empilées.</p>
+    </div>
+    <div class="ins">
+      <span class="fig">Sur la route</span>
+      <h3>L'app sert dehors, d'une main</h3>
+      <p>En plein soleil, sans réseau, batterie basse, écran qui doit rester allumé pendant le suivi GPS.</p>
+      <p class="so"><b>Règle :</b> contrastes AAA sur les infos clés, mode sombre réel (économise l'écran OLED), lisible à bout de bras.</p>
+    </div>
+    <div class="ins">
+      <span class="fig">Vie privée</span>
+      <h3>Un sujet devenu public</h3>
+      <p>L'enquête de Follow the Money sur Polarsteps (2026) : données de localisation et domiciles retrouvables, y compris de militaires. Le ministère néerlandais de la Défense a interdit l'app sur ses appareils.</p>
+      <p class="so"><b>Règle :</b> rendre visible le fait que tout reste sur le téléphone (un signe dédié, présent mais discret). C'est un argument commercial à part entière.</p>
+    </div>
+    <div class="ins">
+      <span class="fig">Abonnements</span>
+      <h3>La lassitude du « Pro »</h3>
+      <p>Wanderlog et Tripsy facturent ≈ 40 $/an pour le hors-ligne, la synchro ou le partage ; un utilisateur de TripIt raconte avoir eu du mal à quitter l'abonnement.</p>
+      <p class="so"><b>Règle :</b> aucune bannière d'upsell, aucun cadenas dans l'interface. L'absence de pression fait partie de l'identité.</p>
+    </div>
+    <div class="ins minor">
       <span class="fig">Souvenir</span>
-      <h3>L'émotion vient de l'après</h3>
-      <p>Chez Polarsteps, la fonction la plus louée est le livre photo. Les plaintes portent sur le tracé automatique erroné, la batterie et les permissions de localisation.</p>
-      <p class="so"><b>Règle :</b> la DA doit fonctionner aussi bien à l'écran qu'imprimée (livre, carte postale, export). Cap Nord, hors-ligne et sans tracking permanent, répond aux trois plaintes.</p>
-    </div>
-    <div class="ins">
-      <span class="fig">64 %</span>
-      <h3>L'inspiration passe par les réseaux</h3>
-      <p>64 % des Gen Z et 61 % des millennials américains ont décidé d'un voyage après un contenu vu sur les réseaux. Mais 69 % des Gen Z préfèrent des lieux « hors de leur fil » (KAYAK 2026).</p>
-      <p class="so"><b>Règle :</b> chaque écran doit pouvoir devenir une story partageable et reconnaissable sans logo.</p>
-    </div>
-    <div class="ins">
-      <span class="fig">41 %</span>
-      <h3>L'IA gagne la confiance, si elle cite ses sources</h3>
-      <p>41 % des Gen Z et millennials disent faire plus confiance aux recommandations de l'IA qu'aux personnes ou aux réseaux (KAYAK, 14 000 répondants).</p>
-      <p class="so"><b>Règle :</b> prévoir un langage visuel distinct pour « ce que l'app suggère » et « ce que vous avez noté ».</p>
-    </div>
-    <div class="ins">
-      <span class="fig">2026</span>
-      <h3>Fin du design plat</h3>
-      <p>Apple pousse Liquid Glass (matière translucide), Google pousse Material 3 Expressive (couleur, ressort, mouvement), Airbnb passe à la 3D tactile.</p>
-      <p class="so"><b>Règle :</b> une identité qui a une matière (papier, encre, relief, lumière) et une signature de mouvement, compatible avec iOS et Android.</p>
+      <h3>Un plus, pas le cœur</h3>
+      <p>Livres photo de Polarsteps et Journi très appréciés. 64 % des Gen Z américains ont déjà choisi un voyage à partir d'un contenu vu sur les réseaux (Phocuswright 2025).</p>
+      <p class="so"><b>Règle :</b> la DA doit pouvoir produire un bel export (carte, récap, story) sans que l'interface quotidienne devienne décorative.</p>
     </div>
   </div>
 </section>
@@ -458,214 +468,232 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 <section id="pistes">
   <header>
     <span class="eyebrow">04 · Cinq directions artistiques</span>
-    <h2>Cinq pistes pour Cap Nord</h2>
-    <p class="lead">Chaque piste est construite pour sortir du bleu et du corail, tenir sur un écran d'accueil de 60 px comme sur une couverture de livre, et se décliner dans toutes les écritures. Les polices affichées sont des équivalents libres pour la démonstration ; la licence de production est indiquée.</p>
+    <h2>Cinq pistes, de la plus fonctionnelle à la plus émotionnelle</h2>
+    <p class="lead">Chaque piste sort du rouge-orange et du bleu de la niche, tient sur une icône de 60 px, et se décline dans toutes les écritures. Polices de démonstration libres ; la police de production est indiquée. Les maquettes reprennent le voyage d'exemple de l'app (Portugal).</p>
   </header>
 
-  <!-- A -->
+  <!-- A Relevé -->
   <article class="prop">
     <div class="prop-text">
       <div class="prop-title">
-        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#6b1d2c"/><rect x="14" y="10" width="36" height="44" rx="3" fill="none" stroke="#e9c77b" stroke-width="2"/><circle cx="32" cy="29" r="8" fill="none" stroke="#e9c77b" stroke-width="2"/><path d="M24 29h16M32 21c-3 4-3 12 0 16M32 21c3 4 3 12 0 16" stroke="#e9c77b" stroke-width="1.4" fill="none"/><path d="M22 45h20" stroke="#e9c77b" stroke-width="2"/></svg>
-        <div><span class="eyebrow">Piste A</span><h3>Passeport</h3></div>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#10231f"/><g fill="none" stroke="#b8662f" stroke-width="1.3" opacity=".8"><path d="M-4 50 C 14 40, 30 56, 68 42"/><path d="M-4 58 C 18 48, 34 64, 68 52"/><path d="M-4 16 C 18 24, 40 6, 68 14"/></g><path d="M32 9 L41 44 L32 38 L23 44 Z" fill="#5fd0c8"/><path d="M32 9 L32 38 L23 44 Z" fill="#9de6e0"/></svg>
+        <div><span class="eyebrow">Piste A</span><h3>Relevé</h3></div>
       </div>
-      <p class="concept">L'objet le plus précieux du voyageur devient l'interface. Couverture bordeaux, dorure à chaud, tampons d'entrée qui s'accumulent à chaque étape, ligne lisible par machine en pied d'écran. C'est l'évolution directe de la DA « Trailbook » déjà amorcée.</p>
+      <span class="reco-tag">Piste recommandée</span>
+      <p class="fit">Part fonctionnelle : <b>●●●●●</b> · part émotion : <b>●●○○○</b></p>
+      <p class="concept">Le langage des cartes topographiques, le support d'information le plus dense et le plus lisible jamais conçu pour se déplacer. Légendes, échelles, coordonnées, altitudes : chaque donnée a sa place et son code. Les courbes de niveau sont en bistre, comme sur les cartes papier. Le bleu glacier signale ce qui est « ici et maintenant ». Le logo est une aiguille qui pointe le nord, comme le nom.</p>
       <div class="pal">
-        <div class="sw"><i style="background:#6b1d2c"></i><span>Bordeaux visa<small>#6B1D2C</small></span></div>
+        <div class="sw"><i style="background:#10231f"></i><span>Forêt nuit<small>#10231F</small></span></div>
+        <div class="sw"><i style="background:#5fd0c8"></i><span>Glacier<small>#5FD0C8</small></span></div>
+        <div class="sw"><i style="background:#b8662f"></i><span>Bistre<small>#B8662F</small></span></div>
+        <div class="sw"><i style="background:#ecefe8"></i><span>Fond de carte<small>#ECEFE8</small></span></div>
+        <div class="sw"><i style="background:#9fb3ad"></i><span>Lichen<small>#9FB3AD</small></span></div>
+      </div>
+      <div class="spec">
+        <div class="typo-demo"><span class="d" style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:115%;text-transform:uppercase">Coimbra</span><span class="b">Titres : Archivo étendu (libre, axe de largeur) · production : ABC Diatype ou Söhne</span><span class="intl">Données : JetBrains Mono · 40°12′N 8°25′O · 206 km</span></div>
+        <dl class="kv"><dt>Signature</dt><dd>La légende. Chaque type d'élément (nuit, trajet, réservation, document) a un symbole cartographique. L'interface se lit comme une carte. Animation : l'aiguille du logo s'oriente vers la prochaine étape.</dd><dt style="margin-top:10px">Souvenir</dt><dd>En fin de voyage, les courbes de niveau du parcours deviennent une affiche ou une couverture unique.</dd></dl>
+      </div>
+      <div class="risk">
+        <p class="plus"><b>Force</b>Seule piste qui découle à la fois du nom et du produit (GPS, carte, hors-ligne). Aucune app de la niche n'utilise ce territoire ni ces couleurs. Les coordonnées et les pictogrammes se lisent sans traduction.</p>
+        <p class="minus"><b>Risque</b>Image « randonnée » qui pourrait éloigner le voyage urbain. Réponse : courbes appliquées au relief des villes (les collines de Lisbonne) et typographie très contemporaine.</p>
+      </div>
+    </div>
+    <div class="phone-col">
+      <div class="phone pR"><span class="notch"></span>
+        <svg class="topo" viewBox="0 0 260 548" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#c98a5b" stroke-width="1" opacity=".75"><path d="M-10 160 C 60 110, 140 210, 270 140"/><path d="M-10 185 C 70 140, 140 240, 270 170"/><path d="M-10 212 C 80 170, 150 270, 270 200"/><ellipse cx="168" cy="206" rx="34" ry="16"/><ellipse cx="168" cy="206" rx="58" ry="30"/><path d="M-10 270 C 60 250, 170 310, 270 270"/></g><path d="M30 300 C 70 270, 110 240, 150 220 S 210 180, 250 130" stroke="#10231f" stroke-width="2.5" stroke-dasharray="6 5" fill="none"/></svg>
+        <div class="ph-in">
+          <span class="coord">40°12′N · 8°25′O · ALT. 75 M</span>
+          <h4>Coimbra<br>Jour 4 / 9</h4>
+          <span class="pin"></span>
+          <div class="card">
+            <div class="leg"><span class="h">10:00</span>Bibliothèque Joanina<span class="tag">Réservé</span></div>
+            <div class="leg"><span class="h">14:30</span>Route → Lisbonne · 206 km<span class="tag o">2 h 10</span></div>
+            <div class="leg"><span class="h">17:00</span>Casa do Alfama<span class="tag">Payé</span></div>
+          </div>
+          <div class="scale"><i></i>1:25 000 · 21 °C · 1 € = 1,00 € · hors-ligne</div>
+        </div>
+      </div>
+      <span class="phone-cap">Étape du jour</span>
+    </div>
+  </article>
+
+  <!-- B Ligne -->
+  <article class="prop">
+    <div class="prop-text">
+      <div class="prop-title">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#fbfbf8"/><path d="M12 48 H30 L46 16" stroke="#0a7b6c" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="48" r="5" fill="#fbfbf8" stroke="#16181d" stroke-width="3"/><circle cx="46" cy="16" r="5" fill="#fbfbf8" stroke="#16181d" stroke-width="3"/></svg>
+        <div><span class="eyebrow">Piste B</span><h3>Ligne</h3></div>
+      </div>
+      <p class="fit">Part fonctionnelle : <b>●●●●●</b> · part émotion : <b>●●○○○</b></p>
+      <p class="concept">Le voyage dessiné comme un plan de métro. Chaque étape est une station, chaque mode de transport une ligne de couleur, chaque correspondance un nœud. Le plan de réseau est compris dans toutes les villes du monde, et c'est le format le plus efficace pour montrer un enchaînement.</p>
+      <div class="pal">
+        <div class="sw"><i style="background:#16181d"></i><span>Encre<small>#16181D</small></span></div>
+        <div class="sw"><i style="background:#0a7b6c"></i><span>Ligne route<small>#0A7B6C</small></span></div>
+        <div class="sw"><i style="background:#7b5cd6"></i><span>Ligne avion<small>#7B5CD6</small></span></div>
+        <div class="sw"><i style="background:#d99a00"></i><span>Ligne train<small>#D99A00</small></span></div>
+        <div class="sw"><i style="background:#fbfbf8"></i><span>Papier plan<small>#FBFBF8</small></span></div>
+      </div>
+      <div class="spec">
+        <div class="typo-demo"><span class="d" style="font-family:'Figtree',sans-serif;font-weight:800;letter-spacing:-.02em">Porto → Lisboa</span><span class="b">Figtree (libre) · production : Transport New ou GT Eesti</span><span class="intl">Horaires : JetBrains Mono</span></div>
+        <dl class="kv"><dt>Signature</dt><dd>Le schéma de ligne, généré automatiquement depuis l'itinéraire. Il sert de navigation, de résumé et de visuel à partager.</dd><dt style="margin-top:10px">Système</dt><dd>Couleurs par mode de transport, doublées d'un pictogramme (lisible par les daltoniens).</dd></dl>
+      </div>
+      <div class="risk">
+        <p class="plus"><b>Force</b>Très fonctionnel et très reconnaissable. Le schéma devient la marque.</p>
+        <p class="minus"><b>Risque</b>Territoire de Citymapper et des réseaux de transport. Le multicolore se dilue vite si la règle n'est pas stricte.</p>
+      </div>
+    </div>
+    <div class="phone-col">
+      <div class="phone pL"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="sub">PORTUGAL · 9 JOURS · 3 VILLES</span>
+          <h4>Votre ligne</h4>
+          <div class="net">
+            <svg viewBox="0 0 228 270" aria-hidden="true">
+              <path d="M20 20 V70" stroke="#7b5cd6" stroke-width="6" stroke-linecap="round"/>
+              <path d="M20 70 V120 L60 160" stroke="#0a7b6c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M60 160 V240" stroke="#d99a00" stroke-width="6" stroke-linecap="round"/>
+              <g fill="#fbfbf8" stroke="#16181d" stroke-width="3"><circle cx="20" cy="20" r="7"/><circle cx="20" cy="70" r="9"/><circle cx="60" cy="160" r="9"/><circle cx="60" cy="240" r="9"/></g>
+              <g font-family="Figtree, sans-serif" fill="#16181d"><text x="38" y="24" font-size="13" font-weight="700">Paris</text><text x="38" y="66" font-size="15" font-weight="800">Porto</text><text x="38" y="82" font-size="10" fill="#6b6f78">3 nuits · Casa Ribeira</text><text x="78" y="156" font-size="15" font-weight="800">Coimbra</text><text x="78" y="172" font-size="10" fill="#6b6f78">1 nuit · aujourd'hui</text><text x="78" y="236" font-size="15" font-weight="800">Lisbonne</text><text x="78" y="252" font-size="10" fill="#6b6f78">4 nuits · Casa do Alfama</text></g>
+            </svg>
+          </div>
+          <div class="lg"><span><i style="background:#7b5cd6"></i>Avion</span><span><i style="background:#0a7b6c"></i>Voiture</span><span><i style="background:#d99a00"></i>Train</span></div>
+        </div>
+      </div>
+      <span class="phone-cap">Vue d'ensemble du voyage</span>
+    </div>
+  </article>
+
+  <!-- C Tableau -->
+  <article class="prop">
+    <div class="prop-text">
+      <div class="prop-title">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#121314"/><rect x="10" y="10" width="44" height="44" rx="4" fill="#ffb000"/><path d="M32 16 L44 31 H36 V48 H28 V31 H20 Z" fill="#121314"/></svg>
+        <div><span class="eyebrow">Piste C</span><h3>Tableau des départs</h3></div>
+      </div>
+      <p class="fit">Part fonctionnelle : <b>●●●●●</b> · part émotion : <b>●○○○○</b></p>
+      <p class="concept">La signalétique de gare et d'aéroport, le seul langage visuel que tous les voyageurs savent déjà lire. Ambre et noir, pictogrammes normalisés, tableau à palettes qui tourne quand une information change. Pensée pour la lecture en plein soleil et pour la checklist des documents (passeport, visa, assurance).</p>
+      <div class="pal">
+        <div class="sw"><i style="background:#ffb000"></i><span>Ambre signal<small>#FFB000</small></span></div>
+        <div class="sw"><i style="background:#121314"></i><span>Tableau<small>#121314</small></span></div>
+        <div class="sw"><i style="background:#f4f1e8"></i><span>Affichage<small>#F4F1E8</small></span></div>
+        <div class="sw"><i style="background:#7ee0a1"></i><span>OK<small>#7EE0A1</small></span></div>
+        <div class="sw"><i style="background:#ff9b6a"></i><span>À faire<small>#FF9B6A</small></span></div>
+      </div>
+      <div class="spec">
+        <div class="typo-demo"><span class="d" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.03em">Paris → Porto</span><span class="b">Titres : Barlow Condensed · texte : Atkinson Hyperlegible (conçue pour les malvoyants)</span><span class="intl">Production : Frutiger, la police des aéroports</span></div>
+        <dl class="kv"><dt>Signature</dt><dd>Le split-flap : chaque changement d'horaire ou de statut s'affiche par palettes qui tournent.</dd><dt style="margin-top:10px">Iconographie</dt><dd>Pictogrammes inspirés de la norme ISO 7001.</dd></dl>
+      </div>
+      <div class="risk">
+        <p class="plus"><b>Force</b>Accessibilité exemplaire, icône très visible, statuts limpides. Argument solide auprès des stores et des investisseurs.</p>
+        <p class="minus"><b>Risque</b>Peu d'émotion. Ambre proche du jaune de Stippl. Peut paraître froid, voire administratif.</p>
+      </div>
+    </div>
+    <div class="phone-col">
+      <div class="phone pE"><span class="notch"></span>
+        <div class="ph-in">
+          <div class="hd"><i>↑</i>Départs · Portugal</div>
+          <div class="board">
+            <div class="flap"><span class="t">07:40</span>Paris → Porto<span class="s">Réservé</span></div>
+            <div class="flap"><span class="t">J4</span>Porto → Coimbra<span class="s">Voiture</span></div>
+            <div class="flap"><span class="t">J5</span>Coimbra → Lisboa<span class="s">Voiture</span></div>
+            <div class="flap"><span class="t">J9</span>Lisboa → Paris<span class="s w">À réserver</span></div>
+          </div>
+          <div class="docs">
+            <div>Carte d'identité<b>OK</b></div>
+            <div>Assurance voyage<b>OK</b></div>
+            <div>Carte Viva Viagem<b class="w">À faire</b></div>
+          </div>
+          <div class="picto">
+            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M5 11l2-5h10l2 5v6h-2v2h-2v-2H9v2H7v-2H5zm2 0h10l-1.3-3H8.3z"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M3 20V9l9-6 9 6v11h-6v-6H9v6z"/></svg></span>
+            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M4 5h16v14H4zM7 9h10M7 13h6" stroke="#ffb000" stroke-width="1.6"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <span class="phone-cap">Trajets et documents</span>
+    </div>
+  </article>
+
+  <!-- D Passeport -->
+  <article class="prop">
+    <div class="prop-text">
+      <div class="prop-title">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#4a1621"/><rect x="14" y="10" width="36" height="44" rx="3" fill="none" stroke="#e9c77b" stroke-width="2"/><circle cx="32" cy="29" r="8" fill="none" stroke="#e9c77b" stroke-width="2"/><path d="M24 29h16M32 21c-3 4-3 12 0 16M32 21c3 4 3 12 0 16" stroke="#e9c77b" stroke-width="1.4" fill="none"/><path d="M22 45h20" stroke="#e9c77b" stroke-width="2"/></svg>
+        <div><span class="eyebrow">Piste D</span><h3>Passeport</h3></div>
+      </div>
+      <p class="fit">Part fonctionnelle : <b>●●●○○</b> · part émotion : <b>●●●●○</b></p>
+      <p class="concept">L'objet officiel du voyageur devient l'interface : couverture prune, dorure, tampons d'entrée à chaque étape, ligne lisible par machine en pied de page. C'est l'évolution de la DA « Trailbook » déjà amorcée. Elle sert bien la partie documents et checklist.</p>
+      <div class="pal">
+        <div class="sw"><i style="background:#4a1621"></i><span>Prune visa<small>#4A1621</small></span></div>
         <div class="sw"><i style="background:#c9a04a"></i><span>Dorure<small>#C9A04A</small></span></div>
         <div class="sw"><i style="background:#2f5d8a"></i><span>Encre tampon<small>#2F5D8A</small></span></div>
         <div class="sw"><i style="background:#f2efe9"></i><span>Page visa<small>#F2EFE9</small></span></div>
         <div class="sw"><i style="background:#241316"></i><span>Encre<small>#241316</small></span></div>
       </div>
       <div class="spec">
-        <div class="typo-demo"><span class="d" style="font-family:'Fraunces',serif;font-weight:700">Reykjavík</span><span class="b">Titres : Fraunces (libre) · production : GT Alpina ou Tiempos</span><span class="intl">Texte : Instrument Sans · données : IBM Plex Mono</span></div>
-        <dl class="kv"><dt>Signature</dt><dd>Le tampon. Chaque ville validée ajoute un tampon unique (date, coordonnées, encre qui varie). Animation : le tampon frappe, léger rebond, retour haptique.</dd><dt style="margin-top:10px">Iconographie</dt><dd>Trait fin doré, style gravure de billet de banque.</dd></dl>
+        <div class="typo-demo"><span class="d" style="font-family:'Fraunces',serif;font-weight:700">Lisboa</span><span class="b">Titres : Fraunces (libre) · production : GT Alpina ou Tiempos</span><span class="intl">Texte : Instrument Sans · données : IBM Plex Mono</span></div>
+        <dl class="kv"><dt>Signature</dt><dd>Le tampon, qui valide une étape ou un document. Il frappe, rebondit légèrement, avec un retour haptique.</dd></dl>
       </div>
       <div class="risk">
-        <p class="plus"><b>Force</b>Émotion immédiate, objet universel, magnifique en impression (livre souvenir).</p>
-        <p class="minus"><b>Risque</b>Le bordeaux est la couleur du passeport européen : lecture eurocentrée en Asie ou aux États-Unis. Serif + or peut glisser vers le « luxe » et exclure les jeunes routards.</p>
+        <p class="plus"><b>Force</b>Émotion immédiate, très belle à l'impression, continuité avec le travail existant.</p>
+        <p class="minus"><b>Risque</b>Le rouge sombre reste dans la famille de Polarsteps et Wanderlog. Le serif doré tire vers le luxe et l'émotion, à l'opposé du positionnement « outil ». Le passeport bordeaux est une référence européenne.</p>
       </div>
     </div>
     <div class="phone-col">
       <div class="phone pA"><span class="notch"></span>
         <div class="ph-in">
-          <div class="top"><small>CARNET N° 07 · ISLANDE</small><b>Reykjavík</b></div>
-          <div class="stamp"><div>ENTRÉE<b>12·X·26</b>64°08′N</div></div>
-          <div class="row"><span>Jour 3 · Golden Circle</span><small>212 km</small></div>
-          <div class="row"><span>Jour 4 · Vík</span><small>187 km</small></div>
-          <div class="row"><span>Jour 5 · Jökulsárlón</span><small>194 km</small></div>
-          <div class="mrz">P&lt;ISLCAP&lt;NORD&lt;&lt;CARNET&lt;07&lt;&lt;&lt;&lt;&lt;<br>0712X26&lt;64N08&lt;21W56&lt;&lt;&lt;&lt;&lt;&lt;&lt;04</div>
+          <div class="top"><small>VOYAGE N° 07 · PORTUGAL</small><b>Lisboa</b></div>
+          <div class="stamp"><div>ENTRÉE<b>17·X·26</b>38°43′N</div></div>
+          <div class="row"><span>Carte d'identité</span><small>Vérifié</small></div>
+          <div class="row"><span>Assurance voyage</span><small>Vérifié</small></div>
+          <div class="row"><span>Dîner fado à Alfama</span><small class="w">À réserver</small></div>
+          <div class="mrz">P&lt;PRTCAP&lt;NORD&lt;&lt;VOYAGE&lt;07&lt;&lt;&lt;&lt;&lt;<br>0717X26&lt;38N43&lt;09W08&lt;&lt;&lt;&lt;&lt;&lt;&lt;04</div>
         </div>
       </div>
-      <span class="phone-cap">Étape du jour, tampon d'entrée</span>
+      <span class="phone-cap">Documents et tampon d'étape</span>
     </div>
   </article>
 
-  <!-- B -->
+  <!-- E Lumière locale -->
   <article class="prop">
     <div class="prop-text">
       <div class="prop-title">
-        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#10231f"/><g fill="none" stroke="#2e4a43" stroke-width="1.3"><path d="M-4 48 C 14 38, 30 54, 68 40"/><path d="M-4 56 C 18 46, 34 62, 68 50"/><path d="M-4 18 C 18 26, 40 8, 68 16"/></g><path d="M32 10 L41 44 L32 38 L23 44 Z" fill="#ff5b1f"/><path d="M32 10 L32 38 L23 44 Z" fill="#ff8a5c"/></svg>
-        <div><span class="eyebrow">Piste B</span><h3>Relevé</h3></div>
+        <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#24335c"/><stop offset=".55" stop-color="#ee8b5e"/><stop offset="1" stop-color="#fbe8cf"/></linearGradient></defs><rect width="64" height="64" fill="url(#gC)"/><circle cx="32" cy="40" r="12" fill="#fff4e0"/><rect x="0" y="40" width="64" height="24" fill="#fbe8cf" opacity=".9"/></svg>
+        <div><span class="eyebrow">Piste E</span><h3>Lumière locale</h3></div>
       </div>
-      <span class="reco-tag">Piste recommandée</span>
-      <p class="concept">La carte topographique comme langage. Courbes de niveau, coordonnées, échelles, flèche du nord : le vocabulaire des cartographes et des guides de montagne, compris dans toutes les langues. L'orange de signalisation (celui des balises de secours et des boîtes noires) marque l'endroit où vous êtes. Le nom « Cap Nord » devient le logo : une aiguille qui pointe le nord.</p>
+      <p class="fit">Part fonctionnelle : <b>●●●○○</b> · part émotion : <b>●●●●●</b></p>
+      <p class="concept">L'interface prend la couleur du ciel de la destination, calculée à partir des heures de lever et de coucher du soleil (déjà fournies par la météo de l'app). Côté fonctionnel, elle passe en sombre la nuit et en contraste renforcé en plein jour.</p>
       <div class="pal">
-        <div class="sw"><i style="background:#10231f"></i><span>Forêt nuit<small>#10231F</small></span></div>
-        <div class="sw"><i style="background:#ff5b1f"></i><span>Orange balise<small>#FF5B1F</small></span></div>
-        <div class="sw"><i style="background:#ecefe8"></i><span>Fond de carte<small>#ECEFE8</small></span></div>
-        <div class="sw"><i style="background:#9fb3ad"></i><span>Courbe de niveau<small>#9FB3AD</small></span></div>
-        <div class="sw"><i style="background:#3d6fb6"></i><span>Hydrographie<small>#3D6FB6</small></span></div>
-      </div>
-      <div class="spec">
-        <div class="typo-demo"><span class="d" style="font-family:'Archivo',sans-serif;font-weight:800;font-stretch:115%;text-transform:uppercase">Lofoten</span><span class="b">Titres : Archivo étendu (libre, axe de largeur) · production : ABC Diatype ou Söhne</span><span class="intl">Données : JetBrains Mono · 68°09′N 13°45′E · 1:25 000</span></div>
-        <dl class="kv"><dt>Signature</dt><dd>Les courbes de niveau, générées à partir du vrai relief de chaque destination : chaque voyage a son motif unique, réutilisable en fond d'écran, en couverture de livre, en story. Animation : l'aiguille du logo s'oriente vers la prochaine étape.</dd><dt style="margin-top:10px">Iconographie</dt><dd>Pictogrammes de cartographie (refuge, sommet, gué, point de vue), trait 1,5 px.</dd></dl>
-      </div>
-      <div class="risk">
-        <p class="plus"><b>Force</b>Seule piste qui découle du nom et du produit (GPS, hors-ligne, cartes). Aucun concurrent n'occupe cet espace. Langage sans mots, donc international par nature.</p>
-        <p class="minus"><b>Risque</b>Peut paraître « outdoor » et exclure le voyage urbain. Réponse : appliquer les courbes aux villes (relief de Lisbonne, de San Francisco) et garder une typo très contemporaine.</p>
-      </div>
-    </div>
-    <div class="phone-col">
-      <div class="phone pB"><span class="notch"></span>
-        <svg class="topo" viewBox="0 0 260 548" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#9fb3ad" stroke-width="1"><path d="M-10 170 C 60 120, 140 220, 270 150"/><path d="M-10 195 C 70 150, 140 250, 270 180"/><path d="M-10 222 C 80 180, 150 280, 270 210"/><path d="M-10 250 C 90 215, 160 305, 270 240"/><ellipse cx="160" cy="216" rx="34" ry="16"/><ellipse cx="160" cy="216" rx="58" ry="30"/><path d="M-10 300 C 60 280, 170 340, 270 300"/><path d="M-10 330 C 70 310, 160 370, 270 330"/></g><path d="M20 340 C 60 300, 100 260, 140 232 S 200 200, 240 150" stroke="#ff5b1f" stroke-width="2.5" stroke-dasharray="6 5" fill="none"/></svg>
-        <div class="ph-in">
-          <span class="coord">68°09′N · 13°45′E · ALT. 41 M</span>
-          <h4>Lofoten<br>Jour 4</h4>
-          <span class="pin"></span>
-          <div class="card">
-            <div class="leg"><i></i>Reine → Hamnøy<span>6,2 KM</span></div>
-            <div class="leg"><i style="background:#9fb3ad"></i>Point de vue Reinebringen<span>448 M</span></div>
-            <div class="leg"><i style="background:#9fb3ad"></i>Ferry Moskenes<span>17:15</span></div>
-          </div>
-          <div class="scale"><i></i>1:25 000 · hors-ligne ✓</div>
-        </div>
-      </div>
-      <span class="phone-cap">Étape du jour sur relief réel</span>
-    </div>
-  </article>
-
-  <!-- C -->
-  <article class="prop">
-    <div class="prop-text">
-      <div class="prop-title">
-        <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2a4d"/><stop offset=".55" stop-color="#ee8b5e"/><stop offset="1" stop-color="#fbe8cf"/></linearGradient></defs><rect width="64" height="64" fill="url(#gC)"/><circle cx="32" cy="40" r="12" fill="#fff4e0"/><rect x="0" y="40" width="64" height="24" fill="#fbe8cf" opacity=".9"/></svg>
-        <div><span class="eyebrow">Piste C</span><h3>Lumière locale</h3></div>
-      </div>
-      <p class="concept">L'app prend la couleur du ciel là où vous êtes. Au lever du soleil à Tromsø, tout est bleu-violet ; au coucher à Marrakech, tout est ambre. La palette est calculée en temps réel à partir des heures de lever et de coucher du soleil (déjà disponibles via la météo de l'app). Aucune capture d'écran ne ressemble à une autre.</p>
-      <div class="pal">
-        <div class="sw"><i style="background:#1d2a4d"></i><span>Heure bleue<small>#1D2A4D</small></span></div>
+        <div class="sw"><i style="background:#24335c"></i><span>Heure bleue<small>#24335C</small></span></div>
         <div class="sw"><i style="background:#6a4c7a"></i><span>Aube<small>#6A4C7A</small></span></div>
         <div class="sw"><i style="background:#ee8b5e"></i><span>Heure dorée<small>#EE8B5E</small></span></div>
         <div class="sw"><i style="background:#f7c98b"></i><span>Zénith<small>#F7C98B</small></span></div>
         <div class="sw"><i style="background:#fbe8cf"></i><span>Plein jour<small>#FBE8CF</small></span></div>
       </div>
       <div class="spec">
-        <div class="typo-demo"><span class="d" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.03em">18:21 Marrakech</span><span class="b">Bricolage Grotesque (libre, variable, axe optique)</span><span class="intl">Production : police variable sur mesure, poids qui suit la lumière</span></div>
-        <dl class="kv"><dt>Signature</dt><dd>Le dégradé vivant et l'arc solaire. La graisse de la typo s'allège la nuit et s'épaissit en plein jour.</dd><dt style="margin-top:10px">Matière</dt><dd>Verre dépoli, en phase avec Liquid Glass d'Apple.</dd></dl>
+        <div class="typo-demo"><span class="d" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;letter-spacing:-.03em">20:12 Lisboa</span><span class="b">Bricolage Grotesque (libre, variable)</span><span class="intl">Production : police variable sur mesure</span></div>
+        <dl class="kv"><dt>Signature</dt><dd>Le dégradé vivant et l'arc solaire. Matière en verre dépoli, en phase avec Liquid Glass d'Apple.</dd></dl>
       </div>
       <div class="risk">
-        <p class="plus"><b>Force</b>La plus « 2026 » des cinq, très forte en contenu social, universelle (le soleil n'a pas de langue).</p>
-        <p class="minus"><b>Risque</b>Identité instable : pas de couleur fixe à associer à la marque. Contraste difficile à garantir à chaque heure. Les dégradés vieillissent vite.</p>
+        <p class="plus"><b>Force</b>La plus dans l'air du temps, très partageable, universelle.</p>
+        <p class="minus"><b>Risque</b>Pas de couleur de marque fixe. Contraste difficile à garantir à toute heure, ce qui contredit l'exigence de fiabilité. Plus émotionnelle que le produit.</p>
       </div>
     </div>
     <div class="phone-col">
       <div class="phone pC"><span class="notch"></span>
         <div class="ph-in">
-          <span class="sun">LEVER 07:31 · COUCHER 18:21</span>
-          <span class="clock">18:04</span>
-          <span class="city">Marrakech · jour 2 sur 9</span>
-          <div class="arc"><svg viewBox="0 0 220 70" aria-hidden="true"><path d="M5 66 Q 110 -20 215 66" fill="none" stroke="rgba(255,249,241,.55)" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="196" cy="48" r="7" fill="#fff4e0"/></svg></div>
-          <div class="glass"><b>Dans 17 min : coucher du soleil</b><small>Terrasse du Café des Épices, 600 m à pied</small></div>
-        </div>
-      </div>
-      <span class="phone-cap">Palette calculée à 18:04 heure locale</span>
-    </div>
-  </article>
-
-  <!-- D -->
-  <article class="prop">
-    <div class="prop-text">
-      <div class="prop-title">
-        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#2d3cff"/><rect x="12" y="14" width="40" height="36" rx="9" fill="#ffd23f" stroke="#1b1b3a" stroke-width="3" transform="rotate(-8 32 32)"/><text x="32" y="40" text-anchor="middle" font-family="'Dela Gothic One', sans-serif" font-size="18" fill="#1b1b3a" transform="rotate(-8 32 32)">cn</text></svg>
-        <div><span class="eyebrow">Piste D</span><h3>Carnet collé</h3></div>
-      </div>
-      <p class="concept">Le scrapbook du routard, version numérique : photos scotchées, stickers en relief, tickets de bus, couleurs franches en aplat. Une marque qui se partage et se collectionne, pensée d'abord pour la Gen Z et les stories.</p>
-      <div class="pal">
-        <div class="sw"><i style="background:#2d3cff"></i><span>Cobalt<small>#2D3CFF</small></span></div>
-        <div class="sw"><i style="background:#ff4d3d"></i><span>Tomate<small>#FF4D3D</small></span></div>
-        <div class="sw"><i style="background:#ffd23f"></i><span>Scotch<small>#FFD23F</small></span></div>
-        <div class="sw"><i style="background:#9be7c4"></i><span>Menthe<small>#9BE7C4</small></span></div>
-        <div class="sw"><i style="background:#fff4e2"></i><span>Papier<small>#FFF4E2</small></span></div>
-      </div>
-      <div class="spec">
-        <div class="typo-demo"><span class="d" style="font-family:'Dela Gothic One',sans-serif">Séoul 서울</span><span class="b">Dela Gothic One (libre, couvre latin + japonais)</span><span class="intl">Texte : Instrument Sans · coréen/chinois : Noto Sans CJK</span></div>
-        <dl class="kv"><dt>Signature</dt><dd>Les stickers en relief, à collectionner (un par pays, par record de km). Ombre dure décalée, tremblement au toucher.</dd><dt style="margin-top:10px">Ton</dt><dd>Tutoiement, humour, phrases courtes.</dd></dl>
-      </div>
-      <div class="risk">
-        <p class="plus"><b>Force</b>Très partageable, mémorisable, dans la vague « texture » lancée par Airbnb.</p>
-        <p class="minus"><b>Risque</b>Peut lasser en 2 ans et paraître enfantin face à un comité d'investissement. Ferme la porte aux familles et aux voyageurs plus âgés.</p>
-      </div>
-    </div>
-    <div class="phone-col">
-      <div class="phone pD"><span class="notch"></span>
-        <div class="ph-in">
-          <h4>Séoul,<br>jour 6</h4>
-          <span class="photo"></span><span class="tape"></span>
-          <span class="stk s1">+12 400 pas</span>
-          <span class="stk s2">Bukchon ✓</span>
-          <span class="stk s3">Pays<br>n° 14</span>
-          <div class="foot"><span class="on">Carnet</span><span>Carte</span><span>Budget</span></div>
-        </div>
-      </div>
-      <span class="phone-cap">Page de carnet du jour</span>
-    </div>
-  </article>
-
-  <!-- E -->
-  <article class="prop">
-    <div class="prop-text">
-      <div class="prop-title">
-        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" fill="#ffc629"/><path d="M32 12 L46 30 H37 V52 H27 V30 H18 Z" fill="#121314"/></svg>
-        <div><span class="eyebrow">Piste E</span><h3>Tableau des départs</h3></div>
-      </div>
-      <p class="concept">La signalétique d'aéroport et de gare, le seul langage visuel que tous les voyageurs du monde savent déjà lire. Jaune et noir de l'orientation, pictogrammes normalisés, tableau à palettes qui claque quand une information change. Lisibilité maximale, y compris en plein soleil.</p>
-      <div class="pal">
-        <div class="sw"><i style="background:#ffc629"></i><span>Jaune signal<small>#FFC629</small></span></div>
-        <div class="sw"><i style="background:#121314"></i><span>Tableau<small>#121314</small></span></div>
-        <div class="sw"><i style="background:#f4f1e8"></i><span>Affichage<small>#F4F1E8</small></span></div>
-        <div class="sw"><i style="background:#7ee0a1"></i><span>À l'heure<small>#7EE0A1</small></span></div>
-        <div class="sw"><i style="background:#ff8a5c"></i><span>Retard<small>#FF8A5C</small></span></div>
-      </div>
-      <div class="spec">
-        <div class="typo-demo"><span class="d" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:.03em">Oslo → Tromsø</span><span class="b">Titres : Barlow Condensed · texte : Atkinson Hyperlegible (conçue pour les malvoyants)</span><span class="intl">Production : Frutiger, la police des aéroports</span></div>
-        <dl class="kv"><dt>Signature</dt><dd>Le split-flap : chaque changement d'horaire ou d'étape s'affiche par palettes qui tournent, avec un son court en option.</dd><dt style="margin-top:10px">Iconographie</dt><dd>Pictogrammes inspirés de la norme ISO 7001.</dd></dl>
-      </div>
-      <div class="risk">
-        <p class="plus"><b>Force</b>Accessibilité exemplaire (argument fort pour les investisseurs et les stores), icône la plus visible sur un écran d'accueil.</p>
-        <p class="minus"><b>Risque</b>Très utilitaire, peu d'émotion pour la partie souvenir. Le jaune et noir est proche d'Expedia et des codes « chantier ».</p>
-      </div>
-    </div>
-    <div class="phone-col">
-      <div class="phone pE"><span class="notch"></span>
-        <div class="ph-in">
-          <div class="hd"><i>↑</i>Départs · Norvège</div>
-          <div class="board">
-            <div class="flap"><span class="t">07:40</span>Oslo → Tromsø<span class="s">À l'heure</span></div>
-            <div class="flap"><span class="t">11:15</span>Tromsø → Senja<span class="s">Route</span></div>
-            <div class="flap"><span class="t">16:30</span>Senja → Andenes<span class="s late">+20 min</span></div>
-            <div class="flap"><span class="t">J+2</span>Andenes → Svolvær<span class="s">Ferry</span></div>
-          </div>
-          <p class="bigtxt">Ferry Gryllefjord : départ décalé à 16:50. Votre étape est recalculée.</p>
-          <div class="picto">
-            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg></span>
-            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M3 15h18l-2 5H5zM6 14V8h5v6M13 14V5l6 9z"/></svg></span>
-            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M5 11l2-5h10l2 5v6h-2v2h-2v-2H9v2H7v-2H5zm2 0h10l-1.3-3H8.3z"/></svg></span>
-            <span><svg viewBox="0 0 24 24" fill="#121314"><path d="M3 20V9l9-6 9 6v11h-6v-6H9v6z"/></svg></span>
+          <span class="sun">LEVER 07:46 · COUCHER 19:02</span>
+          <span class="clock">18:41</span>
+          <span class="city">Lisbonne · jour 6 sur 9</span>
+          <div class="arc"><svg viewBox="0 0 220 64" aria-hidden="true"><path d="M5 60 Q 110 -18 215 60" fill="none" stroke="rgba(255,249,241,.6)" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="198" cy="44" r="7" fill="#fff4e0"/></svg></div>
+          <div class="stack">
+            <div class="glass"><b>Coucher du soleil dans 21 min</b><small>Miradouro da Senhora do Monte · 900 m</small></div>
+            <div class="glass"><b>20:30 · Dîner fado à Alfama</b><small>Réservé · 2 personnes</small></div>
           </div>
         </div>
       </div>
-      <span class="phone-cap">Itinéraire en mode tableau</span>
+      <span class="phone-cap">Palette calculée à 18:41 heure locale</span>
     </div>
   </article>
 </section>
@@ -675,55 +703,49 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
   <header>
     <span class="eyebrow">05 · Comparaison</span>
     <h2>Les cinq pistes face à vos critères</h2>
-    <p class="lead">Notes de 1 à 5. Pour « Risque d'exécution », 5 signifie le moins risqué.</p>
+    <p class="lead">Notes de 1 à 5. « Adéquation produit » mesure l'adéquation à un outil d'abord fonctionnel. Pour « Risque d'exécution », 5 signifie le moins risqué.</p>
   </header>
   <div class="tablewrap">
     <table>
-      <thead><tr><th>Piste</th><th>Différenciation</th><th>Scalabilité internationale</th><th>Mémorisation (icône)</th><th>Air du temps</th><th>Cohérence produit</th><th>Risque d'exécution</th><th>Total /30</th></tr></thead>
-      <tbody>
-        <tr><td><b>A · Passeport</b></td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><b>23</b></td></tr>
-        <tr class="best"><td><b>B · Relevé</b></td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><b>27</b></td></tr>
-        <tr><td><b>C · Lumière locale</b></td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span>2</td><td class="n"><b>23</b></td></tr>
-        <tr><td><b>D · Carnet collé</b></td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i></i><i></i><i></i></span>2</td><td class="n"><b>22</b></td></tr>
-        <tr><td><b>E · Tableau des départs</b></td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></span>5</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i></span>3</td><td class="n"><span class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span>4</td><td class="n"><b>23</b></td></tr>
-      </tbody>
+      <thead><tr><th>Piste</th><th>Différenciation dans la niche</th><th>Scalabilité internationale</th><th>Mémorisation (icône)</th><th>Air du temps</th><th>Adéquation produit</th><th>Risque d'exécution</th><th>Total /30</th></tr></thead>
+      <tbody id="scores"></tbody>
     </table>
   </div>
-  <p class="note">Notation argumentée mais subjective : elle sert à cadrer la discussion. Avant la présentation aux investisseurs, la valider par un test de préférence rapide (5 pistes, 50 à 100 personnes, 3 marchés) apporterait une preuve chiffrée.</p>
+  <p class="note">Notation argumentée mais subjective, pour cadrer la discussion. Avant le comité d'investissement, un test de préférence rapide (50 à 100 personnes, 3 marchés) apporterait une preuve chiffrée.</p>
 </section>
 
 <!-- ============ 6. RECOMMANDATION ============ -->
 <section id="reco">
   <header>
     <span class="eyebrow">06 · Recommandation</span>
-    <h2>Retenir « Relevé », enrichi par le tampon du Passeport</h2>
+    <h2>Retenir « Relevé », avec le système de lignes et les statuts du tableau</h2>
   </header>
   <div class="reco">
     <div>
       <h3>Pourquoi Relevé</h3>
       <ul>
-        <li>C'est la seule piste qui découle à la fois du nom (Cap Nord, l'aiguille) et du produit (GPS, cartes hors-ligne).</li>
-        <li>Aucun des cinq leaders n'utilise ce territoire, et la palette forêt + orange sort du bleu et du corail.</li>
-        <li>Coordonnées, relief et pictogrammes se lisent sans traduction : le lancement dans un nouveau pays ne demande aucune adaptation graphique.</li>
-        <li>Les courbes de niveau générées par voyage donnent un visuel unique à partager, ce qui répond à l'usage social de la Gen Z.</li>
+        <li>Une carte est un outil avant d'être une image : la piste sert d'abord la gestion du voyage.</li>
+        <li>Elle découle du nom (Cap Nord, l'aiguille) et du produit (GPS, carte, hors-ligne, météo, altitude).</li>
+        <li>Forêt, glacier et bistre : aucune app de la niche n'occupe ces couleurs.</li>
+        <li>Coordonnées, échelles et symboles se lisent sans traduction, ce qui facilite le lancement dans d'autres pays.</li>
       </ul>
     </div>
     <div>
       <h3>Ce qu'on emprunte aux autres pistes</h3>
       <ul>
-        <li><b>Passeport :</b> le tampon de ville comme récompense et comme page du livre souvenir.</li>
-        <li><b>Tableau des départs :</b> la rigueur d'accessibilité (Atkinson, contrastes AA minimum).</li>
-        <li><b>Lumière locale :</b> une teinte de fond qui varie légèrement avec l'heure, en mode discret.</li>
+        <li><b>Ligne :</b> le schéma de l'itinéraire comme vue d'ensemble, une couleur par mode de transport.</li>
+        <li><b>Tableau des départs :</b> les statuts limpides (réservé, payé, à faire) et l'exigence d'accessibilité.</li>
+        <li><b>Passeport :</b> le tampon, réservé au volet souvenir.</li>
       </ul>
     </div>
     <div>
       <h3>Étapes suivantes, une fois la piste validée</h3>
       <ol>
-        <li>Logo : aiguille, wordmark, versions icône 1024 px à 29 px.</li>
-        <li>Système de couleurs clair et sombre, contrastes vérifiés.</li>
-        <li>Typographie : choix et licence de la police de production, écritures non latines.</li>
-        <li>Écrans clés : accueil, étape du jour, carte, budget, souvenir.</li>
-        <li>Motion et sons, puis déclinaisons (store, réseaux, livre).</li>
+        <li>Logo : aiguille, wordmark, déclinaisons d'icône de 1024 à 29 px.</li>
+        <li>Couleurs claires et sombres, contrastes vérifiés, codes de statut.</li>
+        <li>Typographie : police de production, licence, écritures non latines.</li>
+        <li>Pictogrammes : légende cartographique complète (transport, nuit, document, budget).</li>
+        <li>Écrans clés : voyage, étape du jour, carte, budget, documents, mode Live.</li>
       </ol>
     </div>
   </div>
@@ -736,36 +758,63 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
     <h2>Références consultées</h2>
   </header>
   <ol class="sources">
-    <li><a href="https://www.apptweak.com/en/reports/most-downloaded-travel-apps" target="_blank" rel="noopener">AppTweak, Most downloaded Travel & Navigation apps 2025</a></li>
-    <li><a href="https://www.statista.com/topics/2273/airbnb/" target="_blank" rel="noopener">Statista, Airbnb statistics & facts</a></li>
-    <li><a href="https://www.webdesignhot.com/design.md/booking/" target="_blank" rel="noopener">Webdesignhot, relevé du design system Booking.com</a></li>
-    <li><a href="https://www.belganewsagency.eu/dutch-consumers-association-launches-major-legal-action-against-bookingcom" target="_blank" rel="noopener">Belga, action collective néerlandaise contre Booking.com</a></li>
-    <li><a href="https://dutchreview.com/news/booking-com-class-action-lawsuit-claim-compensation/" target="_blank" rel="noopener">DutchReview, participants à l'action collective</a></li>
-    <li><a href="https://www.itsnicethat.com/articles/airbnb-app-redesign-140525" target="_blank" rel="noopener">It's Nice That, refonte de l'app Airbnb (mai 2025)</a></li>
-    <li><a href="https://www.bloomberg.com/news/articles/2025-06-13/apple-airbnb-ditch-flat-app-icons-for-new-3d-ui-design" target="_blank" rel="noopener">Bloomberg, Big Tech Is Dealing Flat Design a Death Blow</a></li>
-    <li><a href="https://designcompass.org/en/2025/07/04/airbnb-new-design-system/" target="_blank" rel="noopener">Design Compass, Airbnb's new design system</a></li>
-    <li><a href="https://opendesigner.io/design-systems/airbnb" target="_blank" rel="noopener">OpenDesigner, relevé du design system Airbnb</a></li>
-    <li><a href="https://fortune.com/2022/11/07/airbnb-surprise-cleaning-fees-plan-to-fix-problem-chesky" target="_blank" rel="noopener">Fortune, Airbnb et les frais cachés</a></li>
-    <li><a href="https://www.pentagram.com/work/expedia-group/story" target="_blank" rel="noopener">Pentagram, identité Expedia Group</a></li>
-    <li><a href="https://www.itsnicethat.com/news/paula-scher-pentagram-new-york-expedia-group-graphic-design-270318" target="_blank" rel="noopener">It's Nice That, Paula Scher pour Expedia Group</a></li>
-    <li><a href="https://www.creativereview.co.uk/tripadvisor-new-rebrand-koto-studio/" target="_blank" rel="noopener">Creative Review, rebrand Tripadvisor par Koto</a></li>
-    <li><a href="https://www.fastcompany.com/91360610/tripadvisor-rebrand" target="_blank" rel="noopener">Fast Company, Tripadvisor rebrand</a></li>
-    <li><a href="https://designcompass.org/en/2025/07/03/tripadvisor-brand-refresh/" target="_blank" rel="noopener">Design Compass, Tripadvisor brand refresh</a></li>
-    <li><a href="https://www.hospitalitynet.org/news/4126305/tripadvisors-2025-transparency-report-reveals-strong-review-submissions-and-improved-fraud-detection" target="_blank" rel="noopener">Hospitality Net, Tripadvisor Transparency Report 2025</a></li>
-    <li><a href="https://www.nbcsandiego.com/news/business/money-report/heres-how-many-fake-reviews-tripadvisor-found-on-its-website-in-2024/3833586/" target="_blank" rel="noopener">CNBC / NBC, faux avis Tripadvisor 2024</a></li>
-    <li><a href="https://koto.studio/?p=701" target="_blank" rel="noopener">Koto, Skyscanner: A new dawn</a></li>
-    <li><a href="https://creativebloq.com/news/new-skyscanner-logo" target="_blank" rel="noopener">Creative Bloq, nouveau logo Skyscanner</a></li>
-    <li><a href="https://www.itsnicethat.com/articles/koto-skyscanner-rebrand-graphic-design-021019" target="_blank" rel="noopener">It's Nice That, Koto × Skyscanner</a></li>
-    <li><a href="https://www.builtinboston.com/articles/colorful-backstories-behind-mascots-boston-tech" target="_blank" rel="noopener">Built In Boston, la mascotte de Hopper</a></li>
+    <li>Relevés directs des feuilles de style : polarsteps.com, wanderlog.com, tripsy.app, stippl.io, findpenguins.com, roadtrippers.com, journiapp.com (12 octobre 2026)</li>
+    <li><a href="https://travelvient.com/tools/travel-apps/compare/polarsteps-vs-wanderlog/" target="_blank" rel="noopener">Travelvient, Polarsteps vs Wanderlog</a></li>
+    <li><a href="https://www.overlandsite.com/tools/polarsteps-review/" target="_blank" rel="noopener">Overland Site, test de Polarsteps</a></li>
+    <li><a href="https://news.polarsteps.com/news/polarsteps-summer-2025-release-is-here" target="_blank" rel="noopener">Polarsteps, nouveautés été 2025 (planificateur IA)</a></li>
+    <li><a href="https://www.polarsteps.com/news/polarsteps-launches-summer-2026-release-new-tools-for-planning-privacy-and-sharing" target="_blank" rel="noopener">Polarsteps, nouveautés été 2026</a></li>
+    <li><a href="https://www.ftm.eu/articles/travel-app-polarsteps-military-sensitive-data-leaked" target="_blank" rel="noopener">Follow the Money, enquête sur les données Polarsteps</a></li>
+    <li><a href="https://cybernews.com/security/polarsteps-travel-app-exposes-users-soldiers/" target="_blank" rel="noopener">Cybernews, Polarsteps et les 23 M d'utilisateurs</a></li>
+    <li><a href="https://www.polarsteps.com/comment-follow-the-money" target="_blank" rel="noopener">Polarsteps, réponse officielle</a></li>
+    <li><a href="https://justuseapp.com/en/app/947925763/polarsteps/reviews" target="_blank" rel="noopener">JustUseApp, avis Polarsteps</a></li>
     <li><a href="https://www.trustpilot.com/review/polarsteps.com?page=3" target="_blank" rel="noopener">Trustpilot, avis Polarsteps</a></li>
-    <li><a href="https://justuseapp.com/en/app/947925763/polarsteps/reviews" target="_blank" rel="noopener">JustUseApp, analyse des avis Polarsteps</a></li>
+    <li><a href="https://techcrunch.com/2021/09/01/general-catalyst-abstract-back-wanderlogs-1-5m-round-for-collaborative-travel/amp/" target="_blank" rel="noopener">TechCrunch, levée de fonds de Wanderlog</a></li>
+    <li><a href="https://www.clay.com/dossier/wanderlog-funding" target="_blank" rel="noopener">Clay, Wanderlog (financement et usage)</a></li>
+    <li><a href="https://kimola.com/reports/unlock-insights-with-the-wanderlog-app-feedback-analysis-google-play-en-us-154237" target="_blank" rel="noopener">Kimola, retours utilisateurs Wanderlog</a></li>
     <li><a href="https://www.trustpilot.com/review/wanderlog.com?page=2" target="_blank" rel="noopener">Trustpilot, avis Wanderlog</a></li>
-    <li><a href="https://kimola.com/reports/unlock-insights-with-the-wanderlog-app-feedback-analysis-google-play-en-us-154237" target="_blank" rel="noopener">Kimola, analyse des retours Wanderlog</a></li>
+    <li><a href="https://www.tripit.com/web/blog/news-culture/how-rethinking-tripit-helped-evolve-our-brand" target="_blank" rel="noopener">TripIt, refonte de la marque</a></li>
+    <li><a href="https://thenextweb.com/news/tripit-gets-redesign-unofficial" target="_blank" rel="noopener">The Next Web, design de TripIt (2012)</a></li>
+    <li><a href="https://unitq.com/unitq-scorecards/tripit" target="_blank" rel="noopener">unitQ, avis TripIt 2025</a></li>
+    <li><a href="https://dk.trustpilot.com/review/www.tripit.com" target="_blank" rel="noopener">Trustpilot, avis TripIt</a></li>
+    <li><a href="https://www.macstories.net/reviews/tripsy-review-the-ultimate-trip-planner-for-iphone-and-ipad/" target="_blank" rel="noopener">MacStories, test de Tripsy</a></li>
+    <li><a href="https://www.tapsmart.com/apps/review-tripsy/" target="_blank" rel="noopener">TapSmart, test de Tripsy</a></li>
+    <li><a href="https://setapp.com/fr/apps/tripsy/customer-reviews" target="_blank" rel="noopener">Setapp, avis Tripsy</a></li>
+    <li><a href="https://justuseapp.com/en/app/6443617088/stippl-the-travel-planner/reviews" target="_blank" rel="noopener">JustUseApp, avis Stippl</a></li>
+    <li><a href="https://www.stork.ai/en/stippl" target="_blank" rel="noopener">Stork, fiche Stippl</a></li>
+    <li><a href="https://justuseapp.com/en/app/721334305/findpenguins/reviews" target="_blank" rel="noopener">JustUseApp, avis FindPenguins</a></li>
+    <li><a href="https://justuseapp.com/en/app/884030844/journi-blog-travel-tracker/reviews" target="_blank" rel="noopener">JustUseApp, avis Journi</a></li>
     <li><a href="https://www.phocuswire.com/freedom-flexibility-transparency-what-gen-z-travelers-want-need" target="_blank" rel="noopener">PhocusWire, ce que veulent les voyageurs Gen Z</a></li>
-    <li><a href="https://www.hospitalitynet.org/news/4130463.html" target="_blank" rel="noopener">KAYAK × TikTok, What the Future 2026</a></li>
-    <li><a href="https://www.wavespace.agency/blog/ui-design-trends" target="_blank" rel="noopener">Wavespace, UI design trends 2026</a></li>
+    <li><a href="https://www.bloomberg.com/news/articles/2025-06-13/apple-airbnb-ditch-flat-app-icons-for-new-3d-ui-design" target="_blank" rel="noopener">Bloomberg, la fin du design plat</a></li>
     <li><a href="https://mantlr.com/blog/liquid-glass-vs-material-expressive" target="_blank" rel="noopener">Mantlr, Liquid Glass vs Material 3 Expressive</a></li>
   </ol>
 </section>
 
 </div>
+
+<script>
+(function () {
+  var rows = [
+    ['A · Relevé', [5,5,4,4,5,4], true],
+    ['B · Ligne', [4,5,4,4,5,3]],
+    ['C · Tableau des départs', [4,5,5,3,4,4]],
+    ['D · Passeport', [3,3,4,3,3,4]],
+    ['E · Lumière locale', [4,5,3,5,3,2]]
+  ];
+  var tb = document.getElementById('scores');
+  rows.forEach(function (r) {
+    var tr = document.createElement('tr');
+    if (r[2]) tr.className = 'best';
+    var html = '<td><b>' + r[0] + '</b></td>';
+    var total = 0;
+    r[1].forEach(function (n) {
+      total += n;
+      var d = '';
+      for (var i = 0; i < 5; i++) d += '<i' + (i < n ? ' class="f"' : '') + '></i>';
+      html += '<td class="n"><span class="dots">' + d + '</span>' + n + '</td>';
+    });
+    html += '<td class="n"><b>' + total + '</b></td>';
+    tr.innerHTML = html;
+    tb.appendChild(tr);
+  });
+})();
+</script>
