@@ -492,12 +492,14 @@ A['new-trip'] = () => openModal(`
       <label class="fld"><span>Début</span><input type="date" name="start"></label>
       <label class="fld"><span>Fin</span><input type="date" name="end"></label>
     </div>
-    <div class="grid3">
+    <div class="grid2">
       <label class="fld"><span>Devise</span><select name="currency">${CURRENCIES.map((c) => `<option>${c}</option>`).join('')}</select></label>
       <label class="fld"><span>Budget total</span><input type="number" name="budget" min="0" step="any" inputmode="decimal"></label>
-      <label class="fld"><span>Voyageurs</span><input type="number" name="travelers" value="1" min="1" inputmode="numeric"></label>
     </div>
-    ${cloud.cloudReady() ? `<label class="nt-collab"><input type="checkbox" name="withCompanions"><span class="ntc-box"><i class="kind-ic">${icon('users')}</i><span><b>Voyage à plusieurs</b><small>Vous recevrez un lien à envoyer à vos compagnons : chacun s’inscrit avec son prénom.</small></span><i class="ntc-check" aria-hidden="true"></i></span></label>` : ''}
+    <div class="ntr-line">
+      <label class="fld nt-trav"><span>Voyageurs</span><input type="number" name="travelers" value="1" min="1" inputmode="numeric"></label>
+      ${cloud.cloudReady() ? `<label class="nt-collab"><input type="checkbox" name="withCompanions"><span class="ntc-box"><i class="kind-ic">${icon('users')}</i><span><b>À plusieurs</b></span><i class="ntc-check" aria-hidden="true"></i></span></label>` : ''}
+    </div>
     <div class="actions"><button type="button" class="btn" data-act="close-modal">Annuler</button><button class="btn primary">Créer le voyage</button></div>
   </form>`, (m) => {
   const syncRoad = () => {

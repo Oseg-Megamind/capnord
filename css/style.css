@@ -1797,3 +1797,20 @@ label.lb-mi select { width: 100%; margin-top: 4px; background: rgba(230, 236, 23
 .mk-group.mix { background: #fff; color: #10231f; border: 3px solid #10231f; }
 .mk-group.mix span { background: none; padding: 0; }
 .mk-group .mk-here { top: auto; bottom: calc(100% + 6px); }
+/* Nouveau voyage : voyageurs et « voyage à plusieurs » sur la même ligne */
+.ntr-line { display: flex; gap: 10px; align-items: flex-end; }
+.ntr-line .nt-trav { flex: 0 0 96px; }
+.ntr-line .nt-collab { flex: 1; min-width: 0; }
+.ntr-line .ntc-box { padding: 8px 10px; gap: 8px; min-height: 48px; }
+.ntr-line .ntc-box .kind-ic { width: 30px; height: 30px; }
+.ntr-line .ntc-box b { font-size: 14px; }
+.ntr-line .ntc-box small { font-size: 11.5px; }
+.ntr-line .ntc-check { width: 22px; height: 22px; }
+.ntr-line { align-items: flex-end; }
+.ntr-line .ntc-box { height: 52px; min-height: 0; padding: 0 10px; box-sizing: border-box; }
+.ntr-line .ntc-box b { white-space: nowrap; font-size: 14.5px; }
+.ntr-line .nt-trav input { height: 52px; box-sizing: border-box; }
+.ntr-line .nt-trav { margin: 0; padding: 0; }
+.ntr-line .ntc-box > span { flex: 1; min-width: 0; overflow: hidden; }
+.ntr-line .ntc-box b { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; display: block; }
+.ntr-line .ntc-check { flex: none; margin-left: 4px; }
