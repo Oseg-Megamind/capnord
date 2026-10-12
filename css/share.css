@@ -227,3 +227,11 @@
 .shx-viewer .link { color: #5fd0c8; }
 .shx-hello { margin: 2px 0 6px; padding: 12px 14px; border-radius: 14px; background: #d9f2ef; color: #10231f; font-size: 14px; line-height: 1.45; animation: shxUp .5s both .2s; }
 .shx-hello b { display: block; font: 800 15.5px var(--font-display); margin-bottom: 2px; }
+/* Carte en grand : le tiroir n'affiche plus que sa poignée et le titre */
+.shx-sheet.mini { --peek: 92px; }
+.shx-sheet.mini .shx-body { overflow: hidden; }
+.shx-sheet.mini .shx-grip i { width: 56px; background: #10231f; }
+.shx-sheet.mini .shx-grip::after { content: 'Glissez vers le haut pour le carnet'; display: block; margin-top: 8px; font: 500 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.shx-sheet.mini .shx-body > :not(.shx-hello):not(.shx-sec-h) { opacity: .0; }
+.shx-sheet.mini .shx-hello { display: none; }
+@media (min-width: 900px) { .shx-sheet.mini .shx-body > * { opacity: 1; } .shx-sheet.mini .shx-grip::after { display: none; } }

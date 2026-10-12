@@ -56,6 +56,18 @@ function currentIdx(steps, d = todayStr()) {
   for (let i = steps.length - 1; i >= 0; i--) if (steps[i].arrival === d) return i;
   return -1;
 }
+// Dernière étape atteinte : celle en cours, ou la plus loin déjà commencée (dates passées ou photos prises)
+function lastDone(steps, d = todayStr()) {
+  let k = currentIdx(steps, d);
+  steps.forEach((s, i) => { if ((s.arrival && s.arrival <= d) || (S && stepPhotos(s.id).length)) k = Math.max(k, i); });
+  return k;
+}
+// Date affichée d'une étape ; le point de départ sans date prend celle du début du voyage
+function stepDate(s, i, D, long = false) {
+  const a = s.arrival || (i === 0 ? D.start : '');
+  if (!a) return i <= lastDone(D.steps) ? '' : 'À venir';
+  return long ? fmtRange(a, s.departure || (i === 0 && !s.arrival ? '' : s.departure)) : fmtDay(a, { day: 'numeric', month: 'short' });
+}
 function status(D) {
   const d = todayStr();
   if (!D.start) return { key: 'draft', label: 'En préparation' };
@@ -134,12 +146,12 @@ function homeView() {
   const photos = photosAll();
   const recent = photos.slice().reverse().slice(0, 12);
   const card = (s, i) => {
-    const c = coverOf(s), n = stepPhotos(s.id).length, done = i <= idx || (s.arrival && s.arrival <= today);
+    const c = coverOf(s), n = stepPhotos(s.id).length, done = i <= lastDone(steps, today);
     const t = `step:${s.id}`;
     return `<button class="shx-card ${i === idx ? 'now' : ''} ${done ? '' : 'todo'}" data-step="${s.id}" style="--i:${i}">
       <span class="shx-card-img">${c ? `<img src="${urlOf(c.path, true)}" alt="" loading="lazy">` : `<span class="shx-card-ph">${icon('pin')}</span>`}
         <em class="shx-num">${i + 1}</em>${i === idx ? '<em class="shx-nowtag">Ici maintenant</em>' : ''}</span>
-      <span class="shx-card-txt"><b>${esc(s.name)}</b><small>${s.arrival ? fmtDay(s.arrival, { day: 'numeric', month: 'short' }) : 'À venir'}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</small>
+      <span class="shx-card-txt"><b>${esc(s.name)}</b><small>${i === 0 && !s.arrival ? 'Départ' + (D.start ? ' · ' + stepDate(s, i, D) : '') : stepDate(s, i, D)}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</small>
         <span class="shx-mini">${n ? `<span>${icon('camera')}${n}</span>` : ''}${likesOf(t).length ? `<span>${P.heart}${likesOf(t).length}</span>` : ''}${commentsOf(t).length ? `<span>${P.chat}${commentsOf(t).length}</span>` : ''}</span></span>
     </button>`;
   };
@@ -175,12 +187,12 @@ function stepView(s) {
     <div class="shx-step-h">
       <button class="shx-back" data-home aria-label="Retour">${P.back}</button>
       <div><small>Étape ${i + 1} sur ${steps.length}${i === idx ? ' · ici maintenant' : ''}</small><h2>${esc(s.name)}</h2>
-        <p>${s.arrival ? fmtRange(s.arrival, s.departure) : 'Dates à venir'}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</p></div>
+        <p>${i === 0 && !s.arrival ? 'Point de départ' + (D.start ? ' · ' + stepDate(s, i, D) : '') : stepDate(s, i, D, true) || 'Étape passée'}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</p></div>
     </div>
     ${prev && (mode || s.legStory) ? `<div class="shx-leg">${mode ? icon(s.mode) : icon('route')}<span>${mode ? `En ${mode.label.toLowerCase()} depuis ${esc(prev.name)}` : `Depuis ${esc(prev.name)}`}${s.legStory ? `<em>${esc(s.legStory)}</em>` : ''}</span></div>` : ''}
     ${s.story ? `<p class="shx-story">${esc(s.story)}</p>` : ''}
     ${ph.length ? `<div class="shx-grid n${Math.min(ph.length, 3)}">${ph.map((p, k) => `<button class="shx-g" data-photo="${p.id}" data-scope="step" style="--i:${k}"><img src="${urlOf(p.path, true)}" alt="" loading="lazy">${p.kind === 'video' ? `<em class="shx-play sm">${P.play}</em>` : ''}${likesOf('photo:' + p.id).length || commentsOf('photo:' + p.id).length ? `<i>${likesOf('photo:' + p.id).length ? P.heart + likesOf('photo:' + p.id).length : ''}${commentsOf('photo:' + p.id).length ? ' ' + P.chat + commentsOf('photo:' + p.id).length : ''}</i>` : ''}</button>`).join('')}</div>`
-      : `<div class="shx-empty">${icon('camera')}<p>${s.arrival && s.arrival > todayStr() ? 'Étape à venir : revenez pendant le voyage !' : 'Pas encore de photos ici.'}</p></div>`}
+      : `<div class="shx-empty">${icon('camera')}<p>${i > lastDone(steps) ? 'Étape à venir : revenez pendant le voyage !' : 'Pas de photos sur cette étape.'}</p></div>`}
     <div class="shx-react big">${likeBtn(t)}<span class="shx-cmcount">${P.chat}${commentsOf(t).length ? plural(commentsOf(t).length, 'commentaire') : 'Commenter l’étape'}</span></div>
     ${thread(t)}
     <div class="shx-stepnav">
@@ -217,6 +229,8 @@ function drawMap() {
     map = L.map('sh-map', { zoomControl: false, attributionControl: true });
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
     layer = L.layerGroup().addTo(map);
+    // Toucher ou déplacer la carte : elle passe en grand, le tiroir se range en bas
+    map.on('click dragstart zoomstart', (e) => { if (e.type !== 'zoomstart' || e.originalEvent) setSheet('mini'); });
   }
   layer.clearLayers();
   const anim = ui.first;
@@ -226,7 +240,7 @@ function drawMap() {
     if (!s.place) return;
     const p = [s.place.lat, s.place.lng];
     pts.push(p);
-    const done = idx >= 0 ? i <= idx : !!(s.arrival && s.arrival <= today);
+    const done = i <= lastDone(steps, today);
     if (prev) {
       const m = MODES[s.mode];
       L.polyline([prev, p], { color: '#f7f8f4', weight: (m?.w || 3) + 5, opacity: 0.8, interactive: false }).addTo(layer);
@@ -273,9 +287,11 @@ function mountSheetDrag() {
     if (y0 == null) return;
     sheet.style.transition = ''; sheet.style.removeProperty('--drag');
     const fast = Math.abs(dy) / Math.max(1, Date.now() - t0) > 0.5;
-    if (Math.abs(dy) < 6) setSheet(ui.sheet === 'full' ? 'peek' : 'full');
-    else if (dy < -60 || (fast && dy < 0)) setSheet('full');
-    else if (dy > 60 || (fast && dy > 0)) setSheet('peek');
+    const order = ['mini', 'peek', 'full'];
+    const k = Math.max(0, order.indexOf(ui.sheet === 'half' ? 'peek' : ui.sheet));
+    if (Math.abs(dy) < 6) setSheet(ui.sheet === 'mini' ? 'peek' : ui.sheet === 'full' ? 'peek' : 'full');
+    else if (dy < -60 || (fast && dy < 0)) setSheet(order[Math.min(2, k + (dy < -260 ? 2 : 1))]);
+    else if (dy > 60 || (fast && dy > 0)) setSheet(order[Math.max(0, k - (dy > 260 ? 2 : 1))]);
     y0 = null;
   };
   grip.addEventListener('touchstart', (e) => start(e.touches[0].clientY), { passive: true });
@@ -288,7 +304,7 @@ function mountSheetDrag() {
   body.addEventListener('touchmove', (e) => {
     if (by0 == null) return;
     const d = e.touches[0].clientY - by0;
-    if (ui.sheet === 'peek' && d < -30) { setSheet('full'); by0 = null; }
+    if ((ui.sheet === 'peek' || ui.sheet === 'mini') && d < -30) { setSheet(ui.sheet === 'mini' ? 'peek' : 'full'); by0 = null; }
     else if (ui.sheet === 'full' && d > 70 && body.scrollTop <= 0) { setSheet('peek'); by0 = null; }
   }, { passive: true });
 }
