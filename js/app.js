@@ -461,13 +461,15 @@ function featuredCard(t) {
   const idx = currentStepIdx(t), s = t.steps[idx];
   const chip = { now: '● En cours', soon: st.n === 1 ? 'Demain' : `Dans ${st.n} jours`, draft: 'À planifier', past: 'Terminé' }[st.key];
   const right = st.key === 'now' ? `Jour ${st.day}${st.tot ? ' / ' + st.tot : ''}` : st.key === 'soon' ? fmtDay(a, { day: 'numeric', month: 'short' }) : '';
-  const sub = st.key === 'now' && s ? `Vous êtes à <b>${esc(s.name)}</b>`
-    : a ? `${fmtRange(a, b)}${t.steps.length > 1 ? ` · ${esc(t.steps[0].name || '')} → ${esc(t.steps.at(-1).name || '')}` : ''}` : t.steps.length ? `${esc(t.steps[0].name || '')}${t.steps.length > 1 ? ' → ' + esc(t.steps.at(-1).name || '') : ''} · dates à définir` : 'Ajoutez votre première étape';
+  // Nom, puis dates, puis point de départ → point d'arrivée
+  const dates = a ? fmtRange(a, b) : 'Dates à définir';
+  const first = t.steps[0]?.name || '', last = t.steps.at(-1)?.name || '';
+  const route = !t.steps.length ? 'Ajoutez votre première étape' : t.steps.length > 1 ? `${esc(first)} <i class="fc-arrow">→</i> ${esc(last)}` : esc(first);
   const pct = st.key === 'now' && st.tot ? Math.min(100, (st.day / st.tot) * 100) : st.key === 'past' ? 100 : 0;
   const money = c.total || t.budget;
   return `<div class="trip-wrap tw-feat st-${st.key}"><button class="trip-more" data-act="trip-settings" data-id="${t.id}" aria-label="Paramètres du voyage ${esc(t.name)}">⋯</button><button class="feat-card fc-${st.key}" data-act="open-trip" data-id="${t.id}" data-tab="${st.key === 'now' ? 'map' : 'itin'}" style="--c:${t.color}">
     <div class="fc-top"><span class="chip live-chip">${chip}</span><span class="fc-day">${right}</span></div>
-    <div class="fc-main"><span class="fc-emoji trip-badge light">${MARK}</span><div><h2>${esc(t.name)}</h2><p>${sub}</p></div></div>
+    <div class="fc-main"><span class="fc-emoji trip-badge light">${MARK}</span><div><h2>${esc(t.name)}</h2><p class="fc-dates">${dates}</p><p class="fc-route">${route}</p></div></div>
     ${st.key === 'now' || st.key === 'past' ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ''}
     <div class="fc-meta"><span>📍 ${plural(t.steps.length, 'étape')}</span><span>🌙 ${plural(totalNights(t), 'nuit')}</span>${money ? `<span>💶 ${fmtMoney(money, t.currency)}</span>` : ''}${t.collab ? `<span>${icon('users')} ${(t.collab.members || []).length || 1}</span>` : ''}</div>
   </button></div>`;
@@ -3319,30 +3321,14 @@ function renderShareModal() {
   let friends;
   if (!isShared(t)) {
     friends = `${ready ? '' : off}
-      <div class="share-what"><b>Ils verront :</b> la carte, les étapes, vos récits et vos photos, et la ville où vous êtes.<br><b>Jamais :</b> budget, documents, réservations, listes, notes.</div>
       <button class="btn primary full" data-act="share-start" ${ready ? '' : 'disabled'}>Créer le lien à envoyer</button>`;
   } else {
     const url = cloud.shareUrl(sh.token);
-    const f = fb[t.id] || { comments: [], likes: [] };
-    const recent = f.comments.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 30);
-    const label = (target) => {
-      if (target === 'trip') return 'Sur le voyage';
-      const [k, id] = target.split(':');
-      if (k === 'step') return esc(t.steps.find((s) => s.id === id)?.name || 'Étape');
-      const p = t.photos.find((x) => x.id === id);
-      return p ? `Photo${p.caption ? ' « ' + esc(p.caption.slice(0, 30)) + ' »' : ''}` : 'Photo';
-    };
-    const targets = [...new Set(recent.map((c) => c.target))];
     friends = `
       <div class="share-link"><input id="share-url" value="${esc(url)}" readonly aria-label="Lien de partage"><button class="btn primary" data-act="share-copy">Copier</button></div>
-      ${navigator.share ? '<button class="btn primary full" data-act="share-native">Envoyer le lien</button>' : ''}
-      <p class="hint" id="share-status"></p>
-      <div class="share-stats"><span><b>${f.comments.length}</b> commentaires</span><span><b>${f.likes.length}</b> j’aime</span></div>
-      ${targets.length ? `<h4 class="share-h">Conversations</h4>${targets.map((tg) => `<div class="share-conv"><small class="eyebrow">${label(tg)}</small>${threadHTML(t, tg, { compact: true })}</div>`).join('')}` : ''}
-      <div class="del-step-row"><button class="link danger-link" data-act="share-stop">Arrêter le partage et supprimer le lien</button></div>`;
+      ${navigator.share ? '<button class="btn primary full" data-act="share-native">Envoyer le lien</button>' : ''}`;
   }
   const nMembers = (t.collab?.members || []).length;
-  const nCom = (fb[t.id]?.comments || []).length;
   const choice = (k, ic, title, line, status) => `
     <button class="share-choice ${v === k ? 'open' : ''}" data-act="share-view" data-k="${k}" aria-expanded="${v === k}">
       <span class="sc-ic">${icon(ic)}</span>
@@ -3353,8 +3339,8 @@ function renderShareModal() {
     <h2>Partager le voyage</h2>
     <div class="share-choices">
       ${choice('collab', 'users', 'Compagnons de voyage', 'Ils voyagent avec vous et complètent le carnet.', t.collab ? (nMembers ? plural(nMembers, 'membre') : 'Actif') : '')}
-      ${v === 'collab' ? `<div class="share-pane">${ready ? companionsHTML(t, ready) : off}</div>` : ''}
-      ${choice('friends', 'eye', 'Amis et famille', 'Ils suivent le voyage et commentent vos photos.', isShared(t) ? (nCom ? plural(nCom, 'commentaire') : 'Lien actif') : '')}
+      ${v === 'collab' ? `<div class="share-pane">${ready ? companionsHTML(t, ready, true) : off}</div>` : ''}
+      ${choice('friends', 'eye', 'Amis et famille', 'Ils suivent le voyage et commentent vos photos.', isShared(t) ? 'Lien actif' : '')}
       ${v === 'friends' ? `<div class="share-pane">${friends}</div>` : ''}
     </div>
     <div class="actions"><button class="btn" data-act="close-modal">Fermer</button></div>`;
@@ -3402,7 +3388,7 @@ setInterval(() => { const t = T(); if (t?.collab && document.visibilityState ===
 document.addEventListener('visibilitychange', () => { const t = T(); if (t?.collab && document.visibilityState === 'visible') collabSync(t); });
 addEventListener('online', () => { const t = T(); if (t?.collab) collabSync(t); });
 
-function companionsHTML(t, ready) {
+function companionsHTML(t, ready, linkOnly = false) {
   const c = t.collab;
   if (!ready) return '';
   if (!c) return `
@@ -3415,8 +3401,8 @@ function companionsHTML(t, ready) {
     <div class="collab-card on">
       <div class="share-link"><input id="invite-url" value="${esc(collab.inviteLink(t, appUrl(), state.settings.myName || ''))}" readonly aria-label="Lien d’invitation"></div>
       <div class="row-btns wrap">${navigator.share ? '<button class="btn primary" data-act="invite-send">Envoyer le lien</button>' : ''}<button class="btn" data-act="invite-copy">Copier le lien</button></div>
-      <div class="inv-list">${members.length ? members.map((m) => `<div class="inv-row joined"><span class="tip-av">${esc((m.name || '?').slice(0, 1).toUpperCase())}</span><b>${esc(m.name)}</b><small>a rejoint</small></div>`).join('') : '<p class="muted">Personne n’a encore rejoint le voyage.</p>'}</div>
-      <small class="hint">${c.error ? `Synchronisation impossible (${esc(c.error)}). Nouvel essai automatique.` : c.syncedAt ? `Synchronisé à ${new Date(c.syncedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : 'Synchronisation…'}</small>
+      ${linkOnly ? '' : `<div class="inv-list">${members.length ? members.map((m) => `<div class="inv-row joined"><span class="tip-av">${esc((m.name || '?').slice(0, 1).toUpperCase())}</span><b>${esc(m.name)}</b><small>a rejoint</small></div>`).join('') : '<p class="muted">Personne n’a encore rejoint le voyage.</p>'}</div>
+      <small class="hint">${c.error ? `Synchronisation impossible (${esc(c.error)}). Nouvel essai automatique.` : c.syncedAt ? `Synchronisé à ${new Date(c.syncedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : 'Synchronisation…'}</small>`}
     </div>`;
 }
 
@@ -3565,7 +3551,7 @@ A['share-native'] = async () => {
 A['share-stop'] = async () => {
   const t = T();
   if (!confirm('Arrêter le partage ? Le lien ne fonctionnera plus et les commentaires seront supprimés.')) return;
-  try { await cloud.stopShare(t); save(); renderShareModal(); renderTripHeader(t); toast('Partage arrêté'); }
+  try { await cloud.stopShare(t); save(); renderShareModal(); renderTripHeader(t); if (!$('#share-modal')) closeModal(); toast('Partage arrêté'); }
   catch (e) { toast(`Impossible : ${esc(e.message || 'réseau')}`); }
 };
 
@@ -3592,6 +3578,7 @@ A['trip-settings'] = (el) => {
       ${cloud.cloudReady() ? `<div class="fld"><span>Mes compagnons de voyage</span>
         <div class="ts-mates">${(t.collab?.members || []).filter((m) => !m.me).map((m) => `<span class="ts-mate"><i>${esc((m.name || '?').slice(0, 1).toUpperCase())}</i>${esc(m.name)}</span>`).join('') || '<span class="muted">Personne pour l’instant</span>'}
           <button type="button" class="btn sm" data-act="collab-link">${t.collab ? 'Lien d’invitation' : 'Inviter'}</button></div></div>` : ''}
+      ${isShared(t) ? '<div class="fld"><span>Amis et famille</span><button type="button" class="link danger-link" data-act="share-stop">Arrêter le partage et supprimer le lien</button></div>' : ''}
       <div class="kind-pick">
         <label class="kind"><input type="radio" name="tkind" data-f="kind" value="roadtrip"><div class="kind-box"><i class="kind-ic">${icon('car')}</i><b>Road trip</b><small>Avec mon véhicule</small></div></label>
         <label class="kind"><input type="radio" name="tkind" data-f="kind" value="mixed"><div class="kind-box"><i class="kind-ic">${icon('plane')}</i><b>Multi-transports</b><small>Avion, train, bus…</small></div></label>

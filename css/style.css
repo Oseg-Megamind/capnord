@@ -1967,3 +1967,7 @@ button.step-rx { background: none; border: 0; padding: 2px; cursor: pointer; fon
 #step-thread .thread { margin-top: 4px; }
 .step .ph-strip { overflow-x: auto !important; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
 .step .ph-strip .ph-mini { touch-action: pan-x pan-y; }
+.feat-card .fc-main p { margin: 0; }
+.feat-card .fc-dates { font: 600 13px var(--mono, 'JetBrains Mono', monospace); opacity: .85; margin-top: 2px !important; }
+.feat-card .fc-route { font-size: 14px; font-weight: 600; margin-top: 3px !important; }
+.feat-card .fc-route .fc-arrow { font-style: normal; color: #5fd0c8; padding: 0 2px; }
