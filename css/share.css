@@ -301,3 +301,16 @@
 .shx-body { touch-action: pan-y; }
 .shx-strip { touch-action: pan-x pan-y; }
 @media (min-width: 900px) { .shx-sheet .shx-body { max-height: none; } }
+
+/* =====================================================================
+   Alignement sur la DA de l'app (même carte, même échelle typographique)
+   display (lieu) : Archivo 800 · 125 % — titre : Archivo 700 · 110 %
+   station : Archivo 800 · 100 % — légende : JetBrains Mono 500 capitales
+   ===================================================================== */
+.shm .leaflet-tile-pane { filter: none; }
+.shx-who h1 { font: 800 20px/1.1 var(--font-display); font-stretch: 110%; letter-spacing: -.02em; }
+.shx-sec-h h2, .shx-where-txt b, .shx-welcome b { font: 700 17px/1.2 var(--font-display); font-stretch: 110%; letter-spacing: -.005em; }
+.shx-step-h h2 { font: 800 28px/1.05 var(--font-display); font-stretch: 125%; letter-spacing: -.01em; }
+.shx-card-txt b, .shx-sub-h { font: 800 15px/1.2 var(--font-display); font-stretch: 100%; }
+.shx-sheet.mini .shx-grip::after { font: 500 10.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #4e6660; }
+.shx-v-top span { font: 700 16px var(--font-display); font-stretch: 110%; }

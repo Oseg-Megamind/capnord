@@ -292,13 +292,15 @@ function thread(target) {
 }
 
 // ---------- Carte : tracé, stations, piles de photos
-let map = null, layer = null;
+let map = null, layer = null, stLayer = null;
 function drawMap() {
   const D = S.data, steps = D.steps || [], idx = currentIdx(steps), today = todayStr(), live = liveLeg(steps);
   if (!map) {
     map = L.map('sh-map', { zoomControl: false, attributionControl: true });
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
     layer = L.layerGroup().addTo(map);
+    stLayer = L.layerGroup().addTo(map);
+    map.on('zoomend', () => drawStations());
     // Toucher ou déplacer la carte : elle passe en grand, le tiroir se range en bas
     map.on('click dragstart zoomstart', (e) => { if (e.type !== 'zoomstart' || e.originalEvent) setSheet('mini'); });
   }
@@ -326,22 +328,55 @@ function drawMap() {
         : { color: '#10231f', weight: 2.5, opacity: 0.55, dashArray: '2 8', lineCap: 'round', interactive: false }).addTo(layer);
     }
     prev = p;
-    const cls = i === idx && !live ? 'now' : done ? 'past' : 'todo';
-    L.marker(p, { zIndexOffset: i === idx ? 3000 : 0, icon: L.divIcon({ className: 'mk-wrap', iconSize: [34, 34], iconAnchor: [17, 17],
-      html: `<div class="shx-st ${cls} ${anim ? 'in' : ''}" style="--d:${k++ * 90}ms"><span>${i + 1}</span>${i === idx && !live ? `<b>${esc(D.author || 'Ici')} est ici</b>` : ''}</div>` }) })
-      .on('click', () => openStep(s.id)).addTo(layer);
   });
-  for (const c of photoClusters()) {
-    const p = c.photos.at(-1);
-    L.marker([c.at.lat, c.at.lng], { zIndexOffset: 1000, icon: L.divIcon({ className: 'mk-wrap', iconSize: [36, 36], iconAnchor: [-4, 46],
-      html: `<div class="shx-pin ${anim ? 'in' : ''}" style="--d:${400 + k++ * 70}ms"><img src="${urlOf(p.path, true)}" alt="">${c.photos.length > 1 ? `<b>${c.photos.length}</b>` : ''}</div>` }) })
-      .on('click', () => openViewer(c.photos[0].id, c.photos.map((x) => x.id))).addTo(layer);
-  }
+  ui.stationPts = steps.map((s, i) => (s.place ? { s, i, status: i === idx && !live ? 'now' : i <= lastDone(steps, today) ? 'past' : 'todo' } : null)).filter(Boolean);
   if (ui.first) {
     const pad = sheetPad();
     if (pts.length > 1) map.fitBounds(pts, { paddingTopLeft: [30, 150], paddingBottomRight: [30, pad + 20], maxZoom: 11 });
     else if (pts.length) map.setView(pts[0], 9);
     else map.setView([30, 0], 2);
+  }
+  drawStations();
+}
+// Stations (faite ✓ / en cours / à venir) regroupées quand elles se touchent, puis photos : comme la carte de l'app
+function drawStations() {
+  if (!stLayer || !ui.stationPts || !map._loaded) return;
+  stLayer.clearLayers();
+  const D = S.data, live = liveLeg(D.steps || []), ll = (pl) => [pl.lat, pl.lng];
+  let groups = ui.stationPts.map((p) => ({ pt: map.latLngToLayerPoint(ll(p.s.place)), items: [p] }));
+  for (let merged = true; merged;) {
+    merged = false;
+    outer: for (let a = 0; a < groups.length; a++) for (let b = a + 1; b < groups.length; b++) {
+      if (groups[a].pt.distanceTo(groups[b].pt) < 46) {
+        const items = [...groups[a].items, ...groups[b].items], pts = items.map((x) => map.latLngToLayerPoint(ll(x.s.place)));
+        groups[a] = { items, pt: L.point(pts.reduce((n, q) => n + q.x, 0) / pts.length, pts.reduce((n, q) => n + q.y, 0) / pts.length) };
+        groups.splice(b, 1); merged = true; break outer;
+      }
+    }
+  }
+  const here = `<b class="mk-here">${esc(D.author || 'Ici')} est ici</b>`;
+  for (const g of groups) {
+    if (g.items.length === 1) {
+      const { s, i, status } = g.items[0];
+      L.marker(ll(s.place), { zIndexOffset: status === 'now' ? 800 : 400, icon: L.divIcon({ className: 'mk-wrap', iconSize: [34, 34], iconAnchor: [17, 17],
+        html: `<div class="mk st-${status} ${status === 'now' ? 'now' : status === 'past' ? 'past' : ''} ${live ? 'calm' : ''}"><span>${status === 'past' ? '✓' : i + 1}</span>${status === 'now' && !live ? here : ''}</div>` }) })
+        .on('click', () => openStep(s.id)).addTo(stLayer);
+    } else {
+      const it = g.items.sort((x, y) => x.i - y.i), nums = it.map((x) => x.i + 1);
+      const lbl = nums.every((n, k) => !k || n === nums[k - 1] + 1) ? `${nums[0]}–${nums.at(-1)}` : nums.length <= 3 ? nums.join(' · ') : `${nums[0]}…${nums.at(-1)}`;
+      const hasNow = it.some((x) => x.status === 'now'), cls = hasNow ? 'now' : it.every((x) => x.status === 'past') ? 'past' : it.every((x) => x.status === 'todo') ? 'todo' : 'mix';
+      const lat = it.reduce((n, x) => n + x.s.place.lat, 0) / it.length, lng = it.reduce((n, x) => n + x.s.place.lng, 0) / it.length;
+      L.marker([lat, lng], { zIndexOffset: 900, icon: L.divIcon({ className: 'mk-wrap', iconSize: [60, 34], iconAnchor: [30, 17], html: `<div class="mk-group ${cls}"><span>${lbl}</span>${hasNow && !live ? here : ''}</div>` }) })
+        .on('click', () => map.flyToBounds(it.map((x) => ll(x.s.place)), { paddingTopLeft: [60, 150], paddingBottomRight: [60, sheetPad() + 30], maxZoom: 13, duration: 0.8 }))
+        .addTo(stLayer);
+    }
+  }
+  // Photos : petites, à côté du point, visibles en zoomant
+  if (map.getZoom() >= 8) for (const c of photoClusters()) {
+    const p = c.photos.at(-1);
+    L.marker([c.at.lat, c.at.lng], { zIndexOffset: 100, icon: L.divIcon({ className: 'mk-wrap', iconSize: [30, 30], iconAnchor: [-6, 40],
+      html: `<div class="mk-photo" style="background-image:url('${urlOf(p.path, true)}')">${c.photos.length > 1 ? `<i>${c.photos.length}</i>` : ''}</div>` }) })
+      .on('click', () => openViewer(c.photos[0].id, c.photos.map((x) => x.id))).addTo(stLayer);
   }
 }
 const sheetPad = () => (innerWidth >= 900 ? 0 : Math.round(innerHeight * 0.48));

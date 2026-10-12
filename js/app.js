@@ -690,10 +690,19 @@ function renderMapProgress(t) {
   } else if (st.key === 'soon' && t.steps[0]) {
     body = `<button class="mp-row" data-act="open-step" data-id="${t.steps[0].id}"><span class="mp-dot"></span><span><small>Première étape</small><b>${esc(t.steps[0].name)}</b></span><i>›</i></button>`;
   }
+  // Barre d'avancement compacte : jour à gauche, une case par étape (touchable), étapes faites à droite
+  const day = st.key === 'now' ? `<b>J${st.day}</b><small>${st.tot ? `sur ${st.tot}` : 'en cours'}</small>`
+    : st.key === 'soon' ? `<b>J-${st.n}</b><small>${fmtDay(tripStart(t), { day: 'numeric', month: 'short' })}</small>`
+      : `<b>Fini</b><small>${plural(n, 'étape')}</small>`;
+  const fresh = el.dataset.drawn !== t.id;
+  el.dataset.drawn = t.id;
   el.innerHTML = `
-    <div class="mp-head" data-act="mp-toggle" title="Réduire / agrandir">${head}<span class="mp-count">${done}/${n} étapes faites</span></div>
-    <div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="mp-legend"><span><i class="lgd done"></i>Fait</span><span><i class="lgd now"></i>Aujourd’hui</span><span><i class="lgd todo"></i>À venir</span></div>`;
+    <div class="mpx ${fresh ? 'fresh' : ''}">
+      <div class="mpx-day">${day}</div>
+      <div class="mpx-track" role="list" aria-label="Avancement des étapes">${t.steps.map((s, i) => `<button class="mpx-seg ${states[i]}" role="listitem" data-act="focus-step" data-id="${s.id}" style="--i:${i}" aria-label="${i + 1}. ${esc(s.name || 'Étape')}" title="${i + 1}. ${esc(s.name || 'Étape')}"><i></i></button>`).join('')}</div>
+      <div class="mpx-count"><b>${done}</b><small>/${n}</small></div>
+    </div>
+    <div class="mp-legend"><span><i class="lgd done"></i>Fait</span><span><i class="lgd now"></i>Aujourd’hui</span><span><i class="lgd todo"></i>À venir</span><em>Touchez une case pour y aller</em></div>`;
 }
 
 function applyBasemap() {
@@ -1665,7 +1674,7 @@ A.nights = (el) => {
 A['focus-step'] = (el) => {
   const s = T().steps.find((x) => x.id === el.dataset.id);
   if (isMobile()) { ui.drawer = null; $('#drawer-root').classList.remove('open'); $('#drawer-root').innerHTML = ''; go(`#/trip/${ui.tripId}/map`); }
-  setTimeout(() => mapView?.focus(s.place, 13), 120);
+  if (s?.place) setTimeout(() => mapView?.focus(s.place, 13), 120);
 };
 
 A['clear-transport'] = () => {

@@ -1854,3 +1854,32 @@ textarea.lb-caption { resize: none; font-size: 16px; }
 .bottomnav .bn.active { color: #10231f; }
 .bottomnav .bn.active::before { background: #5fd0c8; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .trip-top, :root:not([data-theme="light"]) .bottomnav { background: #0b1916; } }
+
+/* =====================================================================
+   Carte : barre d'avancement compacte (une ligne), animée et touchable
+   ===================================================================== */
+.map-progress { padding: 10px 12px 8px; gap: 6px; }
+.mpx { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
+.mpx-day { display: flex; flex-direction: column; line-height: 1; min-width: 44px; }
+.mpx-day b { font: 800 21px/1 var(--font-display); font-stretch: 110%; letter-spacing: -.02em; color: var(--text); }
+.mpx-day small { font: 500 9.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+.mpx-count { display: flex; align-items: baseline; gap: 1px; }
+.mpx-count b { font: 800 19px var(--font-display); color: var(--text); }
+.mpx-count small { font: 500 11px var(--mono); color: var(--muted); }
+.mpx-track { display: flex; gap: 3px; align-items: center; min-width: 0; }
+.mpx-seg { flex: 1; min-width: 6px; height: 26px; border: 0; padding: 0; background: none; cursor: pointer; display: grid; align-items: center; }
+.mpx-seg i { display: block; height: 8px; border-radius: 4px; background: var(--surface-2); transition: transform .2s var(--spring), height .2s; transform-origin: left; }
+.mpx-seg.done i { background: var(--text); }
+.mpx-seg.now i { background: #5fd0c8; height: 14px; box-shadow: 0 0 0 2px #10231f inset, 0 0 0 4px rgba(95, 208, 200, .35); animation: segNow 2.2s ease-in-out infinite; }
+.mpx-seg.todo i { background: repeating-linear-gradient(90deg, var(--line) 0 4px, transparent 4px 7px); box-shadow: inset 0 0 0 1px var(--line); }
+.mpx-seg:active i { transform: scaleY(1.6); }
+@keyframes segNow { 50% { box-shadow: 0 0 0 2px #10231f inset, 0 0 0 7px rgba(95, 208, 200, 0); } }
+/* À l'ouverture : les cases se remplissent l'une après l'autre */
+.mpx.fresh .mpx-seg i { animation: segIn .5s var(--ease) both; animation-delay: calc(var(--i) * 70ms); }
+.mpx.fresh .mpx-seg.now i { animation: segIn .5s var(--ease) both calc(var(--i) * 70ms), segNow 2.2s ease-in-out infinite calc(var(--i) * 70ms + .5s); }
+@keyframes segIn { from { transform: scaleX(0); opacity: 0; } }
+.mpx.fresh .mpx-day, .mpx.fresh .mpx-count { animation: rise .45s var(--ease) both; }
+.map-progress .mp-legend { gap: 10px; font-size: 9.5px; flex-wrap: nowrap; align-items: center; }
+.map-progress .mp-legend em { margin-left: auto; font-style: normal; text-transform: none; letter-spacing: 0; opacity: .7; white-space: nowrap; }
+.map-progress .mp-head, .map-progress > .bar { display: none; }
+@media (max-width: 380px) { .map-progress .mp-legend em { display: none; } }
