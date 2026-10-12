@@ -746,7 +746,7 @@ function stepCardHTML(t, s, i, cur, today) {
   const nph = stepPhotos(t, s).length;
   if (nph) chips.push(`<button class="chip" data-act="open-step" data-id="${s.id}" data-focus="photos">📸 ${nph}</button>`);
   if (cost) chips.push(`<span class="chip">💶 ${fmtMoney(cost, t.currency)}</span>`);
-  const rx = reactions(t, [`step:${s.id}`, ...stepPhotos(t, s).map((p) => `photo:${p.id}`), ...t.photos.filter((p) => p.stepId === s.id && p.onLeg).map((p) => `photo:${p.id}`)]);
+  const rx = reactions(t, [`step:${s.id}`]);
   return `<article class="step ${status} ${ui.drawer?.type === 'step' && ui.drawer.id === s.id ? 'sel' : ''}" data-id="${s.id}">
     <div class="step-rail"><span class="num">${status === 'past' ? '✓' : i + 1}</span></div>
     <div class="step-main" data-act="open-step" data-id="${s.id}" tabindex="0">
@@ -2871,10 +2871,10 @@ document.addEventListener('change', async (e) => {
   await addPhotos(files, { stepId: input.dataset.step || null, onLeg: input.dataset.leg === '1', day: input.dataset.day || null });
 });
 
-function photoStripHTML(t, s, max = 4) {
-  const ph = stepPhotos(t, s);
+function photoStripHTML(t, s) {
+  const ph = [...t.photos.filter((p) => p.stepId === s.id && p.onLeg), ...stepPhotos(t, s)].filter((p, i, a) => a.indexOf(p) === i);
   if (!ph.length) return '';
-  return `<div class="ph-strip">${ph.slice(0, max).map((p, i) => `<button class="ph-mini ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}"><img data-thumb="${p.thumbId}" alt="">${i === max - 1 && ph.length > max ? `<b>+${ph.length - max}</b>` : ''}</button>`).join('')}</div>`;
+  return `<div class="ph-strip ${ph.length > 4 ? 'scroll' : ''}">${ph.map((p) => { const r = reactions(t, [`photo:${p.id}`]); return `<button class="ph-mini ${isVideo(p) ? 'vid' : ''} ${r ? 'has-rx' : ''}" data-act="view-photo" data-id="${p.id}" ${r ? 'data-cm="1"' : ''} aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="">${isVideo(p) ? '<em class="ph-play">▶</em>' : ''}${r ? `<span class="ph-rx">${rxHTML(r)}</span>` : ''}</button>`; }).join('')}</div>`;
 }
 
 function photosPaneHTML(t, s, leg = false, day = null) {
@@ -2890,10 +2890,11 @@ function photosPaneHTML(t, s, leg = false, day = null) {
 
 // ---------- Visionneuse plein écran
 const GEAR = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
-function viewPhoto(id) {
+function viewPhoto(id, toComments = false) {
   const t = T();
   const p = t.photos.find((x) => x.id === id);
   if (!p) return;
+  if (t.share) { t.share.seenPhotos = { ...(t.share.seenPhotos || {}), [id]: Date.now() }; save(); setTimeout(() => { renderTripHeader(t); if ($('#trip-layout')) renderPanel(); if (ui.drawer?.type === 'step' && ui.dtab === 'photos') renderDrawer(); }, 0); }
   const s = t.steps.find((x) => x.id === p.stepId);
   const list = s ? stepPhotos(t, s, !!p.onLeg) : t.photos;
   const i = list.indexOf(p);
@@ -2918,6 +2919,7 @@ function viewPhoto(id) {
     </div>`, async (m) => {
     m.closest('#modal-root').classList.add('dark');
     renderLbThread();
+    if (toComments) setTimeout(() => $('#lb-thread', m)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
     bindFields($('#lb-info', m), p, () => refresh({ map: false, header: false }));
     $('#lb-step', m).onchange = (e) => { p.stepId = e.target.value; commit(); viewPhoto(p.id); if (ui.drawer) renderDrawer(); toast('Photo déplacée'); };
     // Molette : ouvre / ferme le petit menu de la photo
@@ -2941,7 +2943,7 @@ function viewPhoto(id) {
     });
   }, 'lightbox');
 }
-A['view-photo'] = (el) => viewPhoto(el.dataset.id);
+A['view-photo'] = (el) => viewPhoto(el.dataset.id, !!el.dataset.cm);
 document.addEventListener('keydown', (e) => {
   if (!$('#lb')) return;
   if (e.target.matches('input, textarea, select')) return;
@@ -2990,11 +2992,12 @@ const RX_CHAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.5a2
 function reactions(t, targets) {
   const f = fb[t.id];
   if (!f) return null;
-  const set = new Set(targets), seen = t.share?.notifSeenAt || 0;
+  const set = new Set(targets), seen0 = t.share?.notifSeenAt || 0, seenPh = t.share?.seenPhotos || {};
+  const seenOf = (target) => Math.max(seen0, seenPh[target.slice(6)] || 0);
   const likes = f.likes.filter((l) => set.has(l.target));
   const comments = f.comments.filter((c) => set.has(c.target) && !c.is_owner);
   if (!likes.length && !comments.length) return null;
-  const isNew = (x) => x.created_at && new Date(x.created_at).getTime() > seen;
+  const isNew = (x) => x.created_at && new Date(x.created_at).getTime() > (x.target.startsWith('photo:') ? seenOf(x.target) : seen0);
   const nl = likes.filter(isNew).length, nc = comments.filter(isNew).length;
   return nl || nc ? { likes: nl, comments: nc } : null;
 }
@@ -3014,8 +3017,8 @@ function notifList(t) {
   return items.sort((a, b) => b.at.localeCompare(a.at));
 }
 function unreadNotifs(t) {
-  const seen = t.share?.notifSeenAt || 0;
-  return notifList(t).filter((n) => new Date(n.at).getTime() > seen).length;
+  const seen = t.share?.notifSeenAt || 0, ph = t.share?.seenPhotos || {};
+  return notifList(t).filter((n) => new Date(n.at).getTime() > Math.max(seen, n.target.startsWith('photo:') ? ph[n.target.slice(6)] || 0 : 0)).length;
 }
 A.notifs = () => {
   const t = T();
