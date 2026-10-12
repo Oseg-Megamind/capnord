@@ -16,7 +16,22 @@ const root = $('#sh');
 const token = new URLSearchParams(location.search).get('t') || location.hash.slice(1);
 const me = deviceId();
 let S = null; // { data, comments, likes, updated_at }
-const ui = { view: 'home', stepId: null, sheet: 'peek', viewer: null, first: true };
+const ui = { view: null, stepId: null, sheet: 'closed', viewer: null, first: true };
+
+// Mes commentaires sur ce voyage (ids) et date de la dernière lecture des notifications
+const mineKey = () => `etapa-mine-${token || DEMO}`, seenKey = () => `etapa-seen-${token || DEMO}`;
+const myIds = () => { try { return JSON.parse(localStorage.getItem(mineKey()) || '[]'); } catch { return ui.demoMine || []; } };
+const addMine = (id) => { try { localStorage.setItem(mineKey(), JSON.stringify([...myIds(), id])); } catch { /* privé */ } };
+const seenAt = () => { try { return +localStorage.getItem(seenKey()) || 0; } catch { return 0; } };
+function myNotifs() {
+  const mine = new Set([...myIds(), ...(ui.demoMine || [])]);
+  const out = [
+    ...S.comments.filter((c) => c.parent_id && mine.has(c.parent_id) && !mine.has(c.id)).map((c) => ({ kind: 'reply', who: c.author, owner: c.is_owner, body: c.body, target: c.target, at: c.created_at })),
+    ...S.likes.filter((l) => l.target.startsWith('comment:') && mine.has(l.target.slice(8)) && l.device !== me).map((l) => ({ kind: 'like', who: l.author || 'Quelqu’un', target: (S.comments.find((c) => c.id === l.target.slice(8)) || {}).target || 'trip', at: l.created_at || '' })),
+  ];
+  return out.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+}
+const unread = () => myNotifs().filter((n) => n.at && new Date(n.at).getTime() > seenAt()).length;
 
 const getName = () => { try { return localStorage.getItem('voyage-name') || ''; } catch { return ''; } };
 const setName = (n) => { try { localStorage.setItem('voyage-name', n); } catch { /* privé */ } };
@@ -30,6 +45,7 @@ const P = {
   play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
   send: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l16-8-6 16-2.5-6.5z"/></svg>',
 };
+const BELL = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
 
 function toast(msg) {
   const el = document.createElement('div');
@@ -132,7 +148,8 @@ function render() {
     root.innerHTML = `
       <div id="sh-map" class="shm"></div>
       <header class="shx-top" id="shx-top"></header>
-      <section class="shx-sheet ${ui.sheet}" id="sheet" aria-label="Carnet de route">
+      <nav class="sx-bar" id="sx-bar" aria-label="Étapes du voyage"></nav>
+      <section class="shx-sheet ${ui.sheet}" id="sheet" aria-label="Détail">
         <div class="shx-grip" id="grip" aria-hidden="true"><i></i></div>
         <div class="shx-body" id="sheet-body"></div>
       </section>`;
@@ -141,6 +158,7 @@ function render() {
     mountSheetDrag();
   }
   renderTop();
+  renderBar();
   renderSheet();
   drawMap();
   if (ui.first) welcome(D);
@@ -163,14 +181,13 @@ function welcome(D) {
 
 function renderTop() {
   const D = S.data, st = status(D), steps = D.steps || [], idx = currentIdx(steps), cur = steps[idx], live = liveLeg(steps);
-  const totalLikes = S.likes.length;
-  $('#shx-top').innerHTML = `
+    $('#shx-top').innerHTML = `
     <div class="shx-who"><span class="shx-av">${esc((D.author || '?').slice(0, 1).toUpperCase())}</span>
       <div><small>Le voyage de ${esc(D.author || 'vos proches')}</small><h1>${esc(D.name)}</h1></div></div>
     <div class="shx-status">
       <span class="shx-chip st-${st.key}">${st.key === 'now' ? '<i class="pulse"></i>' : ''}${st.label}</span>
       ${live ? `<span class="shx-here live">${icon(steps[live.i].mode || 'route')} En route vers ${esc(steps[live.i].name)}</span>` : cur ? `<span class="shx-here">${icon('pin')} ${esc(cur.name)}</span>` : ''}
-      <span class="shx-love">${P.heart}<b>${totalLikes}</b></span>
+      <span class="shx-acts"><button class="shx-act" data-panel="guest" aria-label="Écrire à ${esc(D.author || 'au voyageur')}">${P.chat}</button><button class="shx-act" data-panel="notifs" aria-label="Notifications">${BELL}${unread() ? `<i class="nb">${unread()}</i>` : ''}</button></span>
     </div>
     ${st.tot ? `<div class="shx-prog"><i style="--w:${Math.min(100, (st.day / st.tot) * 100)}%"></i></div>` : ''}`;
 }
@@ -179,7 +196,7 @@ function renderSheet() {
   const body = $('#sheet-body');
   const keep = body.scrollTop;
   const strip0 = $('#strip')?.scrollLeft;
-  body.innerHTML = ui.view === 'step' && stepById(ui.stepId) ? stepView(stepById(ui.stepId)) : homeView();
+  body.innerHTML = ui.view === 'step' && stepById(ui.stepId) ? stepView(stepById(ui.stepId)) : ui.view === 'guest' ? guestView() : ui.view === 'notifs' ? notifsView() : '';
   body.scrollTop = ui.first ? 0 : keep;
   const strip = $('#strip');
   if (strip) {
@@ -236,6 +253,47 @@ function homeView() {
     <p class="shx-foot">Créé avec <b>Etapa</b></p>`;
 }
 
+// ---------- Barrette des étapes : un point par étape, photos au-dessus, nom en dessous
+function renderBar() {
+  const D = S.data, steps = D.steps || [], idx = currentIdx(steps), ld = lastDone(steps), live = liveLeg(steps);
+  const bar = $('#sx-bar');
+  const keep = $('#sx-track')?.scrollLeft;
+  bar.innerHTML = `<div class="sx-track" id="sx-track">${steps.map((s, i) => {
+    const st = live && i === live.i ? 'go' : i === idx && !live ? 'now' : i <= ld ? 'done' : 'todo';
+    const n = stepPhotos(s.id).length;
+    return `<button class="sx-pt ${st} ${ui.stepId === s.id ? 'sel' : ''}" data-step="${s.id}" style="--i:${i}" aria-label="${i + 1}. ${esc(s.name)}">
+      <small class="sx-ph">${n ? `${icon('camera')}${n}` : ''}</small>
+      <span class="sx-dot"><em>${st === 'done' ? '✓' : i + 1}</em></span>
+      <b class="sx-name">${esc(s.name)}</b>
+    </button>`;
+  }).join('')}</div>`;
+  const tr = $('#sx-track');
+  if (keep != null && !ui.first) tr.scrollLeft = keep;
+  else { const c = $('.sx-pt.now, .sx-pt.go', tr) || $$('.sx-pt.done', tr).at(-1); if (c) tr.scrollLeft = c.offsetLeft - (tr.clientWidth - c.offsetWidth) / 2; }
+}
+
+function guestView() {
+  const D = S.data;
+  return `<div class="shx-step-h"><button class="shx-back" data-close-sheet aria-label="Fermer">${P.close}</button><div><small>Livre d’or</small><h2>Un mot pour ${esc(D.author || 'les voyageurs')}</h2></div></div>
+    <div class="shx-guest">${thread('trip')}</div>`;
+}
+function notifsView() {
+  const list = myNotifs(), seen = seenAt();
+  try { localStorage.setItem(seenKey(), String(Date.now())); } catch { /* privé */ }
+  setTimeout(renderTop, 50);
+  const where = (t) => (t === 'trip' ? 'le livre d’or' : t.startsWith('step:') ? `l’étape ${esc(stepById(t.slice(5))?.name || '')}` : 'une photo');
+  return `<div class="shx-step-h"><button class="shx-back" data-close-sheet aria-label="Fermer">${P.close}</button><div><small>Pour vous</small><h2>Notifications</h2></div></div>
+    <div class="sx-notifs">${list.map((n) => `<button class="sx-nt ${n.at && new Date(n.at).getTime() > seen ? 'new' : ''}" data-goto="${esc(n.target)}">
+      <span class="cm-av ${n.owner ? 'own' : ''}">${esc((n.who || '?').slice(0, 1).toUpperCase())}<i class="${n.kind}">${n.kind === 'like' ? P.heart : P.chat}</i></span>
+      <span><b>${esc(n.who)}</b> ${n.kind === 'like' ? 'a aimé votre commentaire' : 'vous a répondu'} sur ${where(n.target)}${n.body ? `<em>« ${esc(n.body.slice(0, 100))} »</em>` : ''}<small>${n.at ? ago(n.at) : ''}</small></span>
+    </button>`).join('') || '<div class="shx-empty"><p>Rien de nouveau. Quand le voyageur vous répondra ou aimera vos commentaires, vous le verrez ici.</p></div>'}</div>`;
+}
+function openPanel(view) {
+  ui.view = view; ui.stepId = null;
+  renderSheet(); renderBar();
+  setSheet(innerWidth < 900 ? 'half' : 'full');
+}
+
 function momentCard(p, k = 0) {
   const s = stepById(p.stepId), t = `photo:${p.id}`;
   return `<article class="shx-moment" style="--i:${k}">
@@ -254,7 +312,7 @@ function stepView(s) {
   const grid = (list, n0 = 0) => `<div class="shx-grid n${Math.min(list.length, 3)}">${list.map((p, k) => `<button class="shx-g" data-photo="${p.id}" data-scope="step" style="--i:${k + n0}"><img src="${urlOf(p.path, true)}" alt="" loading="lazy">${p.kind === 'video' ? `<em class="shx-play sm">${P.play}</em>` : ''}${likesOf('photo:' + p.id).length || commentsOf('photo:' + p.id).length ? `<i>${likesOf('photo:' + p.id).length ? P.heart + likesOf('photo:' + p.id).length : ''}${commentsOf('photo:' + p.id).length ? ' ' + P.chat + commentsOf('photo:' + p.id).length : ''}</i>` : ''}</button>`).join('')}</div>`;
   return `
     <div class="shx-step-h">
-      <button class="shx-back" data-home aria-label="Retour">${P.back}</button>
+      <button class="shx-back" data-close-sheet aria-label="Fermer">${P.close}</button>
       <div><small>Étape ${i + 1} sur ${steps.length}${i === idx ? ' · ici maintenant' : ''}</small><h2>${esc(s.name)}</h2>
         <p>${i === 0 && !s.arrival ? 'Point de départ' + (D.start ? ' · ' + stepDate(s, i, D) : '') : stepDate(s, i, D, true) || 'Étape passée'}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</p></div>
     </div>
@@ -279,7 +337,7 @@ function thread(target) {
   const one = (c) => `<div class="cm ${c.is_owner ? 'own' : ''}">
     <span class="cm-av">${esc((c.author || '?').slice(0, 1).toUpperCase())}</span>
     <div><div class="cm-b"><b>${esc(c.author)}${c.is_owner ? ' <em>voyageur</em>' : ''}</b><p>${esc(c.body)}</p></div>
-    <small>${ago(c.created_at)} · <button class="link" data-reply="${c.id}" data-who="${esc(c.author)}">Répondre</button></small></div>
+    <small>${ago(c.created_at)} · <button class="link" data-reply="${c.id}" data-who="${esc(c.author)}">Répondre</button> <button class="cm-like ${iLike('comment:' + c.id) ? 'on' : ''}" data-like="comment:${c.id}" aria-label="Aimer ce commentaire">${P.heart}<span>${likesOf('comment:' + c.id).length || ''}</span></button></small></div>
   </div>`;
   return `<div class="thread" data-thread="${target}">
     ${roots.map((c) => `<div class="cm-th">${one(c)}${list.filter((r) => r.parent_id === c.id).map((r) => `<div class="cm-rep">${one(r)}</div>`).join('')}</div>`).join('')}
@@ -302,7 +360,7 @@ function drawMap() {
     stLayer = L.layerGroup().addTo(map);
     map.on('zoomend', () => drawStations());
     // Toucher ou déplacer la carte : elle passe en grand, le tiroir se range en bas
-    map.on('click dragstart zoomstart', (e) => { if (e.type !== 'zoomstart' || e.originalEvent) setSheet('mini'); });
+    map.on('click', () => { if (ui.sheet !== 'closed') closeSheet(); });
   }
   layer.clearLayers();
   const anim = ui.first;
@@ -379,7 +437,7 @@ function drawStations() {
       .on('click', () => openViewer(c.photos[0].id, c.photos.map((x) => x.id))).addTo(stLayer);
   }
 }
-const sheetPad = () => (innerWidth >= 900 ? 0 : Math.round(innerHeight * 0.48));
+const sheetPad = () => (innerWidth >= 900 ? 0 : ui.sheet === 'closed' ? 150 : Math.round(innerHeight * 0.55));
 // Vole jusqu'à un lieu en le gardant au-dessus du tiroir
 function flyTo(place, zoom = 11) {
   if (!place) return;
@@ -389,7 +447,8 @@ function flyTo(place, zoom = 11) {
 }
 
 // ---------- Tiroir : glisser pour l'agrandir ou le réduire
-function setSheet(s) { ui.sheet = s; $('#sheet').className = `shx-sheet ${s}`; }
+function setSheet(s) { ui.sheet = s; $('#sheet').className = `shx-sheet ${s}`; document.body.classList.toggle('sheet-open', s !== 'closed'); }
+function closeSheet() { setSheet('closed'); ui.view = null; ui.stepId = null; renderBar(); }
 function mountSheetDrag() {
   const sheet = $('#sheet'), grip = $('#grip'), body = $('#sheet-body');
   let y0 = null, dy = 0, t0 = 0;
@@ -399,11 +458,9 @@ function mountSheetDrag() {
     if (y0 == null) return;
     sheet.style.transition = ''; sheet.style.removeProperty('--drag');
     const fast = Math.abs(dy) / Math.max(1, Date.now() - t0) > 0.5;
-    const order = ['mini', 'peek', 'full'];
-    const k = Math.max(0, order.indexOf(ui.sheet === 'half' ? 'peek' : ui.sheet));
-    if (Math.abs(dy) < 6) setSheet(ui.sheet === 'mini' ? 'peek' : ui.sheet === 'full' ? 'peek' : 'full');
-    else if (dy < -60 || (fast && dy < 0)) setSheet(order[Math.min(2, k + (dy < -260 ? 2 : 1))]);
-    else if (dy > 60 || (fast && dy > 0)) setSheet(order[Math.max(0, k - (dy > 260 ? 2 : 1))]);
+    if (Math.abs(dy) < 6) setSheet(ui.sheet === 'full' ? 'half' : 'full');
+    else if (dy < -60 || (fast && dy < 0)) setSheet('full');
+    else if (dy > 60 || (fast && dy > 0)) { if (ui.sheet === 'full' && dy < 260) setSheet('half'); else closeSheet(); }
     y0 = null;
   };
   grip.addEventListener('touchstart', (e) => start(e.touches[0].clientY), { passive: true });
@@ -416,8 +473,8 @@ function mountSheetDrag() {
   body.addEventListener('touchmove', (e) => {
     if (by0 == null) return;
     const d = e.touches[0].clientY - by0;
-    if ((ui.sheet === 'peek' || ui.sheet === 'mini') && d < -30) { setSheet(ui.sheet === 'mini' ? 'peek' : 'full'); by0 = null; }
-    else if (ui.sheet === 'full' && d > 70 && body.scrollTop <= 0) { setSheet('peek'); by0 = null; }
+    if (ui.sheet === 'half' && d < -30) { setSheet('full'); by0 = null; }
+    else if (d > 80 && body.scrollTop <= 0) { if (ui.sheet === 'full') setSheet('half'); else closeSheet(); by0 = null; }
   }, { passive: true });
 }
 
@@ -427,9 +484,9 @@ function openStep(id) {
   ui.view = 'step'; ui.stepId = id;
   const body = $('#sheet-body');
   body.classList.remove('slide-in'); void body.offsetWidth; body.classList.add('slide-in');
-  renderSheet();
+  renderSheet(); renderBar();
   body.scrollTop = 0;
-  if (ui.sheet !== 'full' && innerWidth < 900) setSheet('half');
+  if (ui.sheet !== 'full') setSheet('half');
   flyTo(s.place, 12);
 }
 function goHome() {
@@ -508,8 +565,16 @@ async function doLike(t) {
 }
 
 document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-step],[data-home],[data-photo],[data-like],[data-vclose],[data-vgo],[data-vcm],[data-reply],[data-cancel-reply]');
+  const el = e.target.closest('[data-step],[data-home],[data-photo],[data-like],[data-vclose],[data-vgo],[data-vcm],[data-reply],[data-cancel-reply],[data-panel],[data-close-sheet],[data-goto]');
   if (!el) return;
+  if (el.dataset.panel) return ui.view === el.dataset.panel && ui.sheet !== 'closed' ? closeSheet() : openPanel(el.dataset.panel);
+  if (el.hasAttribute('data-close-sheet')) return closeSheet();
+  if (el.dataset.goto) {
+    const t = el.dataset.goto;
+    if (t === 'trip') return openPanel('guest');
+    if (t.startsWith('step:')) return openStep(t.slice(5));
+    if (t.startsWith('photo:')) { openViewer(t.slice(6)); ui.viewer.cm = true; return renderViewer(); }
+  }
   if (el.dataset.like) return doLike(el.dataset.like);
   if (el.dataset.step) return openStep(el.dataset.step);
   if (el.hasAttribute('data-home')) return goHome();
@@ -555,6 +620,7 @@ document.addEventListener('submit', async (e) => {
       ? { id: Math.random().toString(36).slice(2), target: form.dataset.target, parent_id: form.dataset.parent || null, author: name, body, is_owner: false, created_at: new Date().toISOString() }
       : await addComment(token, form.dataset.target, form.dataset.parent || null, name, body);
     S.comments.push({ ...c, device: me });
+    addMine(c.id); (ui.demoMine ||= []).push(c.id);
     document.activeElement?.blur();
     if (ui.viewer) renderViewer(); else renderSheet();
     renderTop();
@@ -604,13 +670,16 @@ async function startDemo() {
       { id: 'c1', target: 'trip', parent_id: null, author: 'Maman', body: 'Profitez bien mes chéris ! Envoyez des nouvelles', is_owner: false, created_at: h(30) },
       { id: 'c1r', target: 'trip', parent_id: 'c1', author: data.author, body: 'Promis ! Tout se passe super bien', is_owner: true, created_at: h(28) },
       ...(firstStep ? [{ id: 'c2', target: `step:${firstStep.id}`, parent_id: null, author: 'Léa', body: 'Trop jalouse ! Vous avez testé les pastéis ?', is_owner: false, created_at: h(5) }] : []),
-      ...(firstPhoto ? [{ id: 'c3', target: `photo:${firstPhoto.id}`, parent_id: null, author: 'Tom', body: 'Quelle lumière sur cette photo !', is_owner: false, created_at: h(2) }] : []),
+      ...(firstPhoto ? [{ id: 'c3', target: `photo:${firstPhoto.id}`, parent_id: null, author: 'Vous', body: 'Quelle lumière sur cette photo !', is_owner: false, created_at: h(2) },
+        { id: 'c3r', target: `photo:${firstPhoto.id}`, parent_id: 'c3', author: data.author, body: 'Merci ! On a eu de la chance avec le soleil', is_owner: true, created_at: h(1) }] : []),
     ],
     likes: [
       ...(firstStep ? ['d1', 'd2', 'd3'].map((device) => ({ target: `step:${firstStep.id}`, device, author: '' })) : []),
       ...(firstPhoto ? ['d1', 'd4'].map((device) => ({ target: `photo:${firstPhoto.id}`, device, author: '' })) : []),
+      ...(firstPhoto ? [{ target: 'comment:c3', device: 'owner', author: data.author, created_at: h(0.5) }] : []),
     ],
   };
+  ui.demoMine = ['c3'];
   render();
   const b = document.createElement('div');
   b.className = 'demo-banner';
