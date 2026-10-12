@@ -695,3 +695,22 @@ else {
   setInterval(() => document.visibilityState === 'visible' && load(), 45000);
   document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && load());
 }
+
+// Clavier mobile : la feuille / le visualiseur se calent au-dessus du clavier pour garder le champ visible
+(function keyboardLift() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const root = document.documentElement;
+  const sync = () => {
+    const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    const open = kb > 80 && document.activeElement?.matches?.('input, textarea');
+    root.style.setProperty('--vvh', `${vv.height}px`);
+    root.style.setProperty('--vvt', `${vv.offsetTop}px`);
+    document.body.classList.toggle('kb-open', !!open);
+    if (open) requestAnimationFrame(() => document.activeElement?.scrollIntoView?.({ block: 'nearest' }));
+  };
+  vv.addEventListener('resize', sync);
+  vv.addEventListener('scroll', sync);
+  document.addEventListener('focusin', () => setTimeout(sync, 60));
+  document.addEventListener('focusout', () => setTimeout(sync, 60));
+})();
