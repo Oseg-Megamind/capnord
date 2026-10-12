@@ -404,3 +404,11 @@ body.kb-open .shx-welcome { display: none; }
 .shx-v-capbox .shx-av { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #5fd0c8; color: #10231f; font: 800 12px var(--font-display); }
 .shx-v-capbox .shx-v-cap { margin: 0; font-style: italic; }
 .shx-v-capbox .shx-v-cap b { display: block; font: 700 13px var(--font-display); font-style: normal; color: #5fd0c8; margin-bottom: 1px; }
+
+/* Visionneuse : la photo occupe toujours tout l'écran ; en bas, j'aime + commentaires ; on fait défiler pour lire */
+.shx-viewer { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.shx-viewer > * { flex: none; }
+.shx-v-top { position: sticky; top: 0; z-index: 3; background: linear-gradient(#050a09 70%, rgba(5, 10, 9, 0)); }
+.shx-viewer .shx-v-media { flex: none; height: calc(100dvh - 150px - var(--safe-t) - var(--safe-b)); min-height: 280px; }
+.shx-viewer .shx-v-info { flex: none; max-height: none; overflow: visible; background: #050a09; padding-bottom: calc(24px + var(--safe-b)); }
+.shx-viewer .shx-v-thread { display: block; min-height: 40dvh; }

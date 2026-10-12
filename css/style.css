@@ -1981,3 +1981,12 @@ button.step-rx { background: none; border: 0; padding: 2px; cursor: pointer; fon
 .ph-dot svg { width: 10px; height: 10px; fill: #fff; stroke: none; }
 .ph-grid .ph .ph-dot { top: 4px; right: 4px; border-color: #fff; }
 .ph-strip .ph-mini.has-rx img { box-shadow: none; }
+/* Visionneuse : photo plein écran, j'aime et nombre de commentaires en bas ; on fait défiler pour lire les commentaires */
+.lb { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: block; }
+.lb-img { height: calc(100dvh - 120px - var(--safe-b)); min-height: 280px; }
+.lb-info { max-height: none !important; overflow: visible !important; padding-bottom: calc(28px + var(--safe-b)); }
+.lb-close, .lb-gear { position: fixed !important; z-index: 5; }
+.lb-menu { position: fixed !important; z-index: 6; }
+.lb-thread { min-height: 30dvh; }
+.lb-social { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lb-cm-go { margin-left: auto; border: 0; background: rgba(255, 255, 255, .12); color: #fff; border-radius: 99px; padding: 4px 10px; font: 600 12px var(--font-body, inherit); }

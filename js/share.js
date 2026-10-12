@@ -581,7 +581,8 @@ document.addEventListener('click', (e) => {
   if (el.dataset.photo) { openViewer(el.dataset.photo); if (el.dataset.cm) { ui.viewer.cm = true; renderViewer(); $('.shx-v-thread [data-body]')?.focus(); } return; }
   if (el.hasAttribute('data-vclose')) return closeViewer();
   if (el.dataset.vgo) { ui.viewer.id = el.dataset.vgo; return renderViewer(); }
-  if (el.hasAttribute('data-vcm')) { ui.viewer.cm = !ui.viewer.cm; $('.shx-viewer').classList.toggle('cm-open', ui.viewer.cm); if (ui.viewer.cm) $('.shx-v-thread [data-body]')?.focus(); return; }
+  // « Commenter » : on fait défiler jusqu'aux commentaires (la photo garde sa taille)
+  if (el.hasAttribute('data-vcm')) { ui.viewer.cm = true; const v = $('.shx-viewer'); v.classList.add('cm-open'); $('.shx-v-thread', v)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); if (!commentsOf(`photo:${ui.viewer.id}`).length) setTimeout(() => $('.shx-v-thread [data-body]')?.focus(), 350); return; }
   if (el.hasAttribute('data-cancel-reply')) {
     const form = el.closest('.cm-form');
     delete form.dataset.parent; $('.cm-replying', form).hidden = true; $('[data-body]', form).placeholder = 'Écrire un commentaire…';

@@ -3101,6 +3101,7 @@ A.notifs = () => {
   pullFeedback(t);
 };
 // Toucher une notification : on ferme la liste et on va droit à la photo (ou l'étape) commentée
+A['lb-cm-go'] = () => $('#lb-thread .thread')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 A['notif-go'] = (el) => {
   const t = T();
   const r = notifResolve(t, el.dataset.target);
@@ -3317,7 +3318,8 @@ function renderLbThread() {
   if (!box || !t) return;
   const target = `photo:${box.dataset.id}`;
   const likes = (fb[t.id]?.likes || []).filter((l) => l.target === target);
-  box.innerHTML = `<div class="lb-social">❤️ ${likes.length}${likes.length ? ` <small>${likes.map((l) => esc(l.author || 'Anonyme')).slice(0, 4).join(', ')}</small>` : ''}</div>${threadHTML(t, target, { compact: true })}`;
+  const nc = (fb[t.id]?.comments || []).filter((c) => c.target === target).length;
+  box.innerHTML = `<div class="lb-social">❤️ ${likes.length}${likes.length ? ` <small>${likes.map((l) => esc(l.author || 'Anonyme')).slice(0, 4).join(', ')}</small>` : ''}${nc ? `<button class="lb-cm-go" data-act="lb-cm-go">${plural(nc, 'commentaire')} ↓</button>` : ''}</div>${threadHTML(t, target, { compact: true })}`;
 }
 
 A.share = () => {
