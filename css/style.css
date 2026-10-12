@@ -1448,3 +1448,27 @@ button.bg-row { cursor: pointer; }
 /* Animations du Budget : seulement à l'ouverture de l'onglet ou d'un sous-onglet */
 .bg2.fresh .bg-row, .bg-pane.anim .bg-row, .bg-pane.anim .bg-stat, .bg-pane.anim .exp-day { animation: rise .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
 .bg2.fresh .bg-bar i, .bg-pane.anim .bg-bar i { animation: grow .7s var(--ease) both; animation-delay: calc(var(--i, 0) * 60ms + .1s); }
+
+/* Convertisseur : devise à gauche de chaque montant, choix libre */
+.qa-amount, .qa-conv { display: flex; align-items: center; gap: 10px; }
+.qa .qa-cur { display: inline-flex; align-items: center; gap: 6px; min-width: 84px; justify-content: center; }
+.qa .qa-cur i { font-style: normal; font-size: 11px; opacity: .7; }
+.qa .qa-cur.to { border-color: var(--line); background: var(--bg); color: var(--ok); }
+.qa-conv { justify-content: flex-start; padding-top: 6px; border-top: 1px dashed var(--line); }
+.qa-conv #qa-out { flex: 1; min-width: 0; font: 800 24px/1.1 var(--font-display); font-stretch: 105%; color: var(--ok); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qa-swap { width: 40px; height: 40px; padding: 0; border-radius: 50%; display: grid; place-items: center; font-size: 18px; transition: transform .35s var(--spring); }
+.qa-swap:active { transform: rotate(180deg) scale(.92); }
+
+/* Liste des devises */
+.cp-search { width: 100%; margin: 4px 0 10px; }
+.cp-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0 14px; }
+.cp-row { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); color: var(--text); text-align: left; cursor: pointer; min-width: 0; }
+.cp-row b { font: 700 15px var(--mono); }
+.cp-row span { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.cp-row.on { border-color: var(--text); background: var(--brand); color: var(--brand-ink); }
+.cp-row.on span { color: #9fb3ad; }
+
+/* Bandeau : dépense par jour */
+.bgh-day { display: flex; gap: 18px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid rgba(230, 236, 230, .14); }
+.bgh-day span { display: flex; flex-direction: column; gap: 1px; }
+.bgh-day b { font: 700 17px var(--font-display); font-variant-numeric: tabular-nums; }

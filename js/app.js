@@ -1713,9 +1713,11 @@ function quickCurs(t) {
   const cs = t.steps[currentStepIdx(t)];
   const local = [stepCurrency(cs), ...t.steps.map(stepCurrency)].find((k) => k && k !== t.currency && curs.includes(k)) || curs.find((k) => k !== t.currency) || t.currency;
   ui.qa ||= {};
-  if (!ui.qa.from || !curs.includes(ui.qa.from)) ui.qa.from = local;
-  const to = ui.qa.from === t.currency ? (local !== t.currency ? local : null) : t.currency;
-  return { curs, from: ui.qa.from, to };
+  const ok = (k) => k && (k === t.currency || k in t.rates);
+  if (!ok(ui.qa.from)) ui.qa.from = local;
+  const from = ui.qa.from;
+  let to = ok(ui.qa.to) && ui.qa.to !== from ? ui.qa.to : from === t.currency ? (local !== t.currency ? local : null) : t.currency;
+  return { curs, from, to, local };
 }
 
 function renderBudget(t) {
@@ -1723,11 +1725,10 @@ function renderBudget(t) {
   const pct = t.budget ? Math.min(100, (c.total / t.budget) * 100) : 0;
   const over = t.budget && c.total > t.budget;
   const days = tripStart(t) && tripEnd(t) ? diffDays(tripStart(t), tripEnd(t)) + 1 : null;
-  const { curs, from, to } = quickCurs(t);
-  const local = from !== cur ? from : to;
+  const { from, to, local: loc0 } = quickCurs(t);
+  const local = loc0 !== cur ? loc0 : null;
   const inLocal = (v) => (local && t.rates[local] ? fmtMoney(v / t.rates[local], local) : '');
-  const tab = ui.btab || 'exp';
-  const rate = (k) => (t.rates[k] ? (1 / t.rates[k]).toLocaleString('fr-FR', { maximumSignificantDigits: 4 }) : '?');
+  const tab = ['exp', 'cats', 'steps'].includes(ui.btab) ? ui.btab : 'exp';
   const catIc = (k) => EXP_CATS[k]?.icon || '💼';
 
   // ----- Contenu des sous-onglets
@@ -1749,28 +1750,6 @@ function renderBudget(t) {
     const max = Math.max(1, ...rows.map(([, v]) => v));
     pane = rows.map(([s, v], i) => `<button class="bg-row" style="--i:${i}" data-act="open-step" data-id="${s.id}"><span class="bg-ic num-ic">${t.steps.indexOf(s) + 1}</span><span class="bg-l"><b>${esc(s.name || 'Étape')}</b><small>${n2(s)}${nights(s) ? ` · ${fmtMoney(v / nights(s), cur)} / nuit` : ''}</small></span><b class="bg-v">${fmtMoney(v, cur)}</b><span class="bg-bar"><i style="--w:${(v / max) * 100}%"></i></span></button>`).join('')
       || '<p class="bg-empty">Aucun coût saisi sur les étapes.</p>';
-  } else {
-    const foreign = [...new Set(t.expenses.map((e) => e.currency).filter((x) => x && x !== cur))];
-    const stat = (v, l) => `<div class="bg-stat"><b>${v}</b><small>${l}</small></div>`;
-    pane = `<div class="bg-stats">
-        ${stat(fmtMoney(c.booked, cur), 'Réservations')}
-        ${stat(fmtMoney(c.paid, cur), 'Déjà payé')}
-        ${stat(fmtMoney(c.spent, cur), 'Dépenses sur place')}
-        ${isRoad(t) ? stat(fmtMoney(c.fuelLeft, cur), 'Carburant à prévoir') : ''}
-        ${t.travelers > 1 ? stat(fmtMoney(c.total / t.travelers, cur), 'Par personne') : ''}
-        ${days ? stat(fmtMoney(c.total / days, cur), 'Par jour') : ''}
-        ${t.expenses.length ? stat(fmtMoney(c.spent / Math.max(1, new Set(t.expenses.map((e) => e.date)).size), cur), 'Sur place, par jour') : ''}
-        ${stat(String(t.expenses.length), 'Dépenses notées')}
-      </div>
-      <h4 class="bg-h">Taux de change <small>valeur en ${cur}</small></h4>
-      <div class="rates">
-        ${[...new Set([...Object.keys(t.rates), ...foreign])].map((k) => `<label class="rate"><span title="${esc(curName(k))}">1 ${k} =<small>${esc(curName(k))}</small></span><input type="number" step="any" min="0" value="${t.rates[k] ?? ''}" data-rate="${k}" inputmode="decimal"><span>${cur}</span><button class="icon-btn sm" data-act="del-rate" data-k="${k}" aria-label="Retirer">✕</button></label>`).join('')}
-      </div>
-      <div class="row-btns">
-        <select id="new-rate"><option value="">＋ Devise…</option>${CURRENCIES.filter((x) => x !== cur && !(x in t.rates)).map((x) => `<option>${x}</option>`).join('')}</select>
-        <button class="btn sm" data-act="update-rates">↻ Taux du jour</button>
-      </div>
-      <small class="hint">${t.ratesAt ? `Taux mis à jour le ${new Date(t.ratesAt).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Taux mis à jour automatiquement quand vous êtes en ligne.'}</small>`;
   }
 
   return `
@@ -1782,24 +1761,29 @@ function renderBudget(t) {
       </div>
       ${t.budget ? `<div class="bgh-bar ${over ? 'over' : ''}"><i style="--w:${pct}%"></i></div>
         <p class="bgh-left ${over ? 'over' : ''}">${over ? 'Dépassement de' : 'Il reste'} <b>${fmtMoney(Math.abs(t.budget - c.total), cur)}</b>${local ? ` · ${inLocal(Math.abs(t.budget - c.total))}` : ''}</p>` : ''}
+      ${days ? `<div class="bgh-day"><span><small class="eyebrow">Par jour</small><b>${fmtMoney(c.total / days, cur)}</b>${local ? `<small class="bgh-loc">${inLocal(c.total / days)}</small>` : ''}</span>${t.budget ? `<span><small class="eyebrow">Budget / jour</small><b>${fmtMoney(t.budget / days, cur)}</b></span>` : ''}${t.travelers > 1 ? `<span><small class="eyebrow">Par personne</small><b>${fmtMoney(c.total / t.travelers, cur)}</b></span>` : ''}</div>` : ''}
     </div>
 
     <section class="qa" aria-label="Convertir et noter une dépense">
       <div class="qa-amount">
+        <button class="qa-cur" data-act="qa-pick" data-side="from" aria-label="Devise du montant">${from} <i aria-hidden="true">▾</i></button>
         <input id="qa-amount" type="text" inputmode="decimal" placeholder="0" value="${esc(ui.qa.amount || '')}" aria-label="Montant" autocomplete="off">
-        <button class="qa-cur" data-act="qa-cycle" aria-label="Changer de devise">${from}</button>
       </div>
-      <div class="qa-conv" id="qa-conv">${to ? `<span id="qa-out">= ${fmtMoney(convTo(t, parseFloat((ui.qa.amount || '0').replace(',', '.')) || 0, from, to) || 0, to)}</span><button class="qa-swap" data-act="qa-swap" aria-label="Inverser">⇄ ${to}</button>` : '<span class="muted">Ajoutez la devise du pays dans Stats pour convertir</span>'}</div>
-      ${to ? `<small class="qa-rate">1 ${cur} = ${rate(local)} ${local}${ui.ratesBusy ? ' · mise à jour…' : t.ratesAt ? ` · taux du ${new Date(t.ratesAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}` : ''}</small>` : ''}
+      <div class="qa-conv" id="qa-conv">
+        <button class="qa-cur to" data-act="qa-pick" data-side="to" aria-label="Convertir en">${to || 'Devise'} <i aria-hidden="true">▾</i></button>
+        <span id="qa-out">${to ? fmtMoney(convTo(t, parseFloat((ui.qa.amount || '0').replace(',', '.')) || 0, from, to) || 0, to) : '—'}</span>
+        ${to ? '<button class="qa-swap" data-act="qa-swap" aria-label="Inverser les devises">⇅</button>' : ''}
+      </div>
+      ${to ? `<small class="qa-rate">1 ${from} = ${(convTo(t, 1, from, to) || 0).toLocaleString('fr-FR', { maximumSignificantDigits: 4 })} ${to}${ui.ratesBusy ? ' · mise à jour…' : t.ratesAt ? ` · taux du ${new Date(t.ratesAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}` : ''}</small>` : ''}
       <div class="qa-cats" role="group" aria-label="Noter en dépense">
         ${Object.entries(EXP_CATS).filter(([k]) => k !== 'fuel' || isRoad(t)).map(([k, v]) => `<button class="qa-cat" data-act="qa-add" data-k="${k}"><span>${v.icon}</span><small>${v.label}</small></button>`).join('')}
       </div>
       <small class="qa-hint">Tapez un montant, puis touchez la catégorie pour l’enregistrer.</small>
     </section>
 
-    <nav class="bg-seg" role="tablist" style="--n:4;--k:${['exp', 'cats', 'steps', 'stats'].indexOf(tab)}">
+    <nav class="bg-seg" role="tablist" style="--n:3;--k:${['exp', 'cats', 'steps'].indexOf(tab)}">
       <i class="bg-seg-ind" aria-hidden="true"></i>
-      ${[['exp', 'Dépenses'], ['cats', 'Catégories'], ['steps', 'Étapes'], ['stats', 'Stats']].map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" data-act="btab" data-k="${k}" role="tab" aria-selected="${tab === k}">${l}</button>`).join('')}
+      ${[['exp', 'Dépenses'], ['cats', 'Catégories'], ['steps', 'Étapes']].map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" data-act="btab" data-k="${k}" role="tab" aria-selected="${tab === k}">${l}</button>`).join('')}
     </nav>
     <div class="bg-pane ${ui.btabAnim ? 'anim' : ''}">${pane}</div>
     <button class="btn ghost full" data-act="add-expense">Dépense détaillée (date, étape, description)</button>
@@ -1815,12 +1799,35 @@ document.addEventListener('input', (e) => {
   ui.qa.amount = e.target.value;
   const { from, to } = quickCurs(t);
   const out = $('#qa-out');
-  if (out && to) out.textContent = `= ${fmtMoney(convTo(t, qaVal(), from, to) || 0, to)}`;
+  if (out && to) out.textContent = fmtMoney(convTo(t, qaVal(), from, to) || 0, to);
   $('.qa')?.classList.toggle('ready', qaVal() > 0);
 });
-A['qa-cycle'] = () => {
-  const t = T(), { curs, from } = quickCurs(t);
-  ui.qa.from = curs[(curs.indexOf(from) + 1) % curs.length];
+// Choix d'une devise (montant saisi ou conversion) : celles du voyage d'abord, puis toutes
+A['qa-pick'] = (el) => {
+  const t = T(), side = el.dataset.side;
+  const { curs, from, to } = quickCurs(t);
+  const cur0 = side === 'from' ? from : to;
+  const mine = [...new Set([...curs, ...t.steps.map(stepCurrency).filter(Boolean)])];
+  const btn = (k) => `<button class="cp-row ${k === cur0 ? 'on' : ''}" data-act="qa-set" data-side="${side}" data-k="${k}"><b>${k}</b><span>${esc(curName(k))}</span></button>`;
+  openModal(`
+    <h2>${side === 'from' ? 'Devise du montant' : 'Convertir en'}</h2>
+    <input class="cp-search" type="search" placeholder="Rechercher (ex : dollar, THB)" aria-label="Rechercher une devise">
+    <small class="eyebrow">Ce voyage</small>
+    <div class="cp-list">${mine.map(btn).join('')}</div>
+    <small class="eyebrow">Toutes les devises</small>
+    <div class="cp-list cp-all">${CURRENCIES.filter((k) => !mine.includes(k)).map(btn).join('')}</div>`, (m) => {
+    $('.cp-search', m).oninput = (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      $$('.cp-row', m).forEach((r) => r.classList.toggle('hidden', !!q && !(r.dataset.k.toLowerCase().includes(q) || r.textContent.toLowerCase().includes(q))));
+    };
+  });
+};
+A['qa-set'] = (el) => {
+  const t = T(), k = el.dataset.k, side = el.dataset.side;
+  const { from, to } = quickCurs(t);
+  if (side === 'from') { if (k === to) ui.qa.to = from; ui.qa.from = k; } else { if (k === from) ui.qa.from = to; ui.qa.to = k; }
+  closeModal();
+  if (k !== t.currency && !(t.rates[k] > 0)) { delete t.rates[k]; ensureCurrency(t, k, { quiet: true }); }
   renderPanel();
 };
 A['qa-swap'] = () => {
@@ -1829,7 +1836,8 @@ A['qa-swap'] = () => {
   // Inverse le sens : le montant converti devient le montant saisi
   const v = convTo(t, qaVal(), from, to);
   ui.qa.from = to;
-  if (qaVal()) ui.qa.amount = String(Math.round(v * 100) / 100).replace('.', ',');
+  ui.qa.to = from;
+  if (qaVal() && v != null) ui.qa.amount = String(Math.round(v * 100) / 100).replace('.', ',');
   renderPanel();
 };
 A['qa-add'] = (el) => {
@@ -2381,7 +2389,6 @@ function docModal(d, isNew = false) {
         <label class="doc-page add"><span>📁<small>Fichier</small></span><input type="file" accept="image/*,application/pdf" multiple data-doc-add="files" hidden></label>
       </div>
       <label class="fld"><span>Nom</span><input data-f="name" placeholder="ex : Passeport, Billet aller, Assurance…" ${isNew ? '' : ''}></label>
-      <div class="pills">${Object.entries(DOC_TYPES).map(([k, v]) => `<label class="pill"><input type="radio" name="dtype" data-f="type" value="${k}"><span>${v.icon} ${v.label}</span></label>`).join('')}</div>
       <div class="grid2">
         <label class="fld"><span>Numéro / référence</span><input data-f="number"></label>
         <label class="fld"><span>Date d’expiration</span><input type="date" data-f="expiry"></label>
@@ -2395,6 +2402,8 @@ function docModal(d, isNew = false) {
       <button class="btn primary" data-act="doc-done" data-id="${d.id}">Terminé</button>
     </div>`, (m) => {
     bindFields($('#f-doc', m), d, () => refresh({ map: false, header: false }));
+    // Le type (pour le picto et l'alerte d'expiration du passeport) se déduit du nom
+    $('[data-f="name"]', m).addEventListener('input', (e) => { d.type = guessDocType(e.target.value); });
     loadThumbs(m);
     $$('[data-doc-add]', m).forEach((input) => (input.onchange = async () => {
       const files = [...input.files];
@@ -2407,9 +2416,16 @@ function docModal(d, isNew = false) {
   });
 }
 
+function guessDocType(name) {
+  const n = (name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const rules = [['passport', /passeport|passport|identite|\bcni\b|\bid\b/], ['visa', /visa|esta|eta\b|evisa/], ['insurance', /assurance|insurance|assistance/], ['license', /permis|licen[cs]e/],
+    ['health', /vaccin|sante|carnet de sante|ordonnance|medical/], ['ticket', /billet|ticket|vol|train|bus|ferry|boarding|carte d.embarquement/], ['booking', /reservation|booking|hotel|airbnb|location|logement/], ['contact', /contact|urgence|ambassade|consulat|telephone/]];
+  return rules.find(([, re]) => re.test(n))?.[0] || 'other';
+}
+
 A['add-doc'] = () => {
   const t = T();
-  const d = { id: uid(), name: '', type: 'passport', number: '', expiry: '', notes: '', files: [], private: true };
+  const d = { id: uid(), name: '', type: 'other', number: '', expiry: '', notes: '', files: [], private: true };
   t.documents.unshift(d);
   commit({ map: false });
   docModal(d, true);
