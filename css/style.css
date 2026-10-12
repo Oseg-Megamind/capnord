@@ -1525,3 +1525,11 @@ button.bg-row { cursor: pointer; }
 @media (min-width: 900px) { .modal > .sheet-grip { display: none; } }
 /* Sur ordinateur la fenêtre est centrée : on garde ce décalage pendant le glisser */
 @media (min-width: 900px) { #modal-root .modal { --sheet-base: translate(-50%, -50%); } }
+
+/* Budget saisi directement dans le bandeau */
+label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; cursor: text; }
+.bgh-bin { display: inline-flex; align-items: baseline; gap: 4px; border-bottom: 1.5px dashed rgba(230, 236, 230, .35); padding-bottom: 2px; }
+.bgh-bin:focus-within { border-bottom-color: #5fd0c8; border-bottom-style: solid; }
+.bg-hero #bgh-budget { width: 6.5ch; min-width: 0; text-align: right; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; color: #e6ece6; font: 700 17px var(--font-display) !important; font-variant-numeric: tabular-nums; outline: none; }
+.bg-hero #bgh-budget::placeholder { color: #5fd0c8; opacity: 1; }
+.bgh-bin i { font-style: normal; font: 600 12px var(--mono); color: #9fb3ad; }

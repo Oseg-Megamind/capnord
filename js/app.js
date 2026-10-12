@@ -1797,7 +1797,7 @@ function renderBudget(t) {
     <div class="bg-hero">
       <div class="bgh-top">
         <div><small class="eyebrow">Coût du voyage</small><div class="bgh-total" data-count="${c.total}" data-cur="${cur}">${fmtMoney(c.total, cur)}</div>${local && c.total ? `<small class="bgh-loc">≈ ${inLocal(c.total)}</small>` : ''}</div>
-        <button class="bgh-budget" data-act="trip-settings"><small class="eyebrow">Budget</small><b>${t.budget ? fmtMoney(t.budget, cur) : 'Définir'}</b></button>
+        <label class="bgh-budget"><small class="eyebrow">Budget</small><span class="bgh-bin"><input id="bgh-budget" type="text" inputmode="decimal" enterkeyhint="done" value="${t.budget ? String(t.budget).replace('.', ',') : ''}" placeholder="Définir" aria-label="Budget du voyage en ${cur}" autocomplete="off"><i>${t.budget ? cur : ''}</i></span></label>
       </div>
       ${t.budget ? `<div class="bgh-bar ${over ? 'over' : ''}"><i style="--w:${pct}%"></i></div>
         <p class="bgh-left ${over ? 'over' : ''}">${over ? 'Dépassement de' : 'Il reste'} <b>${fmtMoney(Math.abs(t.budget - c.total), cur)}</b>${local ? ` · ${inLocal(Math.abs(t.budget - c.total))}` : ''}</p>` : ''}
@@ -1831,6 +1831,18 @@ function renderBudget(t) {
 }
 
 // ---------- Budget : saisie rapide, conversion, sous-onglets
+// Budget du voyage : on le tape directement dans le bandeau
+document.addEventListener('keydown', (e) => { if (e.target.id === 'bgh-budget' && e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+document.addEventListener('focusout', (e) => {
+  if (e.target.id !== 'bgh-budget') return;
+  const t = T();
+  const v = parseFloat(e.target.value.replace(/\s/g, '').replace(',', '.'));
+  const nb = v > 0 ? v : null;
+  if (nb === (t.budget || null)) return;
+  t.budget = nb;
+  commit({ map: false });
+  if (nb) toast(`Budget : ${fmtMoney(nb, t.currency)}`);
+});
 A.btab = (el) => { ui.btab = el.dataset.k; ui.btabAnim = true; renderPanel(); ui.btabAnim = false; };
 const qaVal = () => parseFloat(String(ui.qa?.amount || '').replace(/\s/g, '').replace(',', '.')) || 0;
 document.addEventListener('input', (e) => {
@@ -3281,20 +3293,19 @@ A['trip-settings'] = () => {
   openModal(`
     <h2>Options du voyage</h2>
     <div class="form" data-scope id="f-trip">
-      <div class="row"><input data-f="name" placeholder="Nom du voyage"></div>
+      <label class="fld"><span>Nom du voyage</span><input data-f="name" placeholder="Nom du voyage"></label>
       <div class="grid2">
-        <label class="fld"><span>Début (sinon : 1ʳᵉ étape)</span><input type="date" data-f="start"></label>
-        <label class="fld"><span>Fin (sinon : dernière étape)</span><input type="date" data-f="end"></label>
+        <label class="fld"><span>Début</span><input type="date" data-f="start"></label>
+        <label class="fld"><span>Fin</span><input type="date" data-f="end"></label>
       </div>
       <div class="grid3">
         <label class="fld"><span>Devise</span><select data-f="currency">${CURRENCIES.map((c) => `<option>${c}</option>`).join('')}</select></label>
         <label class="fld"><span>Budget (${t.currency})</span><input type="number" step="any" min="0" inputmode="decimal" data-f="budget"></label>
         <label class="fld"><span>Voyageurs</span><input type="number" min="1" inputmode="numeric" data-f="travelers"></label>
       </div>
-      <div class="colors">${COLORS.map((c) => `<label class="color"><input type="radio" name="tcolor" data-f="color" value="${c}"><span style="background:${c}"></span></label>`).join('')}</div>
       <div class="kind-pick">
-        <label class="kind"><input type="radio" name="tkind" data-f="kind" value="roadtrip"><span><b>🚗 Road trip</b><small>Avec mon véhicule</small></span></label>
-        <label class="kind"><input type="radio" name="tkind" data-f="kind" value="mixed"><span><b>✈️ Multi-transports</b><small>Avion, train, bus…</small></span></label>
+        <label class="kind"><input type="radio" name="tkind" data-f="kind" value="roadtrip"><div class="kind-box"><i class="kind-ic">${icon('car')}</i><b>Road trip</b><small>Avec mon véhicule</small></div></label>
+        <label class="kind"><input type="radio" name="tkind" data-f="kind" value="mixed"><div class="kind-box"><i class="kind-ic">${icon('plane')}</i><b>Multi-transports</b><small>Avion, train, bus…</small></div></label>
       </div>
       <div class="road-opts ${isRoad(t) ? '' : 'hidden'}">
         <div class="pills">${Object.entries(VEHICLES).map(([k, v]) => `<label class="pill"><input type="radio" name="tveh" data-f="vehicle" value="${k}"><span>${v.icon} ${v.label}</span></label>`).join('')}</div>
