@@ -138,10 +138,23 @@ export async function getTips(lat, lng, km = 25) {
   if (error) throw error;
   return data || [];
 }
-export async function addTip(lat, lng, placeName, author, body) {
-  const { error } = await client().rpc('add_tip', { p_lat: lat, p_lng: lng, p_place: placeName || '', p_author: author, p_body: body, p_device: deviceId() });
+// Photos d'astuce : réduites puis rangées dans le dossier de l'auteur (<uid>/tips/…)
+export async function addTip(lat, lng, placeName, author, body, files = []) {
+  const photos = [];
+  if (files.length) {
+    const s = await session();
+    for (const f of files.slice(0, 4)) {
+      const blob = await compressImage(f, 1400, 0.8);
+      const path = `${s.user.id}/tips/${uid()}.jpg`;
+      const { error } = await client().storage.from('trip-photos').upload(path, blob, { contentType: 'image/jpeg', upsert: false });
+      if (error) throw error;
+      photos.push(path);
+    }
+  } else await session().catch(() => null);
+  const { error } = await client().rpc('add_tip', { p_lat: lat, p_lng: lng, p_place: placeName || '', p_author: author, p_body: body, p_device: deviceId(), p_photos: photos });
   if (error) throw error;
 }
+export const tipPhotoUrl = (path) => `${SUPABASE_URL}/storage/v1/object/public/trip-photos/${path}`;
 export async function voteTip(id) {
   const { error } = await client().rpc('vote_tip', { p_id: id, p_device: deviceId() });
   if (error) throw error;

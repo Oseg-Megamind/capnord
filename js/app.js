@@ -994,7 +994,7 @@ function stepDrawerHTML(t, s) {
   if (ui.dday !== 'all' && !days.includes(ui.dday)) ui.dday = days[0] || 'all';
   const D = ui.dday;
   const dayMode = D !== 'all';
-  const okTabs = dayMode ? ['subs', 'photos', 'night', 'notes', 'place', 'tips'] : ['place', 'stays', 'subs', 'photos', 'notes', 'tips'];
+  const okTabs = dayMode ? ['subs', 'photos', 'night', 'notes', 'place'] : ['place', 'stays', 'subs', 'photos', 'notes'];
   if (!okTabs.includes(ui.dtab)) ui.dtab = dayMode ? 'subs' : 'place';
   const pane = (k) => (ui.dtab === k ? '' : 'hidden');
   const cover = t.photos.find((p) => p.id === s.coverId) || stepPhotos(t, s).at(-1);
@@ -1013,7 +1013,7 @@ function stepDrawerHTML(t, s) {
     <button class="icon-btn dh-close" data-act="close-drawer" aria-label="Fermer">✕</button>
     <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><h2 class="dh-name">${esc(s.name || 'Lieu à choisir')}</h2></div>
     <p class="dh-sub">${s.arrival ? (n ? `${fmtDay(s.arrival, { day: 'numeric', month: 'short' })} → ${fmtDay(s.departure, { day: 'numeric', month: 'short' })}` : fmtDay(s.arrival, { weekday: 'short', day: 'numeric', month: 'short' })) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1}/${t.steps.length}</p>
-  ${s.place ? `<button class="dh-tips ${ui.dtab === 'tips' ? 'on' : ''}" data-act="dtab" data-k="${ui.dtab === 'tips' ? (dayMode ? 'subs' : 'place') : 'tips'}" aria-pressed="${ui.dtab === 'tips'}" title="Astuces de voyageurs">${icon('tip')} Astuces</button>` : ''}
+  ${s.place ? `<button class="dh-tips" data-act="tips-open" data-id="${s.id}" title="Astuces de voyageurs">${icon('tip')} Astuces</button>` : ''}
   <div class="drawer-nav dh-nav">
     ${prev ? `<button class="btn sm" data-act="open-leg" data-id="${s.id}">‹ Trajet depuis ${esc(prev.name)}</button>` : '<button class="btn sm" disabled>‹ Départ</button>'}
     ${s.place ? `<button class="btn sm" data-act="focus-step" data-id="${s.id}">${icon('map')} Carte</button>` : ''}
@@ -1053,10 +1053,7 @@ function stepDrawerHTML(t, s) {
         <a class="btn sm" href="https://news.google.com/search?q=${encodeURIComponent(s.name || shortLabel(s.place.label))}&hl=fr&gl=FR&ceid=FR:fr" target="_blank" rel="noopener">Plus d’actualités</a>
       </div>
     </section>
-    <section class="sec ${pane('tips')}">
-      <h4>Astuces des voyageurs <small>partagées avec tous</small></h4>
-      <div id="tips" class="tips"></div>
-    </section>` : ''}
+` : ''}
     <div class="${pane('place')} del-step-row"><button class="link danger-link" data-act="del-step">Supprimer cette étape</button></div>
 
 
@@ -1306,7 +1303,6 @@ function mountStepDrawer(t, s, root) {
     $(`[data-sub-add-day="${day}"] input`)?.focus();
   }));
   if (s.place && ui.dtab === 'place') { loadWeather(s); loadNews(s); }
-  if (s.place && ui.dtab === 'tips') loadTips(s);
 }
 
 async function loadWeather(s) {
@@ -1351,47 +1347,89 @@ async function loadNews(s) {
 }
 
 // ---------- Astuces laissées par les voyageurs (communauté, via le service en ligne)
+// ---------- Astuces des voyageurs : fenêtre avec les derniers commentaires du lieu, photos possibles
+A['tips-open'] = (el) => {
+  const s = T().steps.find((x) => x.id === el.dataset.id);
+  if (!s?.place) return;
+  ui.tipFiles = [];
+  openModal(`
+    <h2 class="tips-title">${icon('tip')} Astuces · ${esc(s.name || 'Lieu')}</h2>
+    <p class="hint">Bons plans, adresses, pièges à éviter : partagés par les voyageurs passés ici.</p>
+    <button class="tip-compose-btn" data-act="tip-compose">${icon('tip')} Partager une astuce</button>
+    <form class="tip-form hidden" id="tip-form">
+      <textarea rows="3" maxlength="600" placeholder="Votre astuce pour les prochains voyageurs…" aria-label="Votre astuce"></textarea>
+      <div class="tip-pics" id="tip-pics"></div>
+      <div class="tip-tools">
+        <label class="btn sm">${icon('camera')} Photo<input type="file" accept="image/*" capture="environment" data-tip-pic hidden></label>
+        <label class="btn sm">${icon('upload')} Galerie<input type="file" accept="image/*" multiple data-tip-pic hidden></label>
+        <span class="spacer"></span>
+        <button class="btn primary sm" type="submit">Publier</button>
+      </div>
+      ${state.settings.tipName || state.settings.myName ? '' : '<input id="tip-name" placeholder="Votre prénom" maxlength="40" aria-label="Votre prénom">'}
+    </form>
+    <div id="tips" class="tips-feed"><div class="wx-msg">Chargement des astuces…</div></div>`, (m) => {
+    const form = $('#tip-form', m);
+    const drawPics = () => {
+      $('#tip-pics', m).innerHTML = ui.tipFiles.map((f, i) => `<span class="tip-pic"><img src="${URL.createObjectURL(f)}" alt=""><button type="button" data-i="${i}" aria-label="Retirer">✕</button></span>`).join('');
+    };
+    $$('[data-tip-pic]', m).forEach((inp) => (inp.onchange = () => { ui.tipFiles.push(...[...inp.files].filter((f) => f.type.startsWith('image/'))); ui.tipFiles = ui.tipFiles.slice(0, 4); inp.value = ''; drawPics(); }));
+    $('#tip-pics', m).onclick = (e) => { const b = e.target.closest('button[data-i]'); if (b) { ui.tipFiles.splice(+b.dataset.i, 1); drawPics(); } };
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const body = $('textarea', form).value.trim();
+      const author = (state.settings.tipName || state.settings.myName || $('#tip-name', form)?.value || '').trim();
+      if (body.length < 3) { $('textarea', form).focus(); return toast('Écrivez votre astuce'); }
+      if (!author) { $('#tip-name', form)?.focus(); return toast('Indiquez votre prénom'); }
+      state.settings.tipName = author;
+      save();
+      const btn = $('button[type=submit]', form);
+      btn.disabled = true; btn.textContent = ui.tipFiles.length ? 'Envoi des photos…' : 'Publication…';
+      try {
+        await cloud.addTip(s.place.lat, s.place.lng, s.name, author, body, ui.tipFiles);
+        ui.tipFiles = [];
+        form.reset(); drawPics(); form.classList.add('hidden'); $('.tip-compose-btn', m).classList.remove('hidden');
+        toast('Merci pour votre astuce !');
+        loadTips(s);
+      } catch (err) { toast(`Publication impossible : ${esc(err.message || 'réseau')}`); }
+      btn.disabled = false; btn.textContent = 'Publier';
+    };
+    loadTips(s);
+  });
+};
+A['tip-compose'] = (el) => { el.classList.add('hidden'); const f = $('#tip-form'); f.classList.remove('hidden'); $('textarea', f).focus(); };
+const tipAgo = (iso) => {
+  const d = (Date.now() - new Date(iso)) / 864e5;
+  return d < 1 ? 'aujourd’hui' : d < 2 ? 'hier' : d < 30 ? `il y a ${Math.floor(d)} jours` : fmtDay(iso.slice(0, 10), { month: 'long', year: 'numeric' });
+};
 async function loadTips(s) {
   const box = $('#tips');
   if (!box) return;
-  if (!cloud.cloudReady()) {
-    box.innerHTML = '<div class="wx-msg">Les astuces des autres voyageurs (bons plans, pièges à éviter, adresses) apparaîtront ici dès que le service en ligne sera connecté.</div>';
-    return;
-  }
-  box.innerHTML = '<div class="wx-msg">Chargement des astuces…</div>';
+  if (!cloud.cloudReady()) { box.innerHTML = '<div class="wx-msg">Les astuces apparaîtront ici dès que le service en ligne sera connecté.</div>'; return; }
   try {
     const tips = await cloud.getTips(s.place.lat, s.place.lng);
     if ($('#tips') !== box) return;
-    box.innerHTML = `
-      ${tips.length ? tips.map((x) => `<div class="tip">
+    box.innerHTML = tips.length ? tips.map((x, i) => `<article class="tip-card" style="--i:${i}">
+        <header><span class="tip-av">${esc((x.author || '?').slice(0, 1).toUpperCase())}</span><span><b>${esc(x.author)}</b><small>${tipAgo(x.created_at)}${x.place_name && x.place_name !== s.name ? ` · ${esc(x.place_name)}` : ''}</small></span></header>
         <p>${esc(x.body)}</p>
-        <div class="tip-meta"><span>${esc(x.author)} · ${esc(x.place_name || '')} · ${fmtDay(x.created_at.slice(0, 10), { month: 'short', year: 'numeric' })}</span>
-          <button class="tip-up ${x.mine ? 'on' : ''}" data-act="tip-vote" data-id="${x.id}">👍 ${x.votes || ''}</button>
-          <button class="link muted" data-act="tip-report" data-id="${x.id}" title="Signaler un contenu inapproprié">Signaler</button></div>
-      </div>`).join('') : '<div class="wx-msg">Aucune astuce pour ce lieu. Soyez le premier à aider les prochains voyageurs !</div>'}
-      <form class="tip-form" id="tip-form">
-        <textarea rows="2" maxlength="600" placeholder="Une astuce pour les prochains : bon plan, adresse, piège à éviter…" aria-label="Votre astuce"></textarea>
-        <div class="row-btns"><input id="tip-name" placeholder="Votre prénom" maxlength="40" value="${esc(state.settings.tipName || T()?.share?.author || '')}" aria-label="Votre prénom"><button class="btn sm primary">Publier</button></div>
-      </form>`;
-    $('#tip-form', box).onsubmit = async (e) => {
-      e.preventDefault();
-      const body = $('textarea', e.target).value.trim();
-      const author = $('#tip-name', e.target).value.trim();
-      if (!body) return;
-      if (!author) { $('#tip-name', e.target).focus(); return toast('Indiquez votre prénom'); }
-      state.settings.tipName = author;
-      save();
-      try { await cloud.addTip(s.place.lat, s.place.lng, s.name, author, body); toast('Merci pour votre astuce ! 🙏'); loadTips(s); }
-      catch (err) { toast(`Publication impossible : ${esc(err.message || 'réseau')}`); }
-    };
+        ${x.photos?.length ? `<div class="tip-photos n${Math.min(x.photos.length, 4)}">${x.photos.map((p) => `<button class="tip-ph" data-act="tip-zoom" data-src="${esc(cloud.tipPhotoUrl(p))}"><img src="${esc(cloud.tipPhotoUrl(p))}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+        <footer><button class="tip-up ${x.mine ? 'on' : ''}" data-act="tip-vote" data-id="${x.id}" data-step="${s.id}">Utile${x.votes ? ` · ${x.votes}` : ''}</button><button class="link muted" data-act="tip-report" data-id="${x.id}" data-step="${s.id}">Signaler</button></footer>
+      </article>`).join('') : '<div class="tips-empty">Aucune astuce ici pour l’instant. Soyez le premier à aider les prochains voyageurs !</div>';
   } catch {
     box.innerHTML = '<div class="wx-msg">Astuces indisponibles (hors-ligne ?).</div>';
   }
 }
-A['tip-vote'] = async (el) => { try { await cloud.voteTip(el.dataset.id); loadTips(curStep()); } catch { toast('Pas de connexion'); } };
+A['tip-vote'] = async (el) => { try { await cloud.voteTip(el.dataset.id); loadTips(T().steps.find((x) => x.id === el.dataset.step)); } catch { toast('Pas de connexion'); } };
 A['tip-report'] = async (el) => {
-  if (!confirm('Signaler cette astuce comme inappropriée ?')) return;
-  try { await cloud.reportTip(el.dataset.id); toast('Merci, c’est signalé.'); loadTips(curStep()); } catch { toast('Pas de connexion'); }
+  try { await cloud.reportTip(el.dataset.id); toast('Merci, c’est signalé.'); loadTips(T().steps.find((x) => x.id === el.dataset.step)); } catch { toast('Pas de connexion'); }
+};
+// Photo d'astuce en grand (touchez pour fermer)
+A['tip-zoom'] = (el) => {
+  const z = document.createElement('div');
+  z.className = 'tip-zoom';
+  z.innerHTML = `<img src="${el.dataset.src}" alt="">`;
+  z.onclick = () => { z.classList.remove('open'); setTimeout(() => z.remove(), 200); };
+  document.body.appendChild(z);
+  requestAnimationFrame(() => z.classList.add('open'));
 };
 
 // =====================================================================
