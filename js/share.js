@@ -622,8 +622,10 @@ document.addEventListener('submit', async (e) => {
     S.comments.push({ ...c, device: me });
     addMine(c.id); (ui.demoMine ||= []).push(c.id);
     document.activeElement?.blur();
-    if (ui.viewer) renderViewer(); else renderSheet();
     renderTop();
+    // Livre d'or : une fois le mot envoyé, l'onglet se referme
+    if (!ui.viewer && ui.view === 'guest') { closeSheet(); toast(`Message envoyé à ${esc(S.data.author || 'l’auteur')}`); return; }
+    if (ui.viewer) renderViewer(); else renderSheet();
     toast('Commentaire envoyé');
   } catch {
     toast('Envoi impossible. Vérifiez votre connexion.');
