@@ -227,14 +227,12 @@
 .shx-viewer .link { color: #5fd0c8; }
 .shx-hello { margin: 2px 0 6px; padding: 12px 14px; border-radius: 14px; background: #d9f2ef; color: #10231f; font-size: 14px; line-height: 1.45; animation: shxUp .5s both .2s; }
 .shx-hello b { display: block; font: 800 15.5px var(--font-display); margin-bottom: 2px; }
-/* Carte en grand : le tiroir n'affiche plus que sa poignée et le titre */
-.shx-sheet.mini { --peek: 92px; }
-.shx-sheet.mini .shx-body { overflow: hidden; }
-.shx-sheet.mini .shx-grip i { width: 56px; background: #10231f; }
-.shx-sheet.mini .shx-grip::after { content: 'Glissez vers le haut pour le carnet'; display: block; margin-top: 8px; font: 500 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
-.shx-sheet.mini .shx-body > :not(.shx-hello):not(.shx-sec-h) { opacity: .0; }
-.shx-sheet.mini .shx-hello { display: none; }
-@media (min-width: 900px) { .shx-sheet.mini .shx-body > * { opacity: 1; } .shx-sheet.mini .shx-grip::after { display: none; } }
+/* Carte en grand : le tiroir se réduit à une fine bande « Carnet de route » */
+.shx-sheet.mini { --peek: calc(58px + var(--safe-b)); }
+.shx-sheet.mini .shx-body { visibility: hidden; }
+.shx-sheet.mini .shx-grip { padding: 8px 0 10px; }
+.shx-sheet.mini .shx-grip::after { content: 'Carnet de route'; display: block; margin-top: 7px; font: 800 14px var(--font-display); font-stretch: 110%; color: #10231f; }
+@media (min-width: 900px) { .shx-sheet.mini .shx-body { visibility: visible; } .shx-sheet.mini .shx-grip::after { display: none; } }
 .shx-welcome { position: fixed; z-index: 2600; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); max-width: 420px; margin: 0 auto; display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 16px; border: 0; border-radius: 18px; background: #10231f; color: #e6ece6; box-shadow: 0 20px 50px rgba(16, 35, 31, .45); cursor: pointer; animation: shxWelcome .6s cubic-bezier(.2, .9, .25, 1.15) both .9s; }
 .shx-welcome > span:last-child { display: flex; flex-direction: column; gap: 4px; }
 .shx-welcome b { font: 800 17px/1.25 var(--font-display); color: #fff; }
