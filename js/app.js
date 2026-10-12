@@ -1453,12 +1453,30 @@ function openLegDrawer(id, tab = 'trip') {
 }
 A['open-leg'] = (el) => openLegDrawer(el.dataset.id);
 
+// Champs utiles selon le mode : on ne demande pas de réservation pour un trajet à pied
+function legFields(mode, own) {
+  if (own) return { title: 'Horaires & frais', price: 'Péages, parking, vignette' };
+  const booked = (company) => ({ title: 'Horaires & réservation', company, ref: true, price: 'Prix', status: true });
+  return ({
+    plane: booked(['Vol (compagnie / n°)', 'ex : TP 433']),
+    train: booked(['Train (n°)', 'ex : TGV 6201']),
+    bus: booked(['Compagnie / ligne', 'ex : FlixBus N 123']),
+    ferry: booked(['Compagnie / traversée', 'ex : Corsica Ferries']),
+    car: booked(['Loueur', 'ex : Hertz']),
+    van: booked(['Loueur', 'ex : Indie Campers']),
+    moto: booked(['Loueur', 'ex : location locale']),
+    bike: { title: 'Horaires & location', price: 'Location du vélo' },
+    walk: { title: 'Horaires' },
+  })[mode] || booked(['Compagnie / n°', '']);
+}
+
 function legDrawerHTML(t, s) {
   const i = t.steps.indexOf(s), prev = t.steps[i - 1];
   const tr = s.transport, mode = MODES[tr.mode];
   const info = legInfo(prev, s);
   const own = ownLeg(t, s);
-  const lt = ui.ltab === 'photos' ? 'photos' : 'trip';
+  const lf = legFields(tr.mode, own);
+  const lt = ['photos', 'notes'].includes(ui.ltab) ? ui.ltab : 'trip';
   const nph = stepPhotos(t, s, true).length;
   return `
   <div class="drawer-head leg-head">
@@ -1477,9 +1495,13 @@ function legDrawerHTML(t, s) {
   <nav class="dtabs" role="tablist">
     <button class="dtab ${lt === 'trip' ? 'active' : ''}" data-act="ltab" data-k="trip" role="tab"><span class="dt-ic">${icon('route')}</span><span class="dt-l">Trajet</span></button>
     <button class="dtab ${lt === 'photos' ? 'active' : ''}" data-act="ltab" data-k="photos" role="tab"><span class="dt-ic">${icon('camera')}</span><span class="dt-l">Photos</span>${nph ? `<i class="dt-b">${nph}</i>` : ''}</button>
+    <button class="dtab ${lt === 'notes' ? 'active' : ''}" data-act="ltab" data-k="notes" role="tab"><span class="dt-ic">${icon('note')}</span><span class="dt-l">Notes</span>${tr.notes ? '<i class="dt-b">•</i>' : ''}</button>
   </nav>
   <div class="drawer-body" id="drawer-body" data-scope>
-    ${lt === 'photos' ? `<section class="sec">${photosPaneHTML(t, s, true)}</section>` : `
+    ${lt === 'photos' ? `<section class="sec">${photosPaneHTML(t, s, true)}</section>` : lt === 'notes' ? `<section class="sec">
+      <h4>Notes du trajet</h4>
+      <textarea rows="8" data-f="transport.notes" placeholder="${own ? 'Pauses, aire de repos, plein, route panoramique…' : tr.mode === 'walk' ? 'Sentier, points de vue, eau, difficulté…' : 'Terminal, siège, voiture, quai…'}"></textarea>
+    </section>` : `
     <section class="sec">
       ${own ? `<div class="own-leg"><span class="own-ic">${icon(t.vehicle)}</span><div><b>En ${VEHICLES[t.vehicle].short}</b><small>Votre véhicule</small></div><button class="link" data-act="leg-modes">Autre mode (ferry, train…)</button></div>` : ''}
       <label class="fld mode-pick ${own && !ui.legModes ? 'hidden' : ''}"><span>Mode de transport</span>
@@ -1489,21 +1511,17 @@ function legDrawerHTML(t, s) {
       ${info ? `<div class="leg-info">${fmtKm(info.km)}${info.min ? ` · ${info.exact ? '' : '~'}${fmtDuration(info.min)}` : ''}${own ? ` · carburant ~${Math.round((info.km * (+t.conso || VEHICLES[t.vehicle].conso)) / 100)} L ≈ ${fmtMoney((info.km * (+t.conso || VEHICLES[t.vehicle].conso)) / 100 * (+t.fuelPrice || 1.85), t.currency)}` : ''}${mode?.road && !info.exact && state.settings.routing ? ' <small>(calcul de la route…)</small>' : ''}</div>` : '<p class="hint">Ajoutez un lieu aux deux étapes pour voir la distance.</p>'}
     </section>
     <section class="sec ${tr.mode ? '' : 'hidden'}">
-      <h4>${own ? 'Horaires & frais' : 'Horaires & réservation'}</h4>
+      <h4>${lf.title}</h4>
       <div class="grid2">
         <label class="fld"><span>Départ</span><input type="datetime-local" data-f="transport.depart"></label>
         <label class="fld"><span>Arrivée</span><input type="datetime-local" data-f="transport.arrive"></label>
-        ${own ? '' : `<label class="fld"><span>Compagnie / n°</span><input data-f="transport.company" placeholder="ex : TP 433"></label>
-        <label class="fld"><span>Référence de réservation</span><input data-f="transport.ref" placeholder="ex : XK7P2L"></label>`}
-        <label class="fld"><span>${own ? 'Péages, parking, vignette' : 'Prix'} (${t.currency})</span><input type="number" step="any" min="0" inputmode="decimal" data-f="transport.price"></label>
-        ${own ? '' : `<label class="fld"><span>Statut</span><select data-f="transport.status"><option value="">—</option>${Object.entries(BOOK_STATUS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}</select></label>`}
+        ${lf.company ? `<label class="fld"><span>${lf.company[0]}</span><input data-f="transport.company" placeholder="${lf.company[1]}"></label>` : ''}
+        ${lf.ref ? '<label class="fld"><span>Référence de réservation</span><input data-f="transport.ref" placeholder="ex : XK7P2L"></label>' : ''}
+        ${lf.price ? `<label class="fld"><span>${lf.price} (${t.currency})</span><input type="number" step="any" min="0" inputmode="decimal" data-f="transport.price"></label>` : ''}
+        ${lf.status ? `<label class="fld"><span>Statut</span><select data-f="transport.status"><option value="">—</option>${Object.entries(BOOK_STATUS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}</select></label>` : ''}
       </div>
     </section>
-    <section class="sec ${tr.mode ? '' : 'hidden'}">
-      <h4>Notes du trajet</h4>
-      <textarea rows="4" data-f="transport.notes" placeholder="${own ? 'Pauses, aire de repos, plein, route panoramique…' : 'Terminal, siège, voiture, quai…'}"></textarea>
-      ${prev.place && s.place ? `<a class="btn sm" href="https://www.google.com/maps/dir/?api=1&origin=${prev.place.lat},${prev.place.lng}&destination=${s.place.lat},${s.place.lng}${tr.mode === 'train' || tr.mode === 'bus' ? '&travelmode=transit' : tr.mode === 'walk' ? '&travelmode=walking' : tr.mode === 'bike' ? '&travelmode=bicycling' : ''}" target="_blank" rel="noopener">${icon('nav')} Itinéraire détaillé (Google Maps)</a>` : ''}
-    </section>
+    ${prev.place && s.place && tr.mode ? `<div class="leg-gmaps"><a class="btn sm" href="https://www.google.com/maps/dir/?api=1&origin=${prev.place.lat},${prev.place.lng}&destination=${s.place.lat},${s.place.lng}${tr.mode === 'train' || tr.mode === 'bus' ? '&travelmode=transit' : tr.mode === 'walk' ? '&travelmode=walking' : tr.mode === 'bike' ? '&travelmode=bicycling' : ''}" target="_blank" rel="noopener">${icon('nav')} Itinéraire détaillé (Google Maps)</a></div>` : ''}
     ${tr.mode && !own ? `<div class="del-step-row"><button class="link danger-link" data-act="${isRoad(t) ? 'leg-own' : 'clear-transport'}">${isRoad(t) ? `Revenir à mon ${VEHICLES[t.vehicle].short}` : 'Retirer ce transport'}</button></div>` : ''}`}
   </div>`;
 }
