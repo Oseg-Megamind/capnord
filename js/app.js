@@ -232,7 +232,7 @@ function undoable(msg, t = T()) {
 function openModal(html, mount, cls = '') {
   const root = $('#modal-root');
   root.classList.remove('dark');
-  root.innerHTML = `<div class="modal-backdrop" data-act="close-modal"></div><div class="modal ${cls}" role="dialog" aria-modal="true">${html}</div>`;
+  root.innerHTML = `<div class="modal-backdrop" data-act="close-modal"></div><div class="modal ${cls}" role="dialog" aria-modal="true"><div class="sheet-grip" aria-hidden="true"></div>${html}</div>`;
   const m = $('.modal', root);
   mount?.(m);
   requestAnimationFrame(() => root.classList.add('open'));
@@ -245,6 +245,54 @@ function closeModal() {
   root.innerHTML = '';
 }
 A['close-modal'] = closeModal;
+
+// Glisser vers le bas pour fermer une fenêtre (fenêtres classiques et petites fenêtres superposées)
+(function swipeToClose() {
+  let g = null;
+  const sheetOf = (el) => el.closest('.mini-pop .mp-card') || el.closest('#modal-root .modal:not(.lightbox)');
+  const closeSheet = (sheet) => {
+    const pop = sheet.closest('.mini-pop');
+    if (pop) { pop.classList.remove('open'); setTimeout(() => pop.remove(), 200); } else closeModal();
+  };
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    const sheet = sheetOf(e.target);
+    // Pas pendant une saisie, un glisser-déposer ou un défilement interne déjà commencé
+    if (!sheet || e.target.closest('input, textarea, select, .tpl-grip, .drag, [data-items], .rates, .cp-list') && !e.target.closest('.sheet-grip')) return;
+    const scroller = e.target.closest('.tpl-items') || sheet;
+    if (scroller.scrollTop > 0 && !e.target.closest('.sheet-grip')) return;
+    g = { sheet, y0: e.touches[0].clientY, t0: Date.now(), dy: 0, on: false };
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (!g) return;
+    const dy = e.touches[0].clientY - g.y0;
+    if (!g.on) {
+      if (dy < -4) { g = null; return; } // vers le haut : on laisse défiler
+      if (dy < 8) return;
+      g.on = true;
+      g.sheet.style.transition = 'none';
+    }
+    g.dy = Math.max(0, dy);
+    g.sheet.style.transform = `${getComputedStyle(g.sheet).getPropertyValue('--sheet-base') || ''} translateY(${g.dy}px)`;
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', () => {
+    if (!g) return;
+    const { sheet, dy, t0, on } = g;
+    g = null;
+    if (!on) return;
+    const fast = dy / Math.max(1, Date.now() - t0) > 0.6;
+    sheet.style.transition = 'transform .25s var(--ease), opacity .25s';
+    if (dy > 110 || (fast && dy > 40)) {
+      sheet.style.transform = `${getComputedStyle(sheet).getPropertyValue('--sheet-base') || ''} translateY(110%)`;
+      sheet.style.opacity = '0';
+      setTimeout(() => { closeSheet(sheet); sheet.style.cssText = ''; }, 220);
+    } else {
+      sheet.style.transform = '';
+      setTimeout(() => { sheet.style.transition = ''; }, 260);
+    }
+  });
+})();
 
 function closeDrawer() {
   ui.drawer = null;
@@ -3058,7 +3106,7 @@ function emailPopup(host, { emails = [], onDone }) {
   const needName = !state.settings.myName;
   const pop = document.createElement('div');
   pop.className = 'mini-pop';
-  pop.innerHTML = `<div class="mp-back"></div><div class="mp-card" role="dialog" aria-modal="true" aria-label="Inviter des compagnons">
+  pop.innerHTML = `<div class="mp-back"></div><div class="mp-card" role="dialog" aria-modal="true" aria-label="Inviter des compagnons"><div class="sheet-grip" aria-hidden="true"></div>
     <h3>Inviter des compagnons</h3>
     <p class="hint">Ils pourront ajouter et modifier les infos du voyage avec vous. Ils recevront un e-mail avec un lien pour vous rejoindre.</p>
     <div class="mp-chips"></div>

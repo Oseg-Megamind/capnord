@@ -1518,3 +1518,10 @@ button.bg-row { cursor: pointer; }
 .mp-add input.bad { border-color: var(--danger) !important; }
 .member.invited { border-style: dashed; color: var(--muted); }
 .mail-go { padding: 14px; font-size: 16px; text-decoration: none; }
+
+/* Poignée « glisser vers le bas pour fermer » */
+.sheet-grip { width: 40px; height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--text) 22%, transparent); margin: -8px auto 12px; flex: none; }
+.modal.lightbox .sheet-grip { display: none; }
+@media (min-width: 900px) { .modal > .sheet-grip { display: none; } }
+/* Sur ordinateur la fenêtre est centrée : on garde ce décalage pendant le glisser */
+@media (min-width: 900px) { #modal-root .modal { --sheet-base: translate(-50%, -50%); } }
