@@ -1,14 +1,14 @@
 export const MODES = {
-  plane: { icon: '✈️', label: 'Avion', color: '#8b5cf6', dash: '2 9', arc: true, speed: 650 },
-  train: { icon: '🚆', label: 'Train', color: '#0ea5e9', speed: 110 },
-  car: { icon: '🚗', label: 'Voiture', color: '#f97316', road: true, speed: 75 },
-  bus: { icon: '🚌', label: 'Bus', color: '#22c55e', road: true, speed: 55 },
-  van: { icon: '🚐', label: 'Van', color: '#eab308', road: true, speed: 65 },
-  moto: { icon: '🏍️', label: 'Moto', color: '#ef4444', road: true, speed: 70 },
-  ferry: { icon: '⛴️', label: 'Bateau', color: '#3b82f6', dash: '6 8', speed: 30 },
-  bike: { icon: '🚲', label: 'Vélo', color: '#84cc16', speed: 15 },
-  walk: { icon: '🥾', label: 'À pied', color: '#a855f7', dash: '1 7', speed: 4.5 },
-  other: { icon: '🧭', label: 'Autre', color: '#64748b', speed: 60 },
+  plane: { icon: '✈️', label: 'Avion', color: '#10231f', w: 2, dash: null, arc: true, speed: 650 },
+  train: { icon: '🚆', label: 'Train', color: '#10231f', w: 4, speed: 110 },
+  car: { icon: '🚗', label: 'Voiture', color: '#10231f', w: 5, road: true, speed: 75 },
+  bus: { icon: '🚌', label: 'Bus', color: '#10231f', w: 3, road: true, speed: 55 },
+  van: { icon: '🚐', label: 'Van', color: '#10231f', w: 5, road: true, speed: 65 },
+  moto: { icon: '🏍️', label: 'Moto', color: '#10231f', w: 5, road: true, speed: 70 },
+  ferry: { icon: '⛴️', label: 'Bateau', color: '#3d6fb6', w: 3.5, dash: '0.5 7', speed: 30 },
+  bike: { icon: '🚲', label: 'Vélo', color: '#10231f', w: 2.5, dash: '5 4', speed: 15 },
+  walk: { icon: '🥾', label: 'À pied', color: '#10231f', w: 2.5, dash: '5 4', speed: 4.5 },
+  other: { icon: '🧭', label: 'Autre', color: '#4e6660', w: 3, speed: 60 },
 };
 
 export const STEP_TYPES = {
@@ -63,7 +63,7 @@ export const BOOK_STATUS = {
   paid: { label: 'Payé', cls: 'ok' },
 };
 
-export const COLORS = ['#7a2436', '#1f4f9e', '#b8532e', '#2f6f62', '#8a6a2f', '#4b3f72', '#1d6f8a', '#5a5f66'];
+export const COLORS = ['#10231f', '#1f4f9e', '#b8532e', '#2f6f62', '#8a6a2f', '#4b3f72', '#1d6f8a', '#5a5f66'];
 
 export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY', 'AUD', 'NZD', 'THB', 'MAD', 'TND', 'MXN', 'BRL', 'IDR', 'VND', 'INR',
   'CNY', 'KRW', 'ZAR', 'TRY', 'SEK', 'NOK', 'DKK', 'ISK', 'PLN', 'CZK', 'HUF', 'RON', 'AED', 'SGD', 'HKD', 'PHP', 'MYR', 'PEN', 'COP',
@@ -135,7 +135,7 @@ export const ICONS = {
   pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
   bed: '<path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>',
   list: '<path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/>',
-  tip: '<path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2V17h6v-.3c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/>',
+  tip: '<path d="M12 2.5l2.6 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.6-6.9L2.5 12l6.9-2.6z"/>',
   note: '<path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4M2 6h4M2 10h4M2 14h4M2 18h4M21.4 5.6a2.1 2.1 0 1 0-3-3l-5 5a2 2 0 0 0-.5.9l-.8 2.8a.5.5 0 0 0 .6.6l2.9-.8a2 2 0 0 0 .8-.5z"/>',
 };
 Object.assign(ICONS, {
@@ -153,4 +153,4 @@ Object.assign(ICONS, {
   storm: '<path d="M6 16.3A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 .5 9M13 11l-4 6h6l-4 6"/>',
   fog: '<path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2M16 17H7M17 21H9"/>',
 });
-export const icon = (name, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.other}</svg>`;
+export const icon = (name, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.other}</svg>`;

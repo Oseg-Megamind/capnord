@@ -1,0 +1,902 @@
+<title>Etapa · Tracé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wdth,wght@62..125,400;62..125,500;62..125,700;62..125,800&family=JetBrains+Mono:wght@500;700&family=Figtree:wght@400;500;700;800;900&family=Noto+Sans+JP:wght@800&family=Noto+Sans+Arabic:wght@800&display=swap">
+<style>
+/* Mise en page : dossier de marque en deux chapitres (Relevé, Ligne) + hybride ; planches pleine largeur, spécimens en couleurs littérales */
+:root {
+  --bg: #f3f4f1;
+  --surface: #ffffff;
+  --ink: #15191b;
+  --muted: #5d6562;
+  --line: #d9ddd7;
+  --accent: #b4442c;
+  --soft: #e9ece6;
+  --good: #2f7a52;
+  --display: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; --good: #6cc496; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; --good: #6cc496; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--display); padding-inline: 20px; padding-block: 40px 80px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 64px; }
+h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lead { font-size: 19px; line-height: 1.55; color: var(--muted); max-width: 68ch; }
+.muted { color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 12px; max-width: 80ch; }
+
+.hero { display: flex; flex-direction: column; gap: 20px; }
+.hero h1 { font-size: clamp(40px, 7vw, 72px); line-height: .98; font-weight: 800; letter-spacing: -.035em; max-width: 18ch; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { font: 500 13px var(--mono); text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--surface); padding: 6px 10px; border-radius: 3px; }
+
+/* Blocs */
+.block { display: flex; flex-direction: column; gap: 22px; }
+.block > header { display: flex; flex-direction: column; gap: 8px; border-top: 2px solid var(--ink); padding-top: 16px; }
+.block > header h2 { font-size: clamp(26px, 3.6vw, 36px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.sub-h { display: flex; align-items: baseline; gap: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+.sub-h h3 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
+.sub-h span { font: 500 12px var(--mono); color: var(--muted); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.cols > * { min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); padding: 18px; display: flex; flex-direction: column; gap: 10px; border-radius: 4px; }
+.panel h4 { font-size: 15px; font-weight: 700; }
+.panel p, .panel li { font-size: 14.5px; line-height: 1.5; color: var(--muted); }
+.panel ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+
+/* Vocabulaire */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14.5px; }
+th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ok { color: var(--good); font-weight: 600; }
+.ko { color: var(--accent); font-weight: 600; }
+
+/* Bandeaux de chapitre (spécimens) */
+.chapter { border-radius: 6px; padding: 36px 28px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: center; overflow: hidden; position: relative; }
+.chapter h2 { font-size: clamp(44px, 8vw, 92px); line-height: .9; }
+.chapter p { font-size: 17px; line-height: 1.55; max-width: 52ch; }
+.chapter .k { font: 500 12px 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+.chR { background: #10231f; color: #e6ece6; }
+.chR h2 { font-family: 'Archivo', sans-serif; font-stretch: 125%; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; }
+.chR .k { color: #5fd0c8; }
+.chL { background: #fbfbf8; color: #16181d; border: 1px solid #e3e4e0; }
+.chL h2 { font-family: 'Figtree', sans-serif; font-weight: 900; letter-spacing: -.04em; }
+.chL .k { color: #0a7b6c; }
+.chapter svg.deco { width: 100%; height: auto; max-height: 220px; }
+
+/* Logo */
+.logo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.logo-tile { border-radius: 4px; min-height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 22px; border: 1px solid var(--line); }
+.logo-tile small { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.icons-row { display: flex; align-items: flex-end; gap: 16px; }
+.icons-row svg { border-radius: 22.5%; display: block; }
+.wmR { font: 800 30px/1 'Archivo', sans-serif; font-stretch: 125%; letter-spacing: .02em; text-transform: uppercase; display: flex; align-items: center; gap: 12px; }
+.wmR em { font: 500 10px 'JetBrains Mono', monospace; font-style: normal; letter-spacing: .06em; display: block; margin-top: 6px; opacity: .8; }
+.wmL { font: 900 34px/1 'Figtree', sans-serif; letter-spacing: -.04em; display: flex; align-items: center; gap: 10px; }
+
+/* Couleurs */
+.sw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.sw { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); display: flex; flex-direction: column; }
+.sw i { display: block; height: 70px; }
+.sw div { padding: 8px 10px; display: flex; flex-direction: column; gap: 1px; font-size: 13px; }
+.sw b { font-size: 13.5px; }
+.sw small { font: 400 11px var(--mono); color: var(--muted); }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.rules p { background: var(--soft); padding: 12px 14px; font-size: 14px; line-height: 1.5; border-radius: 4px; }
+.rules b { display: block; font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+
+/* Spécimen fonctionnel (statuts, partage) */
+.spec-box { border-radius: 4px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.spec-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.spec-label { font: 500 10.5px 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; opacity: .7; width: 100%; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px var(--f, 'Archivo'), sans-serif; padding: 5px 10px 5px 8px; border-radius: 999px; }
+.chip svg { width: 14px; height: 14px; flex: none; }
+.share { display: inline-flex; flex-direction: column; align-items: center; gap: 5px; font: 600 11.5px 'Archivo', sans-serif; width: 84px; text-align: center; }
+.share svg { width: 34px; height: 34px; }
+
+/* Typo */
+.type-scale { display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; }
+.ts { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid rgba(127,127,127,.2); }
+.ts small { font: 500 11px 'JetBrains Mono', monospace; opacity: .65; line-height: 1.4; }
+.ts span { overflow-wrap: anywhere; }
+
+/* Légende / pictos */
+.legend { border-radius: 4px; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px 18px; }
+.lg-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+.lg-item svg { width: 26px; height: 26px; flex: none; }
+.lg-sq { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.lg-sq svg { width: 20px; height: 20px; }
+.lg-line { width: 46px; height: 12px; flex: none; }
+
+/* Écrans */
+.screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 28px 20px; justify-items: center; }
+.phone-col { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
+.phone { width: 260px; max-width: 100%; aspect-ratio: 9 / 19; border-radius: 36px; border: 8px solid #0d0f10; overflow: hidden; position: relative; box-shadow: 0 24px 50px -24px rgba(0,0,0,.45); display: flex; flex-direction: column; }
+.notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 70px; height: 20px; background: #0d0f10; border-radius: 12px; z-index: 5; }
+.ph-in { flex: 1; padding: 40px 14px 10px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 1; min-height: 0; }
+.phone-cap { font: 400 12px var(--mono); color: var(--muted); text-align: center; max-width: 260px; }
+.phone-cap b { color: var(--ink); font-family: var(--display); font-size: 13px; display: block; }
+.tabbar { margin-top: auto; display: flex; justify-content: space-between; padding: 8px 4px 0; border-top: 1px solid rgba(127,127,127,.25); }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; opacity: .6; }
+.tabbar span.on { opacity: 1; }
+.tabbar svg { width: 18px; height: 18px; }
+
+/* Relevé — écrans */
+.R { background: #ecefe8; color: #10231f; font-family: 'Archivo', sans-serif; }
+.R .coord { font: 500 9.5px 'JetBrains Mono', monospace; color: #4e6660; letter-spacing: .04em; }
+.R .ttl { font: 800 26px/.95 'Archivo', sans-serif; font-stretch: 118%; text-transform: uppercase; }
+.R .meta { font: 500 11px 'Archivo', sans-serif; color: #4e6660; }
+.R .row { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid #d3dad3; }
+.R .row svg { width: 16px; height: 16px; }
+.R .row small { display: block; font-size: 10.5px; color: #4e6660; }
+.R .st { font: 700 9px 'JetBrains Mono', monospace; letter-spacing: .04em; padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
+.st-res { background: #10231f; color: #5fd0c8; }
+.st-pay { background: #10231f; color: #ecefe8; }
+.st-todo { border: 1.5px dashed #9a5222; color: #9a5222; }
+.st-done { color: #4e6660; border: 1px solid #b9c5bf; }
+.R .card { background: #10231f; color: #e6ece6; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.R .card .r { display: grid; grid-template-columns: 34px 1fr auto; gap: 6px; align-items: center; font-size: 12px; }
+.R .card .h { font: 500 10px 'JetBrains Mono', monospace; color: #9fb3ad; }
+.R .tip { background: #f7f8f4; border: 1px solid #c9d2cb; border-radius: 10px; padding: 9px 10px; display: flex; gap: 8px; font-size: 11.5px; line-height: 1.35; }
+.R .tip svg { width: 22px; height: 22px; flex: none; }
+.R .tip b { display: block; font-size: 12px; }
+.R .tip small { color: #4e6660; font: 500 9.5px 'JetBrains Mono', monospace; }
+.R .alert { background: #10231f; color: #e6ece6; border-left: 4px solid #ff7a66; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.35; }
+.R .alert b { color: #ff7a66; font: 700 9.5px 'JetBrains Mono', monospace; letter-spacing: .08em; display: block; }
+.R .layers { display: flex; gap: 5px; flex-wrap: wrap; }
+.R .layers span { font: 600 10px 'Archivo', sans-serif; padding: 4px 7px; border-radius: 999px; border: 1px solid #10231f; }
+.R .layers span.on { background: #10231f; color: #ecefe8; }
+.R .wx { position: absolute; z-index: 3; right: 14px; top: 46px; background: #10231f; color: #e6ece6; border-radius: 10px; padding: 6px 9px; font: 700 15px 'Archivo', sans-serif; display: flex; gap: 6px; align-items: center; }
+.R .wx small { font: 500 9px 'JetBrains Mono', monospace; color: #9fb3ad; display: block; }
+.R .bg { position: absolute; inset: 0; z-index: 0; }
+.R .tabbar { color: #10231f; }
+
+/* Ligne — écrans */
+.Lg { background: #fbfbf8; color: #16181d; font-family: 'Figtree', sans-serif; }
+.Lg .sm { font: 500 10px 'JetBrains Mono', monospace; color: #6b6f78; letter-spacing: .04em; }
+.Lg .ttl { font: 900 26px/1 'Figtree', sans-serif; letter-spacing: -.03em; }
+.Lg .badges { display: flex; gap: 4px; }
+.Lg .badge { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; }
+.Lg .badge svg { width: 13px; height: 13px; }
+.Lg .traffic { background: #16181d; color: #fbfbf8; border-radius: 10px; padding: 8px 10px; font-size: 11.5px; line-height: 1.35; display: flex; gap: 8px; align-items: flex-start; }
+.Lg .traffic b { font: 800 10px 'Figtree', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #f2b53a; display: block; }
+.Lg .state { display: flex; justify-content: space-between; align-items: center; border: 1.5px solid #16181d; border-radius: 10px; padding: 7px 10px; font-size: 12px; font-weight: 700; }
+.Lg .state span { font: 500 10px 'JetBrains Mono', monospace; color: #6b6f78; }
+.Lg .corr { display: flex; flex-direction: column; gap: 6px; }
+.Lg .corr div { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; font-size: 11.5px; line-height: 1.35; padding-bottom: 6px; border-bottom: 1px solid #e3e4e0; }
+.Lg .corr svg { width: 24px; height: 24px; }
+.Lg .corr b { font-size: 12px; display: block; }
+.Lg .corr small { font: 500 9.5px 'JetBrains Mono', monospace; color: #6b6f78; }
+.Lg .tabbar { color: #16181d; }
+
+/* Composants */
+.comp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.comp { border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.comp > small { font: 500 10.5px 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+
+/* Souvenir */
+.posters { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; align-items: start; }
+.poster { aspect-ratio: 3 / 4; max-width: 100%; border-radius: 4px; overflow: hidden; position: relative; box-shadow: 0 18px 40px -22px rgba(0,0,0,.45); }
+.poster svg { width: 100%; height: 100%; display: block; }
+
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.verdict p { padding: 12px 14px; background: var(--soft); font-size: 14.5px; line-height: 1.5; border-radius: 4px; }
+.verdict b { font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.plus b { color: var(--good); }
+.minus b { color: var(--accent); }
+.hybrid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 36px; align-items: start; }
+.hybrid ul, .hybrid ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+
+@media (max-width: 760px) {
+  .chapter, .hybrid { grid-template-columns: 1fr; }
+  .ts { grid-template-columns: 1fr; gap: 4px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .draw { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 2.4s ease-out .3s forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .needle { transform-box: fill-box; transform-origin: 50% 60%; animation: seek 3s cubic-bezier(.3,1.5,.5,1) .4s both; }
+  @keyframes seek { 0% { transform: rotate(-70deg); } 60% { transform: rotate(12deg); } 100% { transform: rotate(0); } }
+}
+</style>
+
+<!-- Sprite de pictogrammes (trait 1,6, viewBox 24) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-avion" viewBox="0 0 24 24"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></symbol>
+    <symbol id="i-train" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 10h12M9 21l1.5-4M15 21l-1.5-4"/></g><circle cx="9" cy="13.5" r="1" fill="currentColor"/><circle cx="15" cy="13.5" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-voiture" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 16v-4l2.2-5h12.6l2.2 5v4z"/><path d="M3.5 12h17"/></g><circle cx="7.5" cy="16.5" r="1.8" fill="currentColor"/><circle cx="16.5" cy="16.5" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="i-van" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2.5 17V6.5h11.5l4 4.5h3.5V17z"/><path d="M14 6.5V11h7.5M6 10h4"/></g><circle cx="6.5" cy="17.5" r="1.8" fill="currentColor"/><circle cx="17" cy="17.5" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="i-bus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="5" y="3" width="14" height="15" rx="2.5"/><path d="M5 11h14M8 18v2.5M16 18v2.5"/></g><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-bateau" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M3 15h18l-3 5H6z"/><path d="M12 3v12M12 4.5l6 8.5h-6"/></g></symbol>
+    <symbol id="i-pied" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2.5-6.5L15 17v4M12.5 14.5L11 9l-3.5 2v3.5M11 9l3.5 1.5 2.5 2.5"/></g></symbol>
+    <symbol id="i-nuit" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M3 19v-8h18v8M3 15h18M6.5 11V8.5h5V11"/></g></symbol>
+    <symbol id="i-resa" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 7h17v3a2 2 0 0 0 0 4v3h-17v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7v10" stroke-dasharray="2 2"/></g></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 16.5h6"/></g></symbol>
+    <symbol id="i-budget" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M15 8.8a3.6 3.6 0 1 0 0 6.4M7.8 11h5.5M7.8 13.4h5.5"/></g></symbol>
+    <symbol id="i-astuce" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M12 2.5l2.6 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.6-6.9L2.5 12l6.9-2.6z"/></symbol>
+    <symbol id="i-meteo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="3.2"/><path d="M8.5 2.2v1.3M2.2 8.5h1.3M4 4l.9.9M13 4l-.9.9"/><path d="M8 20h10a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.4 1.6A2.7 2.7 0 0 0 8 20z"/></g></symbol>
+    <symbol id="i-actu" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2v.3"/></g></symbol>
+    <symbol id="i-vue" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2.5 19.5l6-10 4 6 2.5-3.5 6.5 7.5z"/></g><circle cx="17" cy="6" r="2" fill="currentColor"/></symbol>
+    <symbol id="i-gps" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></g><circle cx="12" cy="12" r="2.6" fill="currentColor"/></symbol>
+    <symbol id="i-carte" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M3 6l6-2.5 6 2.5 6-2.5v14.5L15 20.5 9 18l-6 2.5zM9 3.5V18M15 6v14.5"/></symbol>
+    <symbol id="i-jour" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <!-- Cercles de partage : point = moi, puis un anneau de plus par cercle -->
+    <symbol id="sh1" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/></symbol>
+    <symbol id="sh2" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/><circle cx="17" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="sh3" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/><circle cx="17" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="17" r="12" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="sh4" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/><circle cx="17" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="17" r="12" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="17" r="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.5 2.5"/></symbol>
+
+    <symbol id="etapa-icon" viewBox="0 0 64 64"><rect width="64" height="64" fill="#10231f"/><path d="M45 13 H27 Q19 13 19 21 V24 Q19 31 26 31 H41 Q45 31 45 34.5 Q45 38 41 38 H26 Q19 38 19 45 Q19 51 27 51 H40" stroke="#5fd0c8" stroke-width="6.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="51" r="6" fill="#ffffff" stroke="#10231f" stroke-width="2"/></symbol>
+    <symbol id="etapa-icon-s" viewBox="0 0 64 64"><rect width="64" height="64" fill="#10231f"/><path d="M45 12 H27 Q18 12 18 21 V24 Q18 31 26 31 H40 Q46 31 46 34.5 Q46 38 40 38 H26 Q18 38 18 45 Q18 52 27 52 H38" stroke="#5fd0c8" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="52" r="7.5" fill="#ffffff"/></symbol>
+    <symbol id="etapa-icon-xs" viewBox="0 0 64 64"><rect width="64" height="64" fill="#10231f"/><path d="M46 11 H27 Q17 11 17 21 V24 Q17 32 26 32 H44 M26 32 Q17 32 17 41 V43 Q17 53 27 53 H34" stroke="#5fd0c8" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="53" r="9" fill="#ffffff"/></symbol>
+    <symbol id="etapa-mark-d" viewBox="14 8 40 50"><path d="M45 13 H27 Q19 13 19 21 V24 Q19 31 26 31 H41 Q45 31 45 34.5 Q45 38 41 38 H26 Q19 38 19 45 Q19 51 27 51 H40" stroke="#5fd0c8" stroke-width="6.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="51" r="6" fill="#ffffff" stroke="#10231f" stroke-width="2"/></symbol>
+    <symbol id="etapa-mark-l" viewBox="14 8 40 50"><path d="M45 13 H27 Q19 13 19 21 V24 Q19 31 26 31 H41 Q45 31 45 34.5 Q45 38 41 38 H26 Q19 38 19 45 Q19 51 27 51 H40" stroke="#10231f" stroke-width="6.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="51" r="6" fill="#5fd0c8" stroke="#10231f" stroke-width="2.4"/></symbol>
+  </defs>
+</svg>
+
+<style>
+/* Ajouts propres à Tracé */
+.lockups { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.variants { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.variant { border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.variant.pick { outline: 2px solid var(--accent); outline-offset: -2px; }
+.variant h4 { font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.variant h4 span { font: 500 11px var(--mono); color: var(--accent); }
+.variant p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.sizes { display: flex; align-items: flex-end; gap: 14px; padding: 14px; border-radius: 4px; }
+.sizes figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sizes figcaption { font: 500 10px 'JetBrains Mono', monospace; opacity: .7; }
+.sizes svg { display: block; border-radius: 22.5%; }
+.donts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.dont { border: 1px solid var(--line); background: var(--surface); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; }
+.dont div { height: 92px; display: grid; place-items: center; position: relative; }
+.dont div::after { content: ''; position: absolute; inset: 10px; background: linear-gradient(to top right, transparent calc(50% - 1px), #c2402f calc(50% - 1px), #c2402f calc(50% + 1px), transparent calc(50% + 1px)); opacity: .8; pointer-events: none; }
+.dont p { padding: 8px 10px; font-size: 13px; color: var(--muted); }
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.tok { border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+.tok header { padding: 12px 16px; font: 700 13px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.tok .r { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 16px; border-top: 1px solid rgba(127,127,127,.18); font-size: 13px; }
+.tok .r i { width: 34px; height: 24px; border-radius: 4px; border: 1px solid rgba(127,127,127,.3); }
+.tok .r code { font: 500 11.5px 'JetBrains Mono', monospace; }
+.tok .r small { font: 500 11px 'JetBrains Mono', monospace; opacity: .75; white-space: nowrap; }
+.strokes td svg { display: block; width: 120px; height: 18px; }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font: 700 14px 'Archivo', sans-serif; padding: 11px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; }
+.btn svg { width: 16px; height: 16px; }
+.seg { display: inline-flex; border: 1.5px solid #10231f; border-radius: 10px; overflow: hidden; font: 600 12.5px 'Archivo', sans-serif; }
+.seg span { padding: 7px 12px; }
+.seg span.on { background: #10231f; color: #ecefe8; }
+.D { background: #0b1916; color: #e6ece6; font-family: 'Archivo', sans-serif; }
+.D .coord { font: 500 9.5px 'JetBrains Mono', monospace; color: #9fb3ad; letter-spacing: .04em; }
+.D .big { font: 800 52px/.9 'Archivo', sans-serif; font-stretch: 112%; letter-spacing: -.01em; }
+.D .big small { font: 600 16px 'Archivo', sans-serif; letter-spacing: 0; color: #9fb3ad; }
+.D .tabbar { color: #e6ece6; }
+.D .alert { color: #e6ece6; border-left: 4px solid #ff7a66; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.35; }
+.D .alert b { color: #ff7a66; font: 700 9.5px 'JetBrains Mono', monospace; letter-spacing: .08em; display: block; }
+.bar { height: 8px; border-radius: 4px; background: #d3dad3; overflow: hidden; }
+.bar i { display: block; height: 100%; background: #10231f; }
+.voice { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.vx { border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; }
+.vx small { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.vx .yes, .vx .no { padding: 8px 10px; border-radius: 4px; line-height: 1.45; }
+.vx .yes { background: var(--soft); border-left: 3px solid var(--good); }
+.vx .no { border-left: 3px solid var(--accent); color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); }
+.scripts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.scripts div { background: #ecefe8; color: #10231f; border-radius: 4px; padding: 16px; display: flex; flex-direction: column; gap: 2px; border: 1px solid #d3dad3; }
+.scripts b { font: 800 26px/1.15 'Archivo', 'Noto Sans JP', 'Noto Sans Arabic', sans-serif; font-stretch: 112%; }
+.scripts span { font: 500 10.5px 'JetBrains Mono', monospace; color: #4e6660; }
+.store { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; align-items: start; }
+.shot { aspect-ratio: 9 / 16; max-width: 100%; border-radius: 10px; overflow: hidden; position: relative; display: flex; flex-direction: column; padding: 20px 18px 0; gap: 10px; box-shadow: 0 18px 40px -22px rgba(0,0,0,.45); }
+.shot h4 { font: 800 22px/1.05 'Archivo', sans-serif; font-stretch: 112%; text-transform: uppercase; }
+.shot .mini { flex: 1; border-radius: 22px 22px 0 0; border: 6px solid #0d0f10; border-bottom: 0; overflow: hidden; }
+.home { background: linear-gradient(160deg, #6f7f8f, #2f3a44); border-radius: 10px; padding: 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 10px; justify-items: center; }
+.home span { display: flex; flex-direction: column; align-items: center; gap: 4px; font: 500 9.5px 'Archivo', sans-serif; color: #fff; }
+.home i { width: 46px; height: 46px; border-radius: 22.5%; background: rgba(255,255,255,.28); display: block; }
+.home svg { width: 46px; height: 46px; border-radius: 22.5%; display: block; }
+pre.code { margin: 0; background: #10231f; color: #e6ece6; border-radius: 6px; padding: 16px 18px; overflow-x: auto; font: 500 12.5px/1.6 'JetBrains Mono', monospace; }
+pre.code .c { color: #9fb3ad; }
+.copy { align-self: flex-start; font: 600 13px var(--display); background: var(--ink); color: var(--bg); border: 0; padding: 8px 14px; border-radius: 4px; cursor: pointer; }
+.copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.trace-path { stroke-dasharray: 100; stroke-dashoffset: 0; }
+.trace-dot { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .tracing .trace-path { animation: tracer .9s cubic-bezier(.5,0,.2,1) both; }
+  .tracing .trace-dot { animation: allume .35s .85s cubic-bezier(.3,1.6,.5,1) both; }
+  @keyframes tracer { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+  @keyframes allume { from { transform: scale(0); } to { transform: scale(1); } }
+}
+</style>
+
+<div class="wrap">
+
+<div class="hero">
+  <span class="eyebrow">Direction artistique retenue · développement complet</span>
+  <h1>Etapa : la carte de Relevé, la clarté de Ligne</h1>
+  <p class="lead">Tracé réunit les deux pistes. L'identité vient de Relevé : forêt, glacier, bistre, coordonnées, calques, et un logo tracé comme une route. La lecture du voyage vient de Ligne : un schéma de stations reliées par des traits. Le transport se lit au dessin du trait, comme sur une carte, et non à sa couleur. Ce document sert de base au design system d'Etapa.</p>
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#plateforme">Plateforme</a><a href="#logo">Logo</a><a href="#couleurs">Couleurs</a><a href="#trait">Système de trait</a><a href="#typo">Typo</a><a href="#composants">Composants</a><a href="#ecrans">Écrans</a><a href="#voix">Ton</a><a href="#monde">International</a><a href="#declinaisons">Déclinaisons</a><a href="#tokens">Tokens</a>
+  </nav>
+  <p class="note">L'app s'appelle désormais Etapa ; « Tracé » reste le nom de la direction artistique. Écrans sur le voyage d'exemple de l'app (Portugal) ; astuces, prénoms, météo et actus sont des contenus d'exemple.</p>
+</div>
+
+<!-- PLATEFORME -->
+<section class="block" id="plateforme">
+  <header>
+    <span class="eyebrow">01 · Plateforme</span>
+    <h2>Une promesse, trois principes</h2>
+  </header>
+  <div class="chapter chR" style="grid-template-columns:1fr">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span class="k">Promesse</span>
+      <p style="font:700 clamp(24px,3.6vw,38px)/1.15 'Archivo',sans-serif;font-stretch:110%;max-width:30ch">Tout le voyage d'un coup d'œil. Ce qui est fait, ce qui reste, et ce que savent ceux qui sont passés avant vous.</p>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="panel"><h4>Se repérer avant tout</h4><p>Chaque écran répond d'abord à « où en suis-je ? ». Le schéma du voyage et la station « ici » en glacier sont toujours à un geste.</p></div>
+    <div class="panel"><h4>Une légende, pas de décoration</h4><p>Chaque objet a un symbole, chaque trajet un trait, chaque statut une forme. Les couleurs sont rares et ont toutes un sens.</p></div>
+    <div class="panel"><h4>Savoir d'où vient l'info</h4><p>Mon plan, mes compagnons, mes amis, les autres voyageurs, la météo, les actus : chaque source est un calque identifié par ses anneaux.</p></div>
+  </div>
+</section>
+
+<!-- LOGO -->
+<section class="block" id="logo">
+  <header>
+    <span class="eyebrow">02 · Logo</span>
+    <h2>Le E en lacets</h2>
+    <p class="lead">Le E d'Etapa, tracé d'un seul trait comme une route de montagne : départ en haut, descente, virage en épingle au milieu, arrivée en bas. Le point blanc marque l'étape atteinte. Un seul voyage, construit étape par étape.</p>
+  </header>
+
+  <div class="cols" style="align-items:stretch">
+    <div class="spec-box" style="background:#10231f;color:#e6ece6;align-items:center;justify-content:center;gap:16px">
+      <svg viewBox="0 0 64 64" width="240" height="240" style="max-width:100%;height:auto" aria-label="Construction du symbole sur grille">
+        <rect width="64" height="64" fill="#10231f"/>
+        <g stroke="#9fb3ad" stroke-width=".15" opacity=".5"><path d="M0 0V64"/><path d="M4 0V64"/><path d="M8 0V64"/><path d="M12 0V64"/><path d="M16 0V64"/><path d="M20 0V64"/><path d="M24 0V64"/><path d="M28 0V64"/><path d="M32 0V64"/><path d="M36 0V64"/><path d="M40 0V64"/><path d="M44 0V64"/><path d="M48 0V64"/><path d="M52 0V64"/><path d="M56 0V64"/><path d="M60 0V64"/><path d="M64 0V64"/><path d="M0 0H64"/><path d="M0 4H64"/><path d="M0 8H64"/><path d="M0 12H64"/><path d="M0 16H64"/><path d="M0 20H64"/><path d="M0 24H64"/><path d="M0 28H64"/><path d="M0 32H64"/><path d="M0 36H64"/><path d="M0 40H64"/><path d="M0 44H64"/><path d="M0 48H64"/><path d="M0 52H64"/><path d="M0 56H64"/><path d="M0 60H64"/><path d="M0 64H64"/></g>
+        <g fill="none" stroke="#b8662f" stroke-width=".3" stroke-dasharray="1 1"><path d="M0 13H64M0 51H64M19 0V64M45 0V64M0 34.5H64"/></g>
+        <path class="trace-path" d="M45 13 H27 Q19 13 19 21 V24 Q19 31 26 31 H41 Q45 31 45 34.5 Q45 38 41 38 H26 Q19 38 19 45 Q19 51 27 51 H40" pathLength="100" stroke="#5fd0c8" stroke-width="6.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle class="trace-dot" cx="47" cy="51" r="6" fill="#ffffff" stroke="#10231f" stroke-width="2"/>
+        <g font-family="JetBrains Mono, monospace" font-size="2.2" fill="#9fb3ad"><text x="46" y="10">DÉPART</text><text x="48.5" y="35.3">ÉPINGLE</text><text x="44" y="59.5">ARRIVÉE</text></g>
+      </svg>
+      <button class="copy" id="replay" type="button" style="background:#5fd0c8;color:#10231f">Rejouer le tracé</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="rules" style="grid-template-columns:1fr">
+        <p><b>Grille</b>Symbole dessiné sur 64 unités. Trait de 6,5 unités, angles arrondis, trois branches alignées sur les lignes 13, 34,5 et 51.</p>
+        <p><b>Le point d'arrivée</b>Diamètre 12 unités, détaché du trait par un liseré de 2 unités couleur fond. Blanc sur fond sombre : c'est l'étape atteinte.</p>
+        <p><b>Couleurs</b>Fond forêt, trait glacier, point blanc. Sur fond clair : trait forêt, point glacier cerclé de forêt.</p>
+        <p><b>Mouvement</b>À l'ouverture de l'app, le E se trace du départ à l'arrivée en 900 ms, puis le point s'allume. Le même tracé sert d'indicateur de chargement.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="variants">
+    <div class="variant pick">
+      <h4>Tailles réelles <span>optique ajustée</span></h4>
+      <div class="sizes" style="background:#ecefe8;color:#10231f">
+        <figure><svg width="60" height="60"><use href="#etapa-icon"/></svg><figcaption>60</figcaption></figure>
+        <figure><svg width="29" height="29"><use href="#etapa-icon-s"/></svg><figcaption>29</figcaption></figure>
+        <figure><svg width="16" height="16"><use href="#etapa-icon-xs"/></svg><figcaption>16</figcaption></figure>
+      </div>
+      <p>Le trait s'épaissit quand l'icône rapetisse. À 16 px, l'épingle du milieu se ferme pour garder un E net.</p>
+    </div>
+    <div class="variant">
+      <h4>Écran d'accueil <span>60 px</span></h4>
+      <div class="home" style="grid-template-columns:repeat(4,1fr);padding:14px">
+        <span><i></i>Photos</span><span><svg viewBox="0 0 64 64"><use href="#etapa-icon"/></svg>Etapa</span><span><i></i>Plans</span><span><i></i>Météo</span>
+      </div>
+      <p>« Etapa » tient sous l'icône sans être tronqué (5 lettres).</p>
+    </div>
+    <div class="variant">
+      <h4>Symbole seul <span>favicon, notifications</span></h4>
+      <div class="sizes" style="background:#10231f;color:#e6ece6">
+        <figure><svg width="40" height="50"><use href="#etapa-mark-d"/></svg><figcaption>sombre</figcaption></figure>
+        <figure style="background:#ecefe8;padding:6px;border-radius:6px"><svg width="40" height="50"><use href="#etapa-mark-l"/></svg><figcaption style="color:#10231f">clair</figcaption></figure>
+      </div>
+      <p>Sans le carré de l'icône, pour les en-têtes, l'App Store et l'impression.</p>
+    </div>
+  </div>
+
+  <div class="lockups">
+    <div class="logo-tile" style="background:#10231f;color:#e6ece6;border-color:#10231f">
+      <div class="wmR"><svg width="38" height="48" aria-hidden="true"><use href="#etapa-mark-d"/></svg><div style="font-size:34px;letter-spacing:.06em">Etapa</div></div>
+      <small>Horizontal · version principale</small>
+    </div>
+    <div class="logo-tile" style="background:#ecefe8;color:#10231f;border-color:#d3dad3">
+      <div class="wmR"><svg width="38" height="48" aria-hidden="true"><use href="#etapa-mark-l"/></svg><div style="font-size:34px;letter-spacing:.06em">Etapa</div></div>
+      <small>Horizontal · version claire</small>
+    </div>
+    <div class="logo-tile" style="background:#10231f;color:#e6ece6;border-color:#10231f">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <svg width="44" height="55" aria-hidden="true"><use href="#etapa-mark-d"/></svg>
+        <span style="font:800 28px/1 'Archivo',sans-serif;font-stretch:125%;text-transform:uppercase;letter-spacing:.06em">Etapa</span>
+        <span style="font:500 10px 'JetBrains Mono',monospace;letter-spacing:.08em;color:#9fb3ad">CARNET DE ROUTE</span>
+      </div>
+      <small>Vertical · avec descripteur</small>
+    </div>
+  </div>
+  <div class="rules">
+    <p><b>Zone de protection</b>Autour du logo, un espace libre égal au diamètre du point d'arrivée.</p>
+    <p><b>Taille minimale</b>Logo horizontal : 88 px de large à l'écran, 22 mm à l'impression. En dessous, symbole seul.</p>
+    <p><b>Descripteur</b>« Carnet de route » (ou sa traduction) sous le nom, quand le contexte ne dit pas ce que fait l'app.</p>
+    <p><b>Wordmark</b>Archivo 800, largeur 125 %, capitales, interlettrage +6 %.</p>
+  </div>
+  <div class="donts">
+    <div class="dont"><div style="background:#ecefe8"><svg width="38" height="48"><use href="#etapa-mark-d"/></svg></div><p>Glacier et blanc sur fond clair</p></div>
+    <div class="dont"><div style="background:#10231f"><svg width="38" height="48" style="transform:rotate(90deg)"><use href="#etapa-mark-d"/></svg></div><p>Symbole tourné</p></div>
+    <div class="dont"><div style="background:linear-gradient(135deg,#5fd0c8,#7b5cd6)"><svg width="38" height="48"><use href="#etapa-mark-d"/></svg></div><p>Fond en dégradé</p></div>
+    <div class="dont"><div style="background:#10231f"><span style="font:800 22px 'Archivo',sans-serif;font-stretch:62%;color:#e6ece6;text-transform:uppercase">Etapa</span></div><p>Wordmark compressé</p></div>
+  </div>
+</section>
+
+<!-- COULEURS -->
+<section class="block" id="couleurs">
+  <header>
+    <span class="eyebrow">03 · Couleurs</span>
+    <h2>Deux thèmes, un seul sens</h2>
+    <p class="lead">Le thème clair sert la préparation, le thème sombre sert la route (et le mode Live, qui garde l'écran allumé). Chaque couleur a un rôle unique, le même dans les deux thèmes.</p>
+  </header>
+  <div class="tokens">
+    <div class="tok" style="background:#f7f8f4;color:#10231f;border-color:#d3dad3">
+      <header style="background:#ecefe8">Thème clair</header>
+      <div class="r"><i style="background:#ecefe8"></i><span>Fond<br><code>--fond</code></span><small>#ECEFE8</small></div>
+      <div class="r"><i style="background:#f7f8f4"></i><span>Surface<br><code>--surface</code></span><small>#F7F8F4</small></div>
+      <div class="r"><i style="background:#10231f"></i><span>Encre · texte<br><code>--encre</code></span><small>#10231F · 14,1</small></div>
+      <div class="r"><i style="background:#4e6660"></i><span>Texte secondaire<br><code>--encre-2</code></span><small>#4E6660 · 5,8</small></div>
+      <div class="r"><i style="background:#5fd0c8"></i><span>Glacier · ici, réservé (cerclé)<br><code>--glacier</code></span><small>#5FD0C8</small></div>
+      <div class="r"><i style="background:#0b6f69"></i><span>Glacier texte · liens<br><code>--glacier-texte</code></span><small>#0B6F69 · 5,6</small></div>
+      <div class="r"><i style="background:#b8662f"></i><span>Bistre · courbes, tracés<br><code>--bistre</code></span><small>#B8662F</small></div>
+      <div class="r"><i style="background:#9a5222"></i><span>Bistre texte · à faire<br><code>--bistre-texte</code></span><small>#9A5222 · 5,0</small></div>
+      <div class="r"><i style="background:#3d6fb6"></i><span>Eau · ferry, mer<br><code>--eau</code></span><small>#3D6FB6 · 4,8</small></div>
+      <div class="r"><i style="background:#ab3626"></i><span>Balise · alertes<br><code>--balise</code></span><small>#AB3626 · 5,5</small></div>
+    </div>
+    <div class="tok" style="background:#10231f;color:#e6ece6;border-color:#10231f">
+      <header style="background:#0b1916">Thème sombre · route et Live</header>
+      <div class="r"><i style="background:#0b1916"></i><span>Fond<br><code>--fond</code></span><small>#0B1916</small></div>
+      <div class="r"><i style="background:#10231f"></i><span>Surface<br><code>--surface</code></span><small>#10231F</small></div>
+      <div class="r"><i style="background:#e6ece6"></i><span>Encre · texte<br><code>--encre</code></span><small>#E6ECE6 · 15,0</small></div>
+      <div class="r"><i style="background:#9fb3ad"></i><span>Texte secondaire<br><code>--encre-2</code></span><small>#9FB3AD · 8,2</small></div>
+      <div class="r"><i style="background:#5fd0c8"></i><span>Glacier · ici, réservé, liens<br><code>--glacier</code></span><small>#5FD0C8 · 9,7</small></div>
+      <div class="r"><i style="background:#d98a55"></i><span>Bistre · tracés, à faire<br><code>--bistre</code></span><small>#D98A55 · 6,6</small></div>
+      <div class="r"><i style="background:#7fa8e0"></i><span>Eau<br><code>--eau</code></span><small>#7FA8E0 · 7,4</small></div>
+      <div class="r"><i style="background:#ff7a66"></i><span>Balise · alertes<br><code>--balise</code></span><small>#FF7A66 · 7,1</small></div>
+    </div>
+  </div>
+  <p class="note">Chiffres après le hex : contraste WCAG mesuré sur le fond du thème. Tous les textes atteignent au moins AA (4,5 : 1). Le glacier n'est jamais utilisé seul sur fond clair (1,6 : 1) : il est toujours cerclé d'encre.</p>
+  <div class="cols">
+    <div class="spec-box" style="background:#ecefe8;color:#10231f;border:1px solid #d3dad3">
+      <span class="spec-label">Statuts · forme d'abord, couleur ensuite</span>
+      <div class="spec-row">
+        <span class="chip" style="background:#10231f;color:#5fd0c8"><svg viewBox="0 0 14 14"><path d="M7 1l6 6-6 6-6-6z" fill="currentColor"/></svg>Réservé</span>
+        <span class="chip" style="background:#10231f;color:#ecefe8"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="currentColor"/></svg>Payé</span>
+        <span class="chip" style="border:1.5px dashed #9a5222;color:#9a5222"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 2"/></svg>À faire</span>
+        <span class="chip" style="border:1px solid #b9c5bf;color:#4e6660"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>Fait</span>
+      </div>
+    </div>
+    <div class="spec-box" style="background:#10231f;color:#e6ece6">
+      <span class="spec-label">Cercles de partage</span>
+      <div class="spec-row" style="color:#5fd0c8">
+        <span class="share"><svg><use href="#sh1"/></svg><span style="color:#e6ece6">Moi</span></span>
+        <span class="share"><svg><use href="#sh2"/></svg><span style="color:#e6ece6">Compagnons</span></span>
+        <span class="share"><svg><use href="#sh3"/></svg><span style="color:#e6ece6">Amis</span></span>
+        <span class="share"><svg><use href="#sh4"/></svg><span style="color:#e6ece6">Voyageurs</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRAIT -->
+<section class="block" id="trait">
+  <header>
+    <span class="eyebrow">04 · Système de trait</span>
+    <h2>Le cœur de Tracé : un trait par mode, une forme par statut</h2>
+    <p class="lead">Repris des conventions des cartes topographiques. Le même trait sert sur le schéma du voyage, sur la carte et sur l'affiche souvenir. Il reste lisible en noir et blanc et pour les daltoniens.</p>
+  </header>
+  <div class="tablewrap strokes">
+    <table>
+      <thead><tr><th>Mode</th><th>Trait</th><th>Spécification (schéma)</th><th>Pourquoi</th></tr></thead>
+      <tbody>
+        <tr><td>Route · voiture, van, moto</td><td><svg viewBox="0 0 120 18"><path d="M4 9h112" stroke="#10231f" stroke-width="5"/></svg></td><td class="num">Plein · 5 px · encre</td><td>La route, trait principal des cartes</td></tr>
+        <tr><td>Rail · train</td><td><svg viewBox="0 0 120 18"><path d="M4 9h112" stroke="#10231f" stroke-width="4"/><path d="M12 3v12M26 3v12M40 3v12M54 3v12M68 3v12M82 3v12M96 3v12M110 3v12" stroke="#10231f" stroke-width="1.3"/></svg></td><td class="num">Plein 4 px + traverses 1,3 px / 14 px</td><td>Convention des voies ferrées</td></tr>
+        <tr><td>Bus, tram</td><td><svg viewBox="0 0 120 18"><path d="M4 6h112M4 12h112" stroke="#10231f" stroke-width="1.6"/></svg></td><td class="num">Double trait · 1,6 px · écart 6 px</td><td>Les rails du tram, la voie réservée</td></tr>
+        <tr><td>À pied, vélo</td><td><svg viewBox="0 0 120 18"><path d="M4 9h112" stroke="#10231f" stroke-width="2" stroke-dasharray="5 4"/></svg></td><td class="num">Tirets 5/4 · 2 px</td><td>Le sentier</td></tr>
+        <tr><td>Bateau, ferry</td><td><svg viewBox="0 0 120 18"><path d="M4 9h112" stroke="#3d6fb6" stroke-width="2.6" stroke-dasharray="0.5 6" stroke-linecap="round"/></svg></td><td class="num">Points · 2,6 px · eau</td><td>Seule couleur de trajet : l'eau est bleue sur toutes les cartes</td></tr>
+        <tr><td>Avion</td><td><svg viewBox="0 0 120 18"><path d="M4 16 Q 60 -6 116 16" stroke="#10231f" stroke-width="1.6" fill="none"/></svg></td><td class="num">Arc fin · 1,6 px</td><td>Un vol ne suit pas le sol</td></tr>
+        <tr><td>Trajet à réserver</td><td><svg viewBox="0 0 120 18"><path d="M4 9h112" stroke="#9a5222" stroke-width="2" stroke-dasharray="3 3"/></svg></td><td class="num">Tirets bistre · 2 px</td><td>Le statut prime sur le mode</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="legend" style="background:#f7f8f4;color:#10231f;border:1px solid #d3dad3">
+    <span class="lg-item"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="7" fill="#ecefe8" stroke="#10231f" stroke-width="2.5"/></svg>Étape</span>
+    <span class="lg-item"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="#10231f"/><circle cx="13" cy="13" r="4" fill="#ecefe8"/></svg>Nuit (terminus du jour)</span>
+    <span class="lg-item"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" fill="#5fd0c8" opacity=".35"/><circle cx="13" cy="13" r="7" fill="#5fd0c8" stroke="#10231f" stroke-width="2.5"/></svg>Vous êtes ici</span>
+    <span class="lg-item"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="7" fill="none" stroke="#9a5222" stroke-width="2" stroke-dasharray="3 3"/></svg>À réserver</span>
+    <span class="lg-item"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="7" fill="#ecefe8" stroke="#b9c5bf" stroke-width="2"/><path d="M9.5 13l2.5 2.5 4.5-5" stroke="#4e6660" stroke-width="2" fill="none"/></svg>Fait</span>
+    <span class="lg-item"><svg viewBox="0 0 26 26"><path d="M13 3l2.5 7.5L23 13l-7.5 2.5L13 23l-2.5-7.5L3 13l7.5-2.5z" fill="none" stroke="#0b6f69" stroke-width="1.8"/></svg>Astuce</span>
+    <span class="lg-item"><svg viewBox="0 0 26 26" style="color:#ab3626"><use href="#i-actu"/></svg>Actu, alerte</span>
+  </div>
+</section>
+
+<!-- TYPO -->
+<section class="block" id="typo">
+  <header>
+    <span class="eyebrow">05 · Typographie</span>
+    <h2>Une famille, trois largeurs, une police de données</h2>
+  </header>
+  <div class="type-scale" style="background:#ecefe8;color:#10231f;border:1px solid #d3dad3">
+    <div class="ts"><small>display · lieu<br>Archivo 800 · largeur 125 % · 34</small><span style="font:800 34px/1 'Archivo';font-stretch:125%;text-transform:uppercase">Lisbonne</span></div>
+    <div class="ts"><small>titre<br>Archivo 700 · 110 % · 22</small><span style="font:700 22px/1.2 'Archivo';font-stretch:110%">Jour 6 · Belém, LX Factory et fado</span></div>
+    <div class="ts"><small>station<br>Archivo 800 · 100 % · 15</small><span style="font:800 15px/1.3 'Archivo'">Monastère des Hiéronymites</span></div>
+    <div class="ts"><small>texte<br>Archivo 400 · 100 % · 15/22</small><span style="font:400 15px/1.5 'Archivo'">Prendre le tram 28 au terminus : on a une place assise et on évite 40 minutes de queue.</span></div>
+    <div class="ts"><small>tableau dense<br>Archivo 500 · 75 % · 14</small><span style="font:500 14px/1.4 'Archivo';font-stretch:75%">Hébergement 640 € · Transport 310 € · Repas 280 € · Activités 150 €</span></div>
+    <div class="ts"><small>donnée<br>JetBrains Mono 500 · 13</small><span style="font:500 13px 'JetBrains Mono';font-variant-numeric:tabular-nums">38°43′N 9°08′O · 186 km · 16:42 · 1 380,00 €</span></div>
+    <div class="ts"><small>légende<br>JetBrains Mono 500 · 10 · capitales</small><span style="font:500 10px 'JetBrains Mono';letter-spacing:.08em;text-transform:uppercase">Calque · astuces des amis · 3</span></div>
+  </div>
+</section>
+
+<!-- COMPOSANTS -->
+<section class="block" id="composants">
+  <header>
+    <span class="eyebrow">06 · Composants</span>
+    <h2>Les briques de l'interface</h2>
+  </header>
+  <div class="comp-grid">
+    <div class="comp R" style="border:1px solid #d3dad3">
+      <small>Boutons</small>
+      <div class="btns">
+        <span class="btn" style="background:#10231f;color:#ecefe8"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>Ajouter une étape</span>
+        <span class="btn" style="border:1.5px solid #10231f;color:#10231f">Réserver</span>
+        <span class="btn" style="color:#0b6f69;padding-inline:4px">Voir sur la carte</span>
+      </div>
+      <div class="seg"><span class="on">Schéma</span><span>Carte</span><span>Liste</span></div>
+    </div>
+    <div class="comp R" style="border:1px solid #d3dad3">
+      <small>Segment de trajet</small>
+      <svg viewBox="0 0 300 80" aria-label="Segment Coimbra vers Lisbonne" style="width:100%;height:auto">
+        <path d="M20 40 H280" stroke="#10231f" stroke-width="5"/>
+        <circle cx="20" cy="40" r="11" fill="#5fd0c8" opacity=".35"/><circle cx="20" cy="40" r="7" fill="#5fd0c8" stroke="#10231f" stroke-width="2.5"/>
+        <circle cx="280" cy="40" r="9" fill="#10231f"/><circle cx="280" cy="40" r="3.5" fill="#ecefe8"/>
+        <g font-family="Archivo" fill="#10231f"><text x="8" y="18" font-size="13" font-weight="800">Coimbra</text><text x="236" y="18" font-size="13" font-weight="800">Lisbonne</text></g>
+        <text x="150" y="68" font-family="JetBrains Mono" font-size="10" fill="#4e6660" text-anchor="middle">206 KM · 2 H 10 · PÉAGE 13,60 €</text>
+        <rect x="136" y="30" width="28" height="20" rx="5" fill="#ecefe8" stroke="#10231f" stroke-width="1.5"/><use href="#i-voiture" x="141" y="31" width="18" height="18" style="color:#10231f"/>
+      </svg>
+    </div>
+    <div class="comp R" style="border:1px solid #d3dad3">
+      <small>Astuce · source, cercle, date</small>
+      <div class="tip"><svg style="color:#0b6f69"><use href="#sh3"/></svg><span><b>Miradouro au coucher du soleil</b>Venir 30 min avant, les marches sont vite prises.<br><small>LÉA · AMIE · MAI 2026</small></span></div>
+      <div class="tip"><svg style="color:#0b6f69"><use href="#sh4"/></svg><span><b>Tram 28 au terminus</b>Place assise, 40 min de queue en moins.<br><small>VOYAGEUR VÉRIFIÉ · 12 « UTILE »</small></span></div>
+    </div>
+    <div class="comp R" style="border:1px solid #d3dad3">
+      <small>Calques · interrupteurs</small>
+      <div class="layers"><span class="on">Mon plan</span><span class="on">Compagnons</span><span class="on">Amis</span><span>Voyageurs</span><span class="on">Météo</span><span class="on">Actus</span></div>
+      <div class="alert" style="background:#10231f"><b>ACTU · LISBONNE</b>Marathon dimanche : centre fermé de 8 h à 14 h.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ÉCRANS -->
+<section class="block" id="ecrans">
+  <header>
+    <span class="eyebrow">07 · Écrans</span>
+    <h2>Le parcours principal, en sept écrans</h2>
+    <p class="lead">Navigation en cinq onglets : Voyage, Jour, Carte, Budget, Astuces. Les documents sont dans Voyage. Le mode Live passe automatiquement en thème sombre.</p>
+  </header>
+  <div class="screens">
+
+    <!-- 1 Voyage -->
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="coord">41°09′N → 38°43′N · 9 JOURS · 4 VOYAGEURS</span>
+          <span class="ttl">Portugal</span>
+          <svg viewBox="0 0 232 290" aria-label="Schéma du voyage" style="width:100%;height:auto">
+            <path d="M22 16 Q 8 42 22 66" stroke="#10231f" stroke-width="1.6" fill="none"/>
+            <path d="M22 66 V118 L64 160" stroke="#10231f" stroke-width="5" stroke-linejoin="round" fill="none"/>
+            <path d="M64 160 V226" stroke="#10231f" stroke-width="5"/>
+            <path d="M64 226 H124" stroke="#10231f" stroke-width="4"/><path d="M76 221v10M90 221v10M104 221v10M118 221v10" stroke="#10231f" stroke-width="1.2"/>
+            <path d="M64 226 V272" stroke="#9a5222" stroke-width="2" stroke-dasharray="3 3"/>
+            <g fill="#ecefe8" stroke="#10231f" stroke-width="2.5"><circle cx="22" cy="16" r="6"/><circle cx="124" cy="226" r="6"/></g>
+            <circle cx="22" cy="66" r="9" fill="#10231f"/><circle cx="22" cy="66" r="3.5" fill="#ecefe8"/>
+            <circle cx="64" cy="226" r="9" fill="#10231f"/><circle cx="64" cy="226" r="3.5" fill="#ecefe8"/>
+            <circle cx="64" cy="160" r="12" fill="#5fd0c8" opacity=".35"/><circle cx="64" cy="160" r="8" fill="#5fd0c8" stroke="#10231f" stroke-width="2.5"/>
+            <circle cx="64" cy="272" r="7" fill="none" stroke="#9a5222" stroke-width="2" stroke-dasharray="3 3"/>
+            <g font-family="Archivo" fill="#10231f">
+              <text x="38" y="20" font-size="11" font-weight="700">Paris</text>
+              <text x="40" y="64" font-size="14" font-weight="800">Porto</text><text x="40" y="78" font-size="8.5" fill="#4e6660" font-family="JetBrains Mono">3 NUITS · FAIT</text>
+              <text x="84" y="156" font-size="14" font-weight="800">Coimbra</text><text x="84" y="170" font-size="8.5" fill="#0b6f69" font-family="JetBrains Mono" font-weight="700">ICI · 21° · 1 NUIT</text>
+              <text x="70" y="250" font-size="14" font-weight="800">Lisbonne</text><text x="70" y="262" font-size="8.5" fill="#4e6660" font-family="JetBrains Mono">4 NUITS · PAYÉ · ◆ 3</text>
+              <text x="132" y="222" font-size="10" font-weight="700">Sintra</text>
+              <text x="80" y="284" font-size="11" font-weight="700">Paris</text><text x="112" y="284" font-size="8.5" fill="#9a5222" font-family="JetBrains Mono">VOL À RÉSERVER</text>
+            </g>
+          </svg>
+          <div class="tabbar"><span class="on"><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Voyage</b>Le schéma : où on en est, ce qui reste</span>
+    </div>
+
+    <!-- 2 Jour -->
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="coord">LISBONNE · JOUR 6 / 9</span>
+          <span class="ttl" style="font-size:22px">Belém et fado</span>
+          <svg viewBox="0 0 232 300" aria-label="Programme du jour" style="width:100%;height:auto">
+            <path d="M24 12 V76" stroke="#10231f" stroke-width="1.6"/><path d="M30 12 V76" stroke="#10231f" stroke-width="1.6"/>
+            <path d="M27 76 V140" stroke="#10231f" stroke-width="2" stroke-dasharray="5 4"/>
+            <path d="M24 140 V206" stroke="#10231f" stroke-width="1.6"/><path d="M30 140 V206" stroke="#10231f" stroke-width="1.6"/>
+            <path d="M27 206 V280" stroke="#10231f" stroke-width="2" stroke-dasharray="5 4"/>
+            <g fill="#ecefe8" stroke="#10231f" stroke-width="2.5"><circle cx="27" cy="12" r="6"/><circle cx="27" cy="140" r="7"/><circle cx="27" cy="206" r="7"/></g>
+            <circle cx="27" cy="76" r="11" fill="#5fd0c8" opacity=".35"/><circle cx="27" cy="76" r="7" fill="#5fd0c8" stroke="#10231f" stroke-width="2.5"/>
+            <circle cx="27" cy="280" r="7" fill="#ecefe8" stroke="#10231f" stroke-width="2.5"/>
+            <g font-family="JetBrains Mono" font-size="9" font-weight="500" fill="#4e6660"><text x="46" y="9">09:15</text><text x="46" y="73">10:00</text><text x="46" y="137">13:00</text><text x="46" y="203">16:30</text><text x="46" y="277">20:30</text></g>
+            <g font-family="Archivo" fill="#10231f"><text x="46" y="22" font-size="12.5" font-weight="800">Casa do Alfama</text>
+              <text x="46" y="86" font-size="12.5" font-weight="800">Hiéronymites</text><text x="46" y="99" font-size="9" fill="#0b6f69" font-family="JetBrains Mono" font-weight="700">◆ RÉSERVÉ · 2 BILLETS</text>
+              <text x="46" y="150" font-size="12.5" font-weight="800">Pastéis &amp; cafés</text><text x="46" y="163" font-size="9" fill="#4e6660" font-family="JetBrains Mono">◆ 1 ASTUCE D'AMIE</text>
+              <text x="46" y="216" font-size="12.5" font-weight="800">LX Factory</text>
+              <text x="46" y="290" font-size="12.5" font-weight="800">Dîner fado à Alfama</text></g>
+            <g font-family="Archivo" font-size="9" fill="#4e6660"><text x="150" y="48">tram 15E · 25 min</text><text x="150" y="112">à pied · 8 min</text><text x="150" y="178">bus 728 · 20 min</text><text x="150" y="250">à pied · 35 min</text></g>
+          </svg>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Voyage</span><span class="on"><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Jour</b>Tram en double trait, marche en tirets</span>
+    </div>
+
+    <!-- 3 Carte -->
+    <div class="phone-col">
+      <div class="phone R" style="background:#e4e9e2"><span class="notch"></span>
+        <svg class="bg" viewBox="0 0 260 548" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 410 C 60 390, 120 430, 260 380 V548 H0z" fill="#c9dbe8"/>
+          <g fill="none" stroke="#c98a5b" stroke-width="1" opacity=".6"><ellipse cx="90" cy="230" rx="40" ry="24"/><ellipse cx="90" cy="230" rx="70" ry="44"/><ellipse cx="190" cy="275" rx="30" ry="18"/><ellipse cx="190" cy="275" rx="54" ry="34"/><path d="M-10 335 C 80 305, 160 355, 270 315"/></g>
+          <path d="M40 345 L 90 305 L 120 250 L 190 275 L 220 225" stroke="#10231f" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+          <path d="M20 392 C 80 380, 130 386, 160 380" stroke="#10231f" stroke-width="1.6" fill="none"/><path d="M20 398 C 80 386, 130 392, 160 386" stroke="#10231f" stroke-width="1.6" fill="none"/>
+          <path d="M130 440 C 160 470, 200 470, 240 450" stroke="#3d6fb6" stroke-width="2.6" stroke-dasharray="0.5 6" stroke-linecap="round" fill="none"/>
+        </svg>
+        <div class="ph-in">
+          <span class="coord">38°43′N · 9°08′O · LISBONNE</span>
+          <div class="layers"><span class="on">Mon plan</span><span class="on">Amis</span><span>Voyageurs</span><span class="on">Météo</span><span class="on">Actus</span></div>
+          <svg width="26" height="26" style="position:absolute;left:78px;top:216px;color:#0b6f69;background:#f7f8f4;border-radius:50%;z-index:2"><use href="#sh3"/></svg>
+          <svg width="26" height="26" style="position:absolute;left:178px;top:262px;color:#0b6f69;background:#f7f8f4;border-radius:50%;z-index:2"><use href="#sh2"/></svg>
+          <span style="position:absolute;left:111px;top:240px;width:18px;height:18px;border-radius:50%;background:#5fd0c8;border:3px solid #10231f;box-shadow:0 0 0 6px rgba(95,208,200,.35);z-index:2"></span>
+          <div class="wx" style="top:84px"><svg width="18" height="18" style="color:#5fd0c8"><use href="#i-meteo"/></svg><span>21°<small>LISBONNE</small></span></div>
+          <div style="flex:1"></div>
+          <div class="alert"><b>ACTU · DIMANCHE</b>Marathon : centre fermé de 8 h à 14 h.</div>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span class="on"><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Carte et calques</b>Mêmes traits que le schéma, ferry en pointillés bleus</span>
+    </div>
+
+    <!-- 4 Astuces / station -->
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="coord">STATION · J5 → J9 · 4 NUITS</span>
+          <span class="ttl">Lisbonne</span>
+          <div class="alert"><b>INFO TRAFIC</b>Marathon dimanche : centre fermé de 8 h à 14 h.</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;border:1.5px solid #10231f;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:700">21° ensoleillé<span style="font:500 9.5px 'JetBrains Mono';color:#4e6660">COUCHER 19:02</span></div>
+          <span class="coord">CORRESPONDANCES · 3 ASTUCES</span>
+          <div class="tip"><svg style="color:#0b6f69"><use href="#sh4"/></svg><span><b>Tram 28 au terminus</b><small>VOYAGEUR VÉRIFIÉ · 12 « UTILE »</small></span></div>
+          <div class="tip"><svg style="color:#0b6f69"><use href="#sh3"/></svg><span><b>Miradouro au coucher</b><small>LÉA · AMIE</small></span></div>
+          <div class="tip"><svg style="color:#0b6f69"><use href="#sh2"/></svg><span><b>Fado réservé 20 h 30</b><small>TOM · COMPAGNON</small></span></div>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span class="on"><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Station et astuces</b>Info trafic, météo, correspondances</span>
+    </div>
+
+    <!-- 5 Budget -->
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="coord">BUDGET · 4 VOYAGEURS · EUR</span>
+          <span class="ttl" style="font-size:34px;font-stretch:112%">1 380 €</span>
+          <span class="meta">dépensés sur 2 400 € prévus · 345 € / personne</span>
+          <div class="bar"><i style="width:57.5%"></i></div>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-top:4px;font-size:12.5px">
+            <div><div style="display:flex;justify-content:space-between"><span><svg width="14" height="14" style="vertical-align:-2px"><use href="#i-nuit"/></svg> Hébergement</span><span style="font-family:'JetBrains Mono'">640 €</span></div><div class="bar" style="height:5px;margin-top:3px"><i style="width:46%"></i></div></div>
+            <div><div style="display:flex;justify-content:space-between"><span><svg width="14" height="14" style="vertical-align:-2px"><use href="#i-voiture"/></svg> Transport</span><span style="font-family:'JetBrains Mono'">310 €</span></div><div class="bar" style="height:5px;margin-top:3px"><i style="width:22%"></i></div></div>
+            <div><div style="display:flex;justify-content:space-between"><span>Repas</span><span style="font-family:'JetBrains Mono'">280 €</span></div><div class="bar" style="height:5px;margin-top:3px"><i style="width:20%"></i></div></div>
+            <div><div style="display:flex;justify-content:space-between"><span>Activités</span><span style="font-family:'JetBrains Mono'">150 €</span></div><div class="bar" style="height:5px;margin-top:3px"><i style="width:11%"></i></div></div>
+          </div>
+          <div class="card" style="margin-top:4px">
+            <div class="r" style="grid-template-columns:1fr auto"><span>Tom doit à Léa</span><span style="font-family:'JetBrains Mono';color:#5fd0c8">42,50 €</span></div>
+            <div class="r" style="grid-template-columns:1fr auto"><span>Vol retour (à réserver)</span><span style="font-family:'JetBrains Mono';color:#d98a55">≈ 520 €</span></div>
+          </div>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span class="on"><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Budget</b>Total, catégories, comptes entre compagnons</span>
+    </div>
+
+    <!-- 6 Documents -->
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="coord">VOYAGE · DOCUMENTS</span>
+          <span class="ttl" style="font-size:24px">Avant de partir</span>
+          <span class="meta">4 sur 6 prêts</span>
+          <div class="bar"><i style="width:66%"></i></div>
+          <div>
+            <div class="row"><svg><use href="#i-doc"/></svg><span>Carte d'identité<small>Privé · expire 2031</small></span><span class="st st-done">FAIT</span></div>
+            <div class="row"><svg><use href="#i-doc"/></svg><span>Assurance voyage<small>Partagé · compagnons</small></span><span class="st st-done">FAIT</span></div>
+            <div class="row"><svg><use href="#i-resa"/></svg><span>Billets Paris → Porto<small>4 cartes d'embarquement</small></span><span class="st st-pay">PAYÉ</span></div>
+            <div class="row"><svg><use href="#i-voiture"/></svg><span>Permis + location<small>Retrait Porto, J4</small></span><span class="st st-res">RÉSERVÉ</span></div>
+            <div class="row"><svg><use href="#i-resa"/></svg><span>Carte Viva Viagem<small>Transports Lisbonne</small></span><span class="st st-todo">À FAIRE</span></div>
+            <div class="row"><svg><use href="#i-avion"/></svg><span>Vol retour<small>Lisboa → Paris, J9</small></span><span class="st st-todo">À FAIRE</span></div>
+          </div>
+          <div class="tabbar"><span class="on"><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Documents</b>Checklist, statuts, ce qui est privé ou partagé</span>
+    </div>
+
+    <!-- 7 Live (sombre) -->
+    <div class="phone-col">
+      <div class="phone D"><span class="notch"></span>
+        <svg class="bg" viewBox="0 0 260 548" preserveAspectRatio="none" aria-hidden="true" style="position:absolute;inset:0;z-index:0"><g fill="none" stroke="#d98a55" stroke-width="1" opacity=".22"><path d="M-10 120 C 60 80, 140 170, 270 100"/><path d="M-10 150 C 70 110, 140 200, 270 130"/><path d="M-10 182 C 80 142, 150 232, 270 162"/></g></svg>
+        <div class="ph-in">
+          <span class="coord">LIVE · ÉCRAN ALLUMÉ · A1 SUD</span>
+          <svg width="54" height="68" style="align-self:center;margin-top:10px" aria-hidden="true"><use href="#etapa-mark-d"/></svg>
+          <span class="coord" style="text-align:center">PROCHAINE ÉTAPE</span>
+          <span class="big" style="text-align:center">Lisbonne</span>
+          <span class="big" style="text-align:center;font-size:40px">142 <small>km</small></span>
+          <div style="display:flex;justify-content:space-between;font:500 11px 'JetBrains Mono';color:#9fb3ad;border-top:1px solid #24403a;border-bottom:1px solid #24403a;padding:8px 0"><span>ARRIVÉE 16:42</span><span>19°</span><span>CARBURANT ✓</span></div>
+          <div class="alert" style="background:#10231f"><b>INFO TRAFIC · A1</b>Travaux à Leiria, +10 min. Itinéraire inchangé.</div>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span class="on"><svg><use href="#i-gps"/></svg>Live</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Live · thème sombre</b>Distance et heure d'arrivée lisibles à bout de bras</span>
+    </div>
+  </div>
+</section>
+
+<!-- TON -->
+<section class="block" id="voix">
+  <header>
+    <span class="eyebrow">08 · Ton de voix</span>
+    <h2>Précis comme une carte, simple comme un panneau</h2>
+    <p class="lead">Phrases courtes, faits d'abord, conseil ensuite. Le « vous » par défaut, sans familiarité forcée ni émoji dans l'interface.</p>
+  </header>
+  <div class="voice">
+    <div class="vx"><small>Changement d'horaire</small><p class="yes">Ferry de 16:50 décalé à 17:20. Votre arrivée à Cacilhas est recalculée.</p><p class="no">Oups ! Petit changement de programme 😅</p></div>
+    <div class="vx"><small>Pas de réseau</small><p class="yes">Pas de réseau. Vos modifications sont gardées et seront envoyées au retour du réseau.</p><p class="no">Erreur de synchronisation (code 503).</p></div>
+    <div class="vx"><small>Écran vide</small><p class="yes">Aucune étape pour l'instant. Ajoutez votre point de départ pour tracer le voyage.</p><p class="no">C'est un peu vide ici… Commencez l'aventure !</p></div>
+    <div class="vx"><small>Astuce publiée</small><p class="yes">Astuce publiée pour vos amis. Vous pouvez l'ouvrir à tous les voyageurs à tout moment.</p><p class="no">Bravo, vous êtes un super voyageur !</p></div>
+  </div>
+</section>
+
+<!-- INTERNATIONAL -->
+<section class="block" id="monde">
+  <header>
+    <span class="eyebrow">09 · International</span>
+    <h2>Le même système dans toutes les écritures</h2>
+    <p class="lead">Les noms de lieux s'affichent en langue locale, avec la transcription dans la langue de l'utilisateur. Coordonnées, traits et pictogrammes ne se traduisent pas.</p>
+  </header>
+  <div class="scripts">
+    <div><span>PORTUGAIS · LATIN</span><b>Lisboa</b><span>38°43′N 9°08′O</span></div>
+    <div><span>JAPONAIS · NOTO SANS JP</span><b>京都</b><span>Kyōto · 35°00′N 135°46′E</span></div>
+    <div><span>ARABE · NOTO SANS ARABIC · DROITE À GAUCHE</span><b dir="rtl">مراكش</b><span>Marrakech · 31°37′N 7°59′O</span></div>
+    <div><span>GREC · ARCHIVO</span><b>Αθήνα</b><span>Athènes · 37°59′N 23°43′E</span></div>
+  </div>
+  <p class="note">En arabe et en hébreu, l'interface passe en miroir, mais le schéma du voyage garde le sens de lecture chronologique de haut en bas.</p>
+</section>
+
+<!-- DÉCLINAISONS -->
+<section class="block" id="declinaisons">
+  <header>
+    <span class="eyebrow">10 · Déclinaisons</span>
+    <h2>Store, écran d'accueil, souvenir</h2>
+  </header>
+  <div class="store">
+    <div class="shot" style="background:#10231f;color:#e6ece6">
+      <span style="font:500 9px 'JetBrains Mono';color:#5fd0c8;letter-spacing:.1em">ETAPA · CARNET DE ROUTE</span>
+      <h4>Tout le voyage, d'un coup d'œil</h4>
+      <div class="mini" style="background:#ecefe8;padding:14px 10px">
+        <svg viewBox="0 0 160 200" style="width:100%;height:auto" aria-hidden="true"><path d="M20 10 V60 L50 90 V150" stroke="#10231f" stroke-width="4" fill="none" stroke-linejoin="round"/><path d="M50 150 H100" stroke="#10231f" stroke-width="3"/><path d="M60 146v8M72 146v8M84 146v8M96 146v8" stroke="#10231f" stroke-width="1"/><circle cx="20" cy="10" r="5" fill="#ecefe8" stroke="#10231f" stroke-width="2"/><circle cx="20" cy="60" r="7" fill="#10231f"/><circle cx="50" cy="90" r="7" fill="#5fd0c8" stroke="#10231f" stroke-width="2"/><circle cx="50" cy="150" r="7" fill="#10231f"/><g font-family="Archivo" font-weight="800" font-size="11" fill="#10231f"><text x="32" y="64">Porto</text><text x="62" y="94">Coimbra</text><text x="62" y="140">Lisbonne</text></g></svg>
+      </div>
+    </div>
+    <div class="shot" style="background:#ecefe8;color:#10231f">
+      <span style="font:500 9px 'JetBrains Mono';color:#0b6f69;letter-spacing:.1em">ASTUCES · AMIS · VOYAGEURS</span>
+      <h4>Ce que savent ceux qui sont passés avant vous</h4>
+      <div class="mini R" style="background:#f7f8f4;padding:12px 10px;display:flex;flex-direction:column;gap:8px">
+        <div class="tip" style="font-size:10px"><svg style="color:#0b6f69;width:18px;height:18px"><use href="#sh4"/></svg><span><b style="font-size:11px">Tram 28 au terminus</b></span></div>
+        <div class="tip" style="font-size:10px"><svg style="color:#0b6f69;width:18px;height:18px"><use href="#sh3"/></svg><span><b style="font-size:11px">Miradouro au coucher</b></span></div>
+      </div>
+    </div>
+    <div class="home" aria-label="Icône sur un écran d'accueil">
+      <span><i></i>Photos</span><span><i></i>Météo</span><span><i></i>Plans</span><span><i></i>Notes</span>
+      <span><i></i>Musique</span><span><svg viewBox="0 0 64 64"><use href="#etapa-icon"/></svg>Etapa</span><span><i></i>Banque</span><span><i></i>Mail</span>
+    </div>
+    <div class="poster"><svg viewBox="0 0 300 400" aria-label="Affiche souvenir Tracé">
+      <rect width="300" height="400" fill="#10231f"/>
+      <g fill="none" stroke="#b8662f" stroke-width=".9" opacity=".6"><path d="M-10 80 C 60 50, 140 120, 310 60"/><path d="M-10 104 C 70 74, 150 144, 310 86"/><ellipse cx="200" cy="230" rx="34" ry="18"/><ellipse cx="200" cy="230" rx="62" ry="34"/><ellipse cx="200" cy="230" rx="92" ry="52"/><path d="M-10 300 C 60 280, 170 330, 310 290"/></g>
+      <path d="M60 60 Q 40 90 60 120" stroke="#e6ece6" stroke-width="1.4" fill="none"/>
+      <path d="M60 120 V180 L120 240 V300" stroke="#5fd0c8" stroke-width="5" fill="none" stroke-linejoin="round"/>
+      <path d="M120 300 H200" stroke="#5fd0c8" stroke-width="4"/><path d="M134 294v12M150 294v12M166 294v12M182 294v12" stroke="#5fd0c8" stroke-width="1.2"/>
+      <g fill="#10231f" stroke="#5fd0c8" stroke-width="2.5"><circle cx="60" cy="60" r="5"/><circle cx="60" cy="120" r="7"/><circle cx="120" cy="240" r="7"/><circle cx="120" cy="300" r="7"/><circle cx="200" cy="300" r="5"/></g>
+      <g font-family="JetBrains Mono" font-size="7" fill="#9fb3ad"><text x="72" y="62">PARIS</text><text x="72" y="124">PORTO 41°09′N</text><text x="132" y="244">COIMBRA 40°12′N</text><text x="80" y="318">LISBOA</text><text x="190" y="318">SINTRA</text></g>
+      <text x="20" y="366" font-family="Archivo" font-stretch="125%" font-weight="800" font-size="26" fill="#e6ece6">PORTUGAL</text>
+      <text x="20" y="382" font-family="JetBrains Mono" font-size="7.5" fill="#9fb3ad">OCTOBRE 2026 · 9 JOURS · 450 KM · 4 VOYAGEURS</text>
+    </svg></div>
+  </div>
+</section>
+
+<!-- TOKENS -->
+<section class="block" id="tokens">
+  <header>
+    <span class="eyebrow">11 · Tokens</span>
+    <h2>Prêt à brancher dans l'app</h2>
+    <p class="lead">Les variables CSS de Tracé, à reprendre telles quelles dans le code d'Etapa quand on passera à l'intégration.</p>
+  </header>
+  <button class="copy" id="copy-tokens" type="button">Copier les tokens</button>
+  <pre class="code" id="tokens-code"><span class="c">/* Etapa · Tracé · thème clair */</span>
+:root {
+  --fond: #ECEFE8;  --surface: #F7F8F4;  --surface-haute: #FFFFFF;
+  --encre: #10231F; --encre-2: #4E6660;  --filet: #D3DAD3;
+  --glacier: #5FD0C8;        <span class="c">/* toujours cerclé d'encre sur fond clair */</span>
+  --glacier-texte: #0B6F69;  --bistre: #B8662F;  --bistre-texte: #9A5222;
+  --eau: #3D6FB6;  --balise: #AB3626;
+  --police-titre: 'Archivo', 'Noto Sans', system-ui, sans-serif;
+  --police-donnee: 'JetBrains Mono', ui-monospace, monospace;
+  --trait-route: 5px;  --trait-rail: 4px;  --trait-tram: 1.6px;
+  --trait-pied: 2px;   --tirets-pied: 5 4;  --tirets-eau: 0.5 6;
+  --rayon-carte: 12px; --rayon-bouton: 10px; --rayon-puce: 999px;
+}
+<span class="c">/* Thème sombre · route et Live */</span>
+[data-theme="dark"] {
+  --fond: #0B1916;  --surface: #10231F;  --surface-haute: #17302A;
+  --encre: #E6ECE6; --encre-2: #9FB3AD;  --filet: #24403A;
+  --glacier: #5FD0C8;  --glacier-texte: #5FD0C8;
+  --bistre: #D98A55;   --bistre-texte: #D98A55;
+  --eau: #7FA8E0;  --balise: #FF7A66;
+}</pre>
+</section>
+
+<section class="block">
+  <header>
+    <span class="eyebrow">12 · Suite</span>
+    <h2>Ce qu'il reste à produire</h2>
+  </header>
+  <div class="cols">
+    <div class="panel"><h4>Pour la présentation investisseurs</h4><ul><li>Test du symbole E en lacets hors contexte (10 personnes, dont des lecteurs grecs : « qu'évoque ce symbole ? »).</li><li>Test de préférence rapide Tracé contre deux concurrents, sur trois marchés.</li><li>Une planche de synthèse d'une page reprenant promesse, logo, trois écrans.</li></ul></div>
+    <div class="panel"><h4>Pour l'app</h4><ul><li>Intégrer les tokens dans le CSS d'Etapa, thème clair et sombre.</li><li>Redessiner les écrans existants un par un, en commençant par Voyage.</li><li>Générer le schéma du voyage à partir des étapes et des trajets saisis.</li></ul></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  var b = document.getElementById('replay');
+  if (!b) return;
+  var box = b.parentNode;
+  function play() { box.classList.remove('tracing'); void box.offsetWidth; box.classList.add('tracing'); }
+  b.addEventListener('click', play);
+  play();
+})();
+</script>
+
+<script>
+(function () {
+  var b = document.getElementById('copy-tokens');
+  var pre = document.getElementById('tokens-code');
+  b.addEventListener('click', function () {
+    var t = pre.innerText;
+    var done = function () { b.textContent = 'Tokens copiés'; setTimeout(function () { b.textContent = 'Copier les tokens'; }, 2000); };
+    var fallback = function () { var r = document.createRange(); r.selectNodeContents(pre); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Sélectionné : Cmd/Ctrl + C'; };
+    try { navigator.clipboard.writeText(t).then(done, fallback); } catch (e) { fallback(); }
+  });
+})();
+</script>

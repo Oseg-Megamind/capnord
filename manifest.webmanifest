@@ -1,6 +1,6 @@
 {
-  "name": "Cap Nord — carnet de route",
-  "short_name": "Cap Nord",
+  "name": "Etapa — carnet de route",
+  "short_name": "Etapa",
   "description": "Organisez vos voyages : itinéraire, étapes, hébergements, budget, documents, photos et partage avec vos proches.",
   "lang": "fr",
   "id": "./",
@@ -8,8 +8,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#7a2436",
-  "theme_color": "#7a2436",
+  "background_color": "#10231f",
+  "theme_color": "#ecefe8",
   "icons": [
     { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" },

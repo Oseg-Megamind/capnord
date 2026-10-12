@@ -23,7 +23,7 @@ const ui = {
 let mapView = null;
 const isMobile = () => matchMedia('(max-width: 899px)').matches;
 
-const MARK = '<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M96 500 L246 290 H266 L416 500 Z" fill="currentColor"/><path d="M256 30 C264 120 280 148 330 160 C280 172 264 200 256 290 C248 200 232 172 182 160 C232 148 248 120 256 30 Z" fill="#d9a441"/></svg>';
+const MARK = '<svg viewBox="14 8 40 50" aria-hidden="true"><path d="M45 13 H27 Q19 13 19 21 V24 Q19 31 26 31 H41 Q45 31 45 34.5 Q45 38 41 38 H26 Q19 38 19 45 Q19 51 27 51 H40" stroke="currentColor" stroke-width="6.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="47" cy="51" r="6" style="fill:var(--mark-dot,#5fd0c8)" stroke="currentColor" stroke-width="2.4"/></svg>';
 const getTrip = (id) => state.trips.find((t) => t.id === id);
 const T = () => getTrip(ui.tripId);
 // Toute modification marque le voyage et part chez les compagnons (envoi groupé après 1,5 s)
@@ -366,7 +366,7 @@ function renderHome() {
   if (mapView) { mapView.destroy(); mapView = null; }
   ui.tripId = null;
   document.body.classList.remove('show-map');
-  document.title = 'Cap Nord';
+  document.title = 'Etapa';
   const groups = { now: [], soon: [], draft: [], past: [] };
   state.trips.forEach((t) => groups[tripStatus(t).key].push(t));
   groups.soon.sort((a, b) => tripStart(a).localeCompare(tripStart(b)));
@@ -377,7 +377,7 @@ function renderHome() {
   app.innerHTML = `
   <div class="home-wrap">
     <header class="home-top">
-      <div><span class="brandmark"><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M96 500 L246 290 H266 L416 500 Z" fill="currentColor"/><path d="M256 30 C264 120 280 148 330 160 C280 172 264 200 256 290 C248 200 232 172 182 160 C232 148 248 120 256 30 Z" fill="#d9a441"/></svg>Cap Nord</span><h1>Mes voyages</h1></div>
+      <div><span class="brandmark">${MARK}Etapa</span><h1>Mes voyages</h1></div>
       <div class="home-btns">
         ${ui.installEvt ? '<button class="btn sm" data-act="install">Installer</button>' : ''}
         <button class="icon-btn" data-act="settings" title="Réglages" aria-label="Réglages">⚙︎</button>
@@ -547,7 +547,7 @@ function renderTripHeader(t) {
   const el = $('#trip-top');
   if (!el) return;
   const st = tripStatus(t);
-  document.title = `${t.name} · Cap Nord`;
+  document.title = `${t.name} · Etapa`;
   $('#trip-layout').style.setProperty('--trip', t.color);
   el.innerHTML = `
     <div class="trip-title" data-act="trip-settings" title="Options du voyage">
@@ -933,7 +933,7 @@ function stepDrawerHTML(t, s) {
     ${cover ? `<img class="dh-cover" data-thumb="${cover.thumbId}" alt="">` : ''}
     <button class="icon-btn dh-close" data-act="close-drawer" aria-label="Fermer">✕</button>
     <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><h2 class="dh-name">${esc(s.name || 'Lieu à choisir')}</h2></div>
-    <p class="dh-sub">${s.arrival ? (n ? `Du ${fmtDay(s.arrival, { day: 'numeric', month: 'long' })} au ${fmtDay(s.departure, { day: 'numeric', month: 'long' })}` : fmtDayLong(s.arrival)) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1} sur ${t.steps.length}</p>
+    <p class="dh-sub">${s.arrival ? (n ? `${fmtDay(s.arrival, { day: 'numeric', month: 'short' })} → ${fmtDay(s.departure, { day: 'numeric', month: 'short' })}` : fmtDay(s.arrival, { weekday: 'short', day: 'numeric', month: 'short' })) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1}/${t.steps.length}</p>
   ${s.place ? `<button class="dh-tips ${ui.dtab === 'tips' ? 'on' : ''}" data-act="dtab" data-k="${ui.dtab === 'tips' ? (dayMode ? 'subs' : 'place') : 'tips'}" aria-pressed="${ui.dtab === 'tips'}" title="Astuces de voyageurs">${icon('tip')} Astuces</button>` : ''}
   <div class="drawer-nav dh-nav">
     ${prev ? `<button class="btn sm" data-act="open-leg" data-id="${s.id}">‹ Trajet depuis ${esc(prev.name)}</button>` : '<button class="btn sm" disabled>‹ Départ</button>'}
@@ -2411,7 +2411,7 @@ async function videoThumb(file) {
   const c = document.createElement('canvas');
   c.width = Math.round(w * k); c.height = Math.round(h * k);
   const g = c.getContext('2d');
-  g.fillStyle = '#7a2436'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#10231f'; g.fillRect(0, 0, c.width, c.height);
   try { g.drawImage(v, 0, 0, c.width, c.height); } catch { /* format non lisible ici */ }
   URL.revokeObjectURL(url);
   return { blob: await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.72)), w, h, duration: isFinite(v.duration) ? v.duration : null };
@@ -3146,7 +3146,7 @@ function applyTheme() {
   const th = state.settings.theme;
   if (th === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.dataset.theme = th;
-  $('meta[name=theme-color]').content = isDark() ? '#0a1312' : '#7a2436';
+  $('meta[name=theme-color]').content = isDark() ? '#0b1916' : '#ecefe8';
   applyBasemap();
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
@@ -3179,7 +3179,7 @@ A.settings = async () => {
 A.demo = () => {
   const d0 = addDays(todayStr(), -2);
   const P = (lat, lng, label) => ({ lat, lng, label });
-  const t = newTrip({ name: 'Road trip au Portugal', emoji: '', color: '#7a2436', budget: 2200, travelers: 2, notes: 'Bonjour : Olá · Merci : Obrigado/a · L’addition : A conta, por favor' });
+  const t = newTrip({ name: 'Road trip au Portugal', emoji: '', color: '#10231f', budget: 2200, travelers: 2, notes: 'Bonjour : Olá · Merci : Obrigado/a · L’addition : A conta, por favor' });
   const steps = [
     { name: 'Paris', type: 'home', place: P(48.8566, 2.3522, 'Paris, Île-de-France, France'), arrival: d0, departure: d0 },
     { name: 'Lisbonne', type: 'city', place: P(38.7223, -9.1393, 'Lisbonne, Portugal'), arrival: d0, departure: addDays(d0, 3),
@@ -3280,5 +3280,5 @@ document.addEventListener('focusin', (e) => {
       else document.addEventListener('focusout', function wait() { setTimeout(() => { if (!typing()) { document.removeEventListener('focusout', wait); go(); } }, 400); });
     });
   }
-  try { if (sessionStorage.getItem('capnord-updated')) { sessionStorage.removeItem('capnord-updated'); setTimeout(() => toast('✓ Cap Nord est à jour'), 600); } } catch {}
+  try { if (sessionStorage.getItem('capnord-updated')) { sessionStorage.removeItem('capnord-updated'); setTimeout(() => toast('✓ Etapa est à jour'), 600); } } catch {}
 })();

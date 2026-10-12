@@ -1,0 +1,927 @@
+<title>Cap Nord · Relevé & Ligne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Archivo:wdth,wght@62..125,400;62..125,500;62..125,700;62..125,800&family=JetBrains+Mono:wght@500;700&family=Figtree:wght@400;500;700;800;900&display=swap">
+<style>
+/* Mise en page : dossier de marque en deux chapitres (Relevé, Ligne) + hybride ; planches pleine largeur, spécimens en couleurs littérales */
+:root {
+  --bg: #f3f4f1;
+  --surface: #ffffff;
+  --ink: #15191b;
+  --muted: #5d6562;
+  --line: #d9ddd7;
+  --accent: #b4442c;
+  --soft: #e9ece6;
+  --good: #2f7a52;
+  --display: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; --good: #6cc496; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #111413; --surface: #191d1c; --ink: #e8ebe7; --muted: #9aa29f; --line: #2c3230; --accent: #e57a60; --soft: #1f2422; --good: #6cc496; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--display); padding-inline: 20px; padding-block: 40px 80px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 64px; }
+h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lead { font-size: 19px; line-height: 1.55; color: var(--muted); max-width: 68ch; }
+.muted { color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 12px; max-width: 80ch; }
+
+.hero { display: flex; flex-direction: column; gap: 20px; }
+.hero h1 { font-size: clamp(40px, 7vw, 72px); line-height: .98; font-weight: 800; letter-spacing: -.035em; max-width: 18ch; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { font: 500 13px var(--mono); text-decoration: none; color: var(--ink); border: 1px solid var(--line); background: var(--surface); padding: 6px 10px; border-radius: 3px; }
+
+/* Blocs */
+.block { display: flex; flex-direction: column; gap: 22px; }
+.block > header { display: flex; flex-direction: column; gap: 8px; border-top: 2px solid var(--ink); padding-top: 16px; }
+.block > header h2 { font-size: clamp(26px, 3.6vw, 36px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.sub-h { display: flex; align-items: baseline; gap: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
+.sub-h h3 { font-size: 21px; font-weight: 700; letter-spacing: -.01em; }
+.sub-h span { font: 500 12px var(--mono); color: var(--muted); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.cols > * { min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); padding: 18px; display: flex; flex-direction: column; gap: 10px; border-radius: 4px; }
+.panel h4 { font-size: 15px; font-weight: 700; }
+.panel p, .panel li { font-size: 14.5px; line-height: 1.5; color: var(--muted); }
+.panel ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+
+/* Vocabulaire */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14.5px; }
+th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ok { color: var(--good); font-weight: 600; }
+.ko { color: var(--accent); font-weight: 600; }
+
+/* Bandeaux de chapitre (spécimens) */
+.chapter { border-radius: 6px; padding: 36px 28px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: center; overflow: hidden; position: relative; }
+.chapter h2 { font-size: clamp(44px, 8vw, 92px); line-height: .9; }
+.chapter p { font-size: 17px; line-height: 1.55; max-width: 52ch; }
+.chapter .k { font: 500 12px 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+.chR { background: #10231f; color: #e6ece6; }
+.chR h2 { font-family: 'Archivo', sans-serif; font-stretch: 125%; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; }
+.chR .k { color: #5fd0c8; }
+.chL { background: #fbfbf8; color: #16181d; border: 1px solid #e3e4e0; }
+.chL h2 { font-family: 'Figtree', sans-serif; font-weight: 900; letter-spacing: -.04em; }
+.chL .k { color: #0a7b6c; }
+.chapter svg.deco { width: 100%; height: auto; max-height: 220px; }
+
+/* Logo */
+.logo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.logo-tile { border-radius: 4px; min-height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 22px; border: 1px solid var(--line); }
+.logo-tile small { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; opacity: .7; }
+.icons-row { display: flex; align-items: flex-end; gap: 16px; }
+.icons-row svg { border-radius: 22.5%; display: block; }
+.wmR { font: 800 30px/1 'Archivo', sans-serif; font-stretch: 125%; letter-spacing: .02em; text-transform: uppercase; display: flex; align-items: center; gap: 12px; }
+.wmR em { font: 500 10px 'JetBrains Mono', monospace; font-style: normal; letter-spacing: .06em; display: block; margin-top: 6px; opacity: .8; }
+.wmL { font: 900 34px/1 'Figtree', sans-serif; letter-spacing: -.04em; display: flex; align-items: center; gap: 10px; }
+
+/* Couleurs */
+.sw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.sw { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); display: flex; flex-direction: column; }
+.sw i { display: block; height: 70px; }
+.sw div { padding: 8px 10px; display: flex; flex-direction: column; gap: 1px; font-size: 13px; }
+.sw b { font-size: 13.5px; }
+.sw small { font: 400 11px var(--mono); color: var(--muted); }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.rules p { background: var(--soft); padding: 12px 14px; font-size: 14px; line-height: 1.5; border-radius: 4px; }
+.rules b { display: block; font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+
+/* Spécimen fonctionnel (statuts, partage) */
+.spec-box { border-radius: 4px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.spec-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.spec-label { font: 500 10.5px 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; opacity: .7; width: 100%; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px var(--f, 'Archivo'), sans-serif; padding: 5px 10px 5px 8px; border-radius: 999px; }
+.chip svg { width: 14px; height: 14px; flex: none; }
+.share { display: inline-flex; flex-direction: column; align-items: center; gap: 5px; font: 600 11.5px 'Archivo', sans-serif; width: 84px; text-align: center; }
+.share svg { width: 34px; height: 34px; }
+
+/* Typo */
+.type-scale { display: flex; flex-direction: column; border-radius: 4px; overflow: hidden; }
+.ts { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px; align-items: baseline; padding: 14px 18px; border-bottom: 1px solid rgba(127,127,127,.2); }
+.ts small { font: 500 11px 'JetBrains Mono', monospace; opacity: .65; line-height: 1.4; }
+.ts span { overflow-wrap: anywhere; }
+
+/* Légende / pictos */
+.legend { border-radius: 4px; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px 18px; }
+.lg-item { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+.lg-item svg { width: 26px; height: 26px; flex: none; }
+.lg-sq { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.lg-sq svg { width: 20px; height: 20px; }
+.lg-line { width: 46px; height: 12px; flex: none; }
+
+/* Écrans */
+.screens { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 28px 20px; justify-items: center; }
+.phone-col { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
+.phone { width: 260px; max-width: 100%; aspect-ratio: 9 / 19; border-radius: 36px; border: 8px solid #0d0f10; overflow: hidden; position: relative; box-shadow: 0 24px 50px -24px rgba(0,0,0,.45); display: flex; flex-direction: column; }
+.notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 70px; height: 20px; background: #0d0f10; border-radius: 12px; z-index: 5; }
+.ph-in { flex: 1; padding: 40px 14px 10px; display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 1; min-height: 0; }
+.phone-cap { font: 400 12px var(--mono); color: var(--muted); text-align: center; max-width: 260px; }
+.phone-cap b { color: var(--ink); font-family: var(--display); font-size: 13px; display: block; }
+.tabbar { margin-top: auto; display: flex; justify-content: space-between; padding: 8px 4px 0; border-top: 1px solid rgba(127,127,127,.25); }
+.tabbar span { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; opacity: .6; }
+.tabbar span.on { opacity: 1; }
+.tabbar svg { width: 18px; height: 18px; }
+
+/* Relevé — écrans */
+.R { background: #ecefe8; color: #10231f; font-family: 'Archivo', sans-serif; }
+.R .coord { font: 500 9.5px 'JetBrains Mono', monospace; color: #4e6660; letter-spacing: .04em; }
+.R .ttl { font: 800 26px/.95 'Archivo', sans-serif; font-stretch: 118%; text-transform: uppercase; }
+.R .meta { font: 500 11px 'Archivo', sans-serif; color: #4e6660; }
+.R .row { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid #d3dad3; }
+.R .row svg { width: 16px; height: 16px; }
+.R .row small { display: block; font-size: 10.5px; color: #4e6660; }
+.R .st { font: 700 9px 'JetBrains Mono', monospace; letter-spacing: .04em; padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
+.st-res { background: #10231f; color: #5fd0c8; }
+.st-pay { background: #10231f; color: #ecefe8; }
+.st-todo { border: 1.5px dashed #9a5222; color: #9a5222; }
+.st-done { color: #4e6660; border: 1px solid #b9c5bf; }
+.R .card { background: #10231f; color: #e6ece6; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.R .card .r { display: grid; grid-template-columns: 34px 1fr auto; gap: 6px; align-items: center; font-size: 12px; }
+.R .card .h { font: 500 10px 'JetBrains Mono', monospace; color: #9fb3ad; }
+.R .tip { background: #f7f8f4; border: 1px solid #c9d2cb; border-radius: 10px; padding: 9px 10px; display: flex; gap: 8px; font-size: 11.5px; line-height: 1.35; }
+.R .tip svg { width: 22px; height: 22px; flex: none; }
+.R .tip b { display: block; font-size: 12px; }
+.R .tip small { color: #4e6660; font: 500 9.5px 'JetBrains Mono', monospace; }
+.R .alert { background: #10231f; color: #e6ece6; border-left: 4px solid #ff7a66; border-radius: 8px; padding: 8px 10px; font-size: 11.5px; line-height: 1.35; }
+.R .alert b { color: #ff7a66; font: 700 9.5px 'JetBrains Mono', monospace; letter-spacing: .08em; display: block; }
+.R .layers { display: flex; gap: 5px; flex-wrap: wrap; }
+.R .layers span { font: 600 10px 'Archivo', sans-serif; padding: 4px 7px; border-radius: 999px; border: 1px solid #10231f; }
+.R .layers span.on { background: #10231f; color: #ecefe8; }
+.R .wx { position: absolute; z-index: 3; right: 14px; top: 46px; background: #10231f; color: #e6ece6; border-radius: 10px; padding: 6px 9px; font: 700 15px 'Archivo', sans-serif; display: flex; gap: 6px; align-items: center; }
+.R .wx small { font: 500 9px 'JetBrains Mono', monospace; color: #9fb3ad; display: block; }
+.R .bg { position: absolute; inset: 0; z-index: 0; }
+.R .tabbar { color: #10231f; }
+
+/* Ligne — écrans */
+.Lg { background: #fbfbf8; color: #16181d; font-family: 'Figtree', sans-serif; }
+.Lg .sm { font: 500 10px 'JetBrains Mono', monospace; color: #6b6f78; letter-spacing: .04em; }
+.Lg .ttl { font: 900 26px/1 'Figtree', sans-serif; letter-spacing: -.03em; }
+.Lg .badges { display: flex; gap: 4px; }
+.Lg .badge { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; }
+.Lg .badge svg { width: 13px; height: 13px; }
+.Lg .traffic { background: #16181d; color: #fbfbf8; border-radius: 10px; padding: 8px 10px; font-size: 11.5px; line-height: 1.35; display: flex; gap: 8px; align-items: flex-start; }
+.Lg .traffic b { font: 800 10px 'Figtree', sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #f2b53a; display: block; }
+.Lg .state { display: flex; justify-content: space-between; align-items: center; border: 1.5px solid #16181d; border-radius: 10px; padding: 7px 10px; font-size: 12px; font-weight: 700; }
+.Lg .state span { font: 500 10px 'JetBrains Mono', monospace; color: #6b6f78; }
+.Lg .corr { display: flex; flex-direction: column; gap: 6px; }
+.Lg .corr div { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; font-size: 11.5px; line-height: 1.35; padding-bottom: 6px; border-bottom: 1px solid #e3e4e0; }
+.Lg .corr svg { width: 24px; height: 24px; }
+.Lg .corr b { font-size: 12px; display: block; }
+.Lg .corr small { font: 500 9.5px 'JetBrains Mono', monospace; color: #6b6f78; }
+.Lg .tabbar { color: #16181d; }
+
+/* Composants */
+.comp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.comp { border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+.comp > small { font: 500 10.5px 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+
+/* Souvenir */
+.posters { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; align-items: start; }
+.poster { aspect-ratio: 3 / 4; max-width: 100%; border-radius: 4px; overflow: hidden; position: relative; box-shadow: 0 18px 40px -22px rgba(0,0,0,.45); }
+.poster svg { width: 100%; height: 100%; display: block; }
+
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.verdict p { padding: 12px 14px; background: var(--soft); font-size: 14.5px; line-height: 1.5; border-radius: 4px; }
+.verdict b { font: 500 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+.plus b { color: var(--good); }
+.minus b { color: var(--accent); }
+.hybrid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 36px; align-items: start; }
+.hybrid ul, .hybrid ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+
+@media (max-width: 760px) {
+  .chapter, .hybrid { grid-template-columns: 1fr; }
+  .ts { grid-template-columns: 1fr; gap: 4px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .draw { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 2.4s ease-out .3s forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .needle { transform-box: fill-box; transform-origin: 50% 60%; animation: seek 3s cubic-bezier(.3,1.5,.5,1) .4s both; }
+  @keyframes seek { 0% { transform: rotate(-70deg); } 60% { transform: rotate(12deg); } 100% { transform: rotate(0); } }
+}
+</style>
+
+<!-- Sprite de pictogrammes (trait 1,6, viewBox 24) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-avion" viewBox="0 0 24 24"><path fill="currentColor" d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></symbol>
+    <symbol id="i-train" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 10h12M9 21l1.5-4M15 21l-1.5-4"/></g><circle cx="9" cy="13.5" r="1" fill="currentColor"/><circle cx="15" cy="13.5" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-voiture" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 16v-4l2.2-5h12.6l2.2 5v4z"/><path d="M3.5 12h17"/></g><circle cx="7.5" cy="16.5" r="1.8" fill="currentColor"/><circle cx="16.5" cy="16.5" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="i-van" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2.5 17V6.5h11.5l4 4.5h3.5V17z"/><path d="M14 6.5V11h7.5M6 10h4"/></g><circle cx="6.5" cy="17.5" r="1.8" fill="currentColor"/><circle cx="17" cy="17.5" r="1.8" fill="currentColor"/></symbol>
+    <symbol id="i-bus" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="5" y="3" width="14" height="15" rx="2.5"/><path d="M5 11h14M8 18v2.5M16 18v2.5"/></g><circle cx="8.5" cy="14.5" r="1" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-bateau" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M3 15h18l-3 5H6z"/><path d="M12 3v12M12 4.5l6 8.5h-6"/></g></symbol>
+    <symbol id="i-pied" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2.5-6.5L15 17v4M12.5 14.5L11 9l-3.5 2v3.5M11 9l3.5 1.5 2.5 2.5"/></g></symbol>
+    <symbol id="i-nuit" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M3 19v-8h18v8M3 15h18M6.5 11V8.5h5V11"/></g></symbol>
+    <symbol id="i-resa" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 7h17v3a2 2 0 0 0 0 4v3h-17v-3a2 2 0 0 0 0-4z"/><path d="M14.5 7v10" stroke-dasharray="2 2"/></g></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M9 16.5h6"/></g></symbol>
+    <symbol id="i-budget" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M15 8.8a3.6 3.6 0 1 0 0 6.4M7.8 11h5.5M7.8 13.4h5.5"/></g></symbol>
+    <symbol id="i-astuce" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M12 2.5l2.6 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.6-6.9L2.5 12l6.9-2.6z"/></symbol>
+    <symbol id="i-meteo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="3.2"/><path d="M8.5 2.2v1.3M2.2 8.5h1.3M4 4l.9.9M13 4l-.9.9"/><path d="M8 20h10a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.4 1.6A2.7 2.7 0 0 0 8 20z"/></g></symbol>
+    <symbol id="i-actu" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2v.3"/></g></symbol>
+    <symbol id="i-vue" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M2.5 19.5l6-10 4 6 2.5-3.5 6.5 7.5z"/></g><circle cx="17" cy="6" r="2" fill="currentColor"/></symbol>
+    <symbol id="i-gps" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></g><circle cx="12" cy="12" r="2.6" fill="currentColor"/></symbol>
+    <symbol id="i-carte" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" d="M3 6l6-2.5 6 2.5 6-2.5v14.5L15 20.5 9 18l-6 2.5zM9 3.5V18M15 6v14.5"/></symbol>
+    <symbol id="i-jour" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <!-- Cercles de partage : point = moi, puis un anneau de plus par cercle -->
+    <symbol id="sh1" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/></symbol>
+    <symbol id="sh2" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/><circle cx="17" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="sh3" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/><circle cx="17" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="17" r="12" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="sh4" viewBox="0 0 34 34"><circle cx="17" cy="17" r="3.5" fill="currentColor"/><circle cx="17" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="17" r="12" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="17" r="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.5 2.5"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+<div class="hero">
+  <span class="eyebrow">Direction artistique · développement de deux pistes</span>
+  <h1>Relevé et Ligne, poussées jusqu'à l'écran</h1>
+  <p class="lead">Les deux pistes retenues, développées sur le même cahier des charges : un outil de gestion de voyage connecté, avec astuces partagées, météo et actus de la destination. Pour chacune : idée, logo, couleurs, typographie, pictogrammes, composants, écrans, mouvement et souvenir. Le dossier se termine par une proposition qui combine les deux.</p>
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#vocabulaire">Vocabulaire commun</a><a href="#releve">A · Relevé</a><a href="#ligne">B · Ligne</a><a href="#comparaison">Comparaison</a><a href="#hybride">Proposition hybride</a>
+  </nav>
+  <p class="note">Les écrans utilisent le voyage d'exemple de l'app (Portugal). Les astuces, prénoms, météo et actualités affichés sont des contenus d'exemple.</p>
+</div>
+
+<!-- ============ VOCABULAIRE ============ -->
+<section class="block" id="vocabulaire">
+  <header>
+    <span class="eyebrow">00 · Le même produit, deux métaphores</span>
+    <h2>Chaque fonction de Cap Nord a son équivalent dans les deux langages</h2>
+    <p class="lead">Une DA d'outil tient si chaque objet du produit trouve une forme évidente. C'est le test principal entre les deux pistes.</p>
+  </header>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Dans Cap Nord</th><th>Relevé (carte topographique)</th><th>Ligne (plan de réseau)</th></tr></thead>
+      <tbody>
+        <tr><td>Le voyage</td><td>Une carte, avec son profil (km par jour) comme un profil de randonnée</td><td>Un réseau, la « ligne » du voyage</td></tr>
+        <tr><td>Une étape / une ville</td><td>Un point coté (nom + coordonnées + altitude)</td><td>Une station</td></tr>
+        <tr><td>Un trajet</td><td>Un tracé, codé par type de trait comme sur une carte (route, rail, chemin, bac)</td><td>Un segment de ligne, une couleur par mode</td></tr>
+        <tr><td>Changer de transport</td><td>Un nœud du tracé</td><td>Une correspondance</td></tr>
+        <tr><td>Nuit, hébergement</td><td>Symbole de refuge</td><td>Station terminus du jour</td></tr>
+        <tr><td>Statut (réservé, payé, à faire, fait)</td><td>Forme du repère : plein, cerné, pointillé, coché</td><td>Forme de la station : pleine, cerclée, pointillée, cochée</td></tr>
+        <tr><td>Astuce d'un voyageur</td><td>Une annotation sur la carte</td><td>Une « correspondance » de la station (à voir en sortant)</td></tr>
+        <tr><td>Météo</td><td>Un calque, comme une carte météo</td><td>« État de la ligne »</td></tr>
+        <tr><td>Actus de la destination</td><td>Un calque d'alerte</td><td>« Info trafic »</td></tr>
+        <tr><td>Partage (moi → tous)</td><td colspan="2">Commun aux deux : des anneaux concentriques, un par cercle (moi, compagnons, amis, voyageurs), comme des courbes de niveau ou les zones d'un réseau</td></tr>
+        <tr><td>Souvenir</td><td>Affiche des courbes de niveau du parcours</td><td>Plan de réseau du voyage</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ RELEVÉ ============ -->
+<div class="chapter chR" id="releve">
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span class="k">Piste A · 71°10′N 25°47′E</span>
+    <h2>Relevé</h2>
+    <p>Une carte est un outil avant d'être une image. Relevé emprunte aux cartographes leur manière de ranger une information dense : une légende, une échelle, des coordonnées, des calques. Le voyage se lit comme un terrain que l'on a relevé.</p>
+  </div>
+  <svg class="deco" viewBox="0 0 300 220" aria-hidden="true">
+    <g fill="none" stroke="#b8662f" stroke-width="1.2" opacity=".75">
+      <ellipse cx="170" cy="110" rx="40" ry="22"/><ellipse cx="170" cy="110" rx="70" ry="42"/><ellipse cx="165" cy="112" rx="102" ry="64"/><ellipse cx="160" cy="114" rx="136" ry="88"/>
+    </g>
+    <path class="draw" d="M20 200 C 60 170, 90 150, 120 140 S 160 100, 200 92 S 250 60, 280 30" fill="none" stroke="#5fd0c8" stroke-width="2.4" stroke-dasharray="7 5"/>
+    <g transform="translate(140 60)"><g class="needle"><path d="M32 6 L42 50 L32 43 L22 50 Z" fill="#5fd0c8"/></g></g>
+  </svg>
+</div>
+
+<section class="block">
+  <div class="sub-h"><h3>Idée et principes</h3><span>A.1</span></div>
+  <div class="cols">
+    <div class="panel"><h4>1. Tout a une légende</h4><p>Chaque objet (trajet, nuit, réservation, document, astuce) a un symbole et un seul. On apprend la légende une fois, puis on lit chaque écran d'un coup d'œil.</p></div>
+    <div class="panel"><h4>2. L'info se superpose en calques</h4><p>Mon plan, les astuces de mes proches, celles des autres voyageurs, la météo, les actus : chaque source est un calque qu'on montre ou qu'on cache. On sait toujours d'où vient une information.</p></div>
+    <div class="panel"><h4>3. Les chiffres sont des repères</h4><p>Distances, heures, altitudes, montants : tous en chasse fixe et alignés, comme les cotes d'une carte. La donnée précise remplace la décoration.</p></div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Logo</h3><span>A.2</span></div>
+  <div class="logo-grid">
+    <div class="logo-tile" style="background:#10231f;color:#e6ece6;border-color:#10231f">
+      <div class="wmR">
+        <svg width="46" height="46" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#b8662f" stroke-width="2"><circle cx="32" cy="34" r="24"/><circle cx="32" cy="34" r="16" opacity=".6"/></g><path d="M32 4 L42 46 L32 39 L22 46 Z" fill="#5fd0c8"/><path d="M32 4 L32 39 L22 46 Z" fill="#9de6e0"/></svg>
+        <div>Cap Nord<em>71°10′N · 25°47′E</em></div>
+      </div>
+      <small>Logotype principal · fond Forêt</small>
+    </div>
+    <div class="logo-tile" style="background:#ecefe8;color:#10231f;border-color:#d3dad3">
+      <div class="wmR">
+        <svg width="46" height="46" viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="#9a5222" stroke-width="2"><circle cx="32" cy="34" r="24"/><circle cx="32" cy="34" r="16" opacity=".6"/></g><path d="M32 4 L42 46 L32 39 L22 46 Z" fill="#10231f"/><path d="M32 4 L32 39 L22 46 Z" fill="#0b6f69"/></svg>
+        <div>Cap Nord<em>71°10′N · 25°47′E</em></div>
+      </div>
+      <small>Version claire · aiguille Forêt</small>
+    </div>
+    <div class="logo-tile" style="background:var(--surface)">
+      <div class="icons-row">
+        <svg width="96" height="96" viewBox="0 0 64 64" aria-label="Icône 1024 px"><rect width="64" height="64" fill="#10231f"/><g fill="none" stroke="#b8662f" stroke-width="1.4" opacity=".85"><path d="M-4 52 C 14 42, 30 58, 68 44"/><path d="M-4 60 C 18 50, 34 66, 68 54"/><path d="M-4 14 C 18 22, 40 4, 68 12"/></g><path d="M32 9 L41 45 L32 39 L23 45 Z" fill="#5fd0c8"/><path d="M32 9 L32 39 L23 45 Z" fill="#9de6e0"/></svg>
+        <svg width="60" height="60" viewBox="0 0 64 64" aria-label="Icône 60 px"><rect width="64" height="64" fill="#10231f"/><g fill="none" stroke="#b8662f" stroke-width="1.8" opacity=".85"><path d="M-4 52 C 14 42, 30 58, 68 44"/><path d="M-4 14 C 18 22, 40 4, 68 12"/></g><path d="M32 9 L41 45 L32 39 L23 45 Z" fill="#5fd0c8"/></svg>
+        <svg width="29" height="29" viewBox="0 0 64 64" aria-label="Icône 29 px"><rect width="64" height="64" fill="#10231f"/><path d="M32 8 L43 48 L32 41 L21 48 Z" fill="#5fd0c8"/></svg>
+      </div>
+      <small>Icône d'app · 1024, 60 et 29 px</small>
+    </div>
+  </div>
+  <div class="rules">
+    <p><b>Construction</b>Une aiguille de boussole (losange étiré) qui pointe le nord, posée sur deux courbes de niveau. L'aiguille seule fonctionne jusqu'à 16 px.</p>
+    <p><b>Coordonnées</b>La signature « 71°10′N · 25°47′E » est la position réelle du cap Nord, en Norvège. Elle se lit dans toutes les langues.</p>
+    <p><b>Simplification</b>Les courbes disparaissent sous 60 px. Sous 32 px, l'aiguille est pleine, sans demi-teinte.</p>
+    <p><b>Mouvement</b>À l'ouverture, l'aiguille oscille puis se fixe vers la prochaine étape du voyage.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Couleurs</h3><span>A.3</span></div>
+  <div class="sw-grid">
+    <div class="sw"><i style="background:#10231f"></i><div><b>Forêt nuit</b><small>#10231F</small><small>Marque, texte, fonds sombres</small></div></div>
+    <div class="sw"><i style="background:#ecefe8"></i><div><b>Fond de carte</b><small>#ECEFE8</small><small>Fond clair</small></div></div>
+    <div class="sw"><i style="background:#5fd0c8"></i><div><b>Glacier</b><small>#5FD0C8</small><small>Ici et maintenant, sur fond sombre</small></div></div>
+    <div class="sw"><i style="background:#0b6f69"></i><div><b>Glacier profond</b><small>#0B6F69</small><small>Glacier en texte, sur fond clair</small></div></div>
+    <div class="sw"><i style="background:#b8662f"></i><div><b>Bistre</b><small>#B8662F</small><small>Courbes, tracés secondaires</small></div></div>
+    <div class="sw"><i style="background:#9a5222"></i><div><b>Bistre texte</b><small>#9A5222</small><small>« À faire », sur fond clair</small></div></div>
+    <div class="sw"><i style="background:#9fb3ad"></i><div><b>Lichen</b><small>#9FB3AD</small><small>Texte secondaire, sur fond sombre</small></div></div>
+    <div class="sw"><i style="background:#ff7a66"></i><div><b>Balise</b><small>#FF7A66 · #C2402F</small><small>Alertes uniquement (sombre · clair)</small></div></div>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Couple texte / fond</th><th>Contraste</th><th>Niveau WCAG</th><th>Usage</th></tr></thead>
+      <tbody>
+        <tr><td>Forêt sur Fond de carte</td><td class="num">14,1 : 1</td><td class="ok">AAA</td><td>Texte courant, mode clair</td></tr>
+        <tr><td>Glacier sur Forêt</td><td class="num">8,9 : 1</td><td class="ok">AAA</td><td>Position, statut « réservé », mode sombre</td></tr>
+        <tr><td>Glacier profond sur Fond de carte</td><td class="num">5,2 : 1</td><td class="ok">AA</td><td>Liens et accents, mode clair</td></tr>
+        <tr><td>Bistre texte sur Fond de carte</td><td class="num">5,0 : 1</td><td class="ok">AA</td><td>« À faire »</td></tr>
+        <tr><td>Lichen sur Forêt</td><td class="num">7,4 : 1</td><td class="ok">AAA</td><td>Heures, légendes, mode sombre</td></tr>
+        <tr><td>Balise sur Forêt nuit (#0B1916)</td><td class="num">7,1 : 1</td><td class="ok">AAA</td><td>Alertes, mode sombre</td></tr>
+        <tr><td>Glacier sur Fond de carte</td><td class="num">1,6 : 1</td><td class="ko">Interdit</td><td>Jamais seul : toujours cerclé de Forêt</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cols">
+    <div class="spec-box" style="background:#ecefe8;color:#10231f;border:1px solid #d3dad3">
+      <span class="spec-label">Statuts · la forme porte le sens, la couleur confirme</span>
+      <div class="spec-row">
+        <span class="chip" style="background:#10231f;color:#5fd0c8"><svg viewBox="0 0 14 14"><path d="M7 1l6 6-6 6-6-6z" fill="currentColor"/></svg>Réservé</span>
+        <span class="chip" style="background:#10231f;color:#ecefe8"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="currentColor"/></svg>Payé</span>
+        <span class="chip" style="border:1.5px dashed #9a5222;color:#9a5222"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 2"/></svg>À faire</span>
+        <span class="chip" style="border:1px solid #b9c5bf;color:#4e6660"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>Fait</span>
+      </div>
+    </div>
+    <div class="spec-box" style="background:#10231f;color:#e6ece6">
+      <span class="spec-label">Cercles de partage · un anneau de plus par cercle</span>
+      <div class="spec-row" style="color:#5fd0c8">
+        <span class="share"><svg><use href="#sh1"/></svg><span style="color:#e6ece6">Moi</span></span>
+        <span class="share"><svg><use href="#sh2"/></svg><span style="color:#e6ece6">Compagnons</span></span>
+        <span class="share"><svg><use href="#sh3"/></svg><span style="color:#e6ece6">Amis</span></span>
+        <span class="share"><svg><use href="#sh4"/></svg><span style="color:#e6ece6">Voyageurs</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Typographie</h3><span>A.4</span></div>
+  <div class="type-scale" style="background:#ecefe8;color:#10231f;border:1px solid #d3dad3">
+    <div class="ts"><small>Titre de lieu<br>Archivo Expanded 800 · 34/32</small><span style="font:800 34px/1 'Archivo';font-stretch:125%;text-transform:uppercase">Coimbra</span></div>
+    <div class="ts"><small>Titre d'écran<br>Archivo Semi-exp. 700 · 22/26</small><span style="font:700 22px/1.2 'Archivo';font-stretch:110%">Jour 4 · Bibliothèque et route vers Lisbonne</span></div>
+    <div class="ts"><small>Texte<br>Archivo 400 · 15/22</small><span style="font:400 15px/1.5 'Archivo'">Arriver avant 10 h : les visites sont limitées à 20 minutes et la file s'allonge vite après l'ouverture.</span></div>
+    <div class="ts"><small>Donnée<br>JetBrains Mono 500 · 13</small><span style="font:500 13px 'JetBrains Mono';font-variant-numeric:tabular-nums">40°12′N 8°25′O · 206 km · 2 h 10 · 48,00 €</span></div>
+    <div class="ts"><small>Légende<br>JetBrains Mono 500 · 10 · +8 %</small><span style="font:500 10px 'JetBrains Mono';letter-spacing:.08em;text-transform:uppercase">Calque · astuces des amis</span></div>
+  </div>
+  <div class="rules">
+    <p><b>Une seule famille</b>Archivo existe en largeurs variables (62 à 125 %) : étendue pour les lieux, normale pour le texte, étroite pour les tableaux denses. Libre de droits.</p>
+    <p><b>Production</b>Option sans coût : Archivo. Option premium : une grotesque à largeurs multiples sous licence (type GT America, de Compressed à Expanded).</p>
+    <p><b>International</b>Complément Noto Sans pour l'arabe, le cyrillique, le grec et le CJK, avec un alignement de graisse vérifié.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Pictogrammes : la légende</h3><span>A.5</span></div>
+  <div class="legend" style="background:#f7f8f4;color:#10231f;border:1px solid #d3dad3">
+    <span class="lg-item"><svg class="lg-line" viewBox="0 0 46 12"><path d="M2 6h42" stroke="#10231f" stroke-width="3"/></svg>Route</span>
+    <span class="lg-item"><svg class="lg-line" viewBox="0 0 46 12"><path d="M2 6h42" stroke="#10231f" stroke-width="3"/><path d="M6 2v8M14 2v8M22 2v8M30 2v8M38 2v8" stroke="#10231f" stroke-width="1.4"/></svg>Rail</span>
+    <span class="lg-item"><svg class="lg-line" viewBox="0 0 46 12"><path d="M2 6h42" stroke="#10231f" stroke-width="2" stroke-dasharray="5 4"/></svg>À pied, vélo</span>
+    <span class="lg-item"><svg class="lg-line" viewBox="0 0 46 12"><path d="M2 6h42" stroke="#3d6fb6" stroke-width="2.4" stroke-dasharray="1 4" stroke-linecap="round"/></svg>Bac, ferry</span>
+    <span class="lg-item"><svg class="lg-line" viewBox="0 0 46 12"><path d="M2 10 Q 23 -4 44 10" stroke="#10231f" stroke-width="1.4" fill="none"/></svg>Vol</span>
+    <span class="lg-item"><svg><use href="#i-avion"/></svg>Avion</span>
+    <span class="lg-item"><svg><use href="#i-train"/></svg>Train</span>
+    <span class="lg-item"><svg><use href="#i-voiture"/></svg>Voiture</span>
+    <span class="lg-item"><svg><use href="#i-van"/></svg>Van</span>
+    <span class="lg-item"><svg><use href="#i-bus"/></svg>Bus, tram</span>
+    <span class="lg-item"><svg><use href="#i-bateau"/></svg>Bateau</span>
+    <span class="lg-item"><svg><use href="#i-pied"/></svg>À pied</span>
+    <span class="lg-item"><svg><use href="#i-nuit"/></svg>Nuit</span>
+    <span class="lg-item"><svg><use href="#i-resa"/></svg>Réservation</span>
+    <span class="lg-item"><svg><use href="#i-doc"/></svg>Document</span>
+    <span class="lg-item"><svg><use href="#i-budget"/></svg>Budget</span>
+    <span class="lg-item"><svg style="color:#0b6f69"><use href="#i-astuce"/></svg>Astuce</span>
+    <span class="lg-item"><svg><use href="#i-meteo"/></svg>Météo</span>
+    <span class="lg-item"><svg style="color:#c2402f"><use href="#i-actu"/></svg>Actu, alerte</span>
+    <span class="lg-item"><svg><use href="#i-vue"/></svg>Point de vue</span>
+    <span class="lg-item"><svg><use href="#i-gps"/></svg>Position live</span>
+  </div>
+  <p class="note">Convention cartographique : le type de transport se lit au dessin du trait (plein, hachuré, tirets, points), pas à sa couleur. Lisible en noir et blanc, par les daltoniens, et à l'impression.</p>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Composants</h3><span>A.6</span></div>
+  <div class="comp-grid">
+    <div class="comp R" style="border:1px solid #d3dad3">
+      <small>Ligne d'étape</small>
+      <div>
+        <div class="row"><svg><use href="#i-nuit"/></svg><span>Casa do Alfama<small>4 nuits · arrivée 17:00</small></span><span class="st st-pay">PAYÉ</span></div>
+        <div class="row"><svg><use href="#i-resa"/></svg><span>Monastère des Hiéronymites<small>J6 · 10:00 · 2 billets</small></span><span class="st st-res">RÉSERVÉ</span></div>
+        <div class="row"><svg><use href="#i-avion"/></svg><span>Lisboa → Paris<small>J9 · vol retour</small></span><span class="st st-todo">À FAIRE</span></div>
+      </div>
+    </div>
+    <div class="comp R" style="border:1px solid #d3dad3">
+      <small>Astuce · source, date, cercle</small>
+      <div class="tip"><svg style="color:#0b6f69"><use href="#sh3"/></svg><span><b>Arriver avant 10 h</b>Visites limitées à 20 min, la file s'allonge vite après l'ouverture.<br><small>LÉA · AMIE · PASSÉE ICI EN MAI 2026</small></span></div>
+      <div class="tip"><svg style="color:#0b6f69"><use href="#sh4"/></svg><span><b>Prendre le tram 28 au terminus</b>On a une place assise, et ça évite 40 min de queue.<br><small>VOYAGEUR VÉRIFIÉ · 12 AVIS UTILES</small></span></div>
+    </div>
+    <div class="comp R" style="background:#10231f;color:#e6ece6">
+      <small>Calques d'info vivante</small>
+      <div class="alert" style="background:#0b1916"><b>ACTU · LISBONNE</b>Marathon dimanche : centre-ville fermé de 8 h à 14 h.</div>
+      <div style="display:flex;gap:10px;align-items:center;font-size:13px"><svg width="30" height="30" style="color:#5fd0c8"><use href="#i-meteo"/></svg><span><b style="font-size:18px">21°</b> ensoleillé · vent 12 km/h<br><span style="font:500 10px 'JetBrains Mono';color:#9fb3ad">COUCHER 19:02 · UV 5</span></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Écrans clés</h3><span>A.7</span></div>
+  <div class="screens">
+    <!-- R1 Voyage -->
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="coord">41°09′N → 38°43′N · PORTUGAL</span>
+          <span class="ttl">Portugal</span>
+          <span class="meta">9 jours · 3 villes · 450 km de route</span>
+          <svg viewBox="0 0 232 74" aria-label="Profil du voyage, kilomètres par jour" style="width:100%;height:auto">
+            <path d="M0 70 L26 70 L52 64 L78 56 L104 40 L130 10 L156 66 L182 58 L208 50 L232 70 Z" fill="#b8662f" opacity=".2"/>
+            <path d="M0 70 L26 70 L52 64 L78 56 L104 40 L130 10 L156 66 L182 58 L208 50 L232 70" fill="none" stroke="#9a5222" stroke-width="1.6"/>
+            <line x1="104" y1="40" x2="104" y2="70" stroke="#10231f" stroke-width="1" stroke-dasharray="2 2"/>
+            <circle cx="104" cy="40" r="4.5" fill="#5fd0c8" stroke="#10231f" stroke-width="2"/>
+            <text x="132" y="9" font-family="JetBrains Mono" font-size="8" fill="#10231f">206 KM</text>
+            <g font-family="JetBrains Mono" font-size="7" fill="#4e6660"><text x="0" y="73">J1</text><text x="100" y="73">J4</text><text x="222" y="73">J9</text></g>
+          </svg>
+          <div>
+            <div class="row"><svg><use href="#i-nuit"/></svg><span>Porto<small>J1 → J4 · 3 nuits</small></span><span class="st st-done">FAIT</span></div>
+            <div class="row"><svg><use href="#i-nuit"/></svg><span>Coimbra<small>J4 → J5 · 1 nuit · aujourd'hui</small></span><span class="st st-res">RÉSERVÉ</span></div>
+            <div class="row"><svg><use href="#i-nuit"/></svg><span>Lisbonne<small>J5 → J9 · 4 nuits</small></span><span class="st st-pay">PAYÉ</span></div>
+            <div class="row"><svg><use href="#i-avion"/></svg><span>Retour Paris<small>J9</small></span><span class="st st-todo">À FAIRE</span></div>
+          </div>
+          <div class="tabbar"><span class="on"><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Voyage</b>Profil des distances, étapes et statuts</span>
+    </div>
+    <!-- R2 Jour -->
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <svg class="bg" viewBox="0 0 260 548" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="#c98a5b" stroke-width="1" opacity=".6"><path d="M-10 150 C 60 100, 140 200, 270 130"/><path d="M-10 176 C 70 130, 140 230, 270 160"/><ellipse cx="170" cy="190" rx="34" ry="16"/><ellipse cx="170" cy="190" rx="58" ry="30"/></g><path d="M20 260 C 70 230, 110 210, 160 196 S 220 160, 250 120" stroke="#10231f" stroke-width="2.4" fill="none"/><path d="M28 254 v-8 M50 241 v-8 M72 230 v-8 M94 221 v-8" stroke="#10231f" stroke-width="1.2"/></svg>
+        <div class="ph-in">
+          <span class="coord">40°12′N · 8°25′O · ALT. 75 M</span>
+          <span class="ttl">Coimbra<br>Jour 4/9</span>
+          <div class="wx" style="top:44px"><svg width="18" height="18" style="color:#5fd0c8"><use href="#i-meteo"/></svg><span>21°<small>SOLEIL</small></span></div>
+          <div style="flex:1"></div>
+          <div class="tip"><svg style="color:#0b6f69"><use href="#sh3"/></svg><span><b>Arriver avant 10 h</b><small>LÉA · AMIE</small></span></div>
+          <div class="card">
+            <div class="r"><span class="h">10:00</span>Bibliothèque Joanina<span class="st st-res">RÉSERVÉ</span></div>
+            <div class="r"><span class="h">14:30</span>Route → Lisbonne · 206 km<span class="h">2 H 10</span></div>
+            <div class="r"><span class="h">17:00</span>Casa do Alfama<span class="st st-pay" style="background:#e6ece6;color:#10231f">PAYÉ</span></div>
+          </div>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Voyage</span><span class="on"><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Jour</b>Programme, météo, l'astuce la plus utile</span>
+    </div>
+    <!-- R3 Carte & calques -->
+    <div class="phone-col">
+      <div class="phone R" style="background:#e4e9e2"><span class="notch"></span>
+        <svg class="bg" viewBox="0 0 260 548" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 400 C 60 380, 120 420, 260 370 V548 H0z" fill="#c9dbe8"/>
+          <g fill="none" stroke="#c98a5b" stroke-width="1" opacity=".6"><ellipse cx="90" cy="230" rx="40" ry="24"/><ellipse cx="90" cy="230" rx="70" ry="44"/><ellipse cx="190" cy="270" rx="30" ry="18"/><ellipse cx="190" cy="270" rx="54" ry="34"/><path d="M-10 330 C 80 300, 160 350, 270 310"/></g>
+          <path d="M40 340 L 90 300 L 120 250 L 190 270 L 220 220" stroke="#10231f" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+          <path d="M20 380 C 90 360, 150 375, 250 350" stroke="#10231f" stroke-width="2.4" fill="none"/><path d="M40 377v-7M70 371v-7M100 367v-7M130 366v-7M160 366v-7M190 362v-7M220 356v-7" stroke="#10231f" stroke-width="1.1"/>
+        </svg>
+        <div class="ph-in">
+          <span class="coord">38°43′N · 9°08′O · LISBONNE</span>
+          <div class="layers"><span class="on">Mon plan</span><span class="on">Amis</span><span>Voyageurs</span><span class="on">Météo</span><span class="on">Actus</span></div>
+          <svg width="26" height="26" style="position:absolute;left:78px;top:216px;color:#0b6f69;background:#f7f8f4;border-radius:50%;z-index:2"><use href="#sh3"/></svg>
+          <svg width="26" height="26" style="position:absolute;left:178px;top:256px;color:#0b6f69;background:#f7f8f4;border-radius:50%;z-index:2"><use href="#sh2"/></svg>
+          <span style="position:absolute;left:111px;top:240px;width:18px;height:18px;border-radius:50%;background:#5fd0c8;border:3px solid #10231f;box-shadow:0 0 0 6px rgba(95,208,200,.35);z-index:2"></span>
+          <div class="wx" style="top:84px"><svg width="18" height="18" style="color:#5fd0c8"><use href="#i-meteo"/></svg><span>21°<small>LISBONNE</small></span></div>
+          <div style="flex:1"></div>
+          <div class="alert"><b>ACTU · DIMANCHE</b>Marathon : centre fermé de 8 h à 14 h.</div>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span class="on"><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Carte et calques</b>Astuces par cercle, position live, actus</span>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Mouvement, son, souvenir</h3><span>A.8</span></div>
+  <div class="cols">
+    <div class="panel"><h4>Mouvement</h4><ul><li>L'aiguille du logo cherche puis se fixe vers la prochaine étape (ouverture de l'app).</li><li>Les tracés se dessinent dans le sens du trajet.</li><li>Les calques apparaissent en fondu de 200 ms, jamais en glissé.</li><li>Tout est désactivé si l'utilisateur réduit les animations.</li></ul></div>
+    <div class="panel"><h4>Son et haptique</h4><ul><li>Un clic sec de boussole quand un statut passe à « fait ».</li><li>Une vibration légère à l'arrivée sur une étape en mode Live.</li><li>Aucun son de notification propre : on respecte ceux du téléphone.</li></ul></div>
+  </div>
+  <div class="posters">
+    <div class="poster"><svg viewBox="0 0 300 400" aria-label="Affiche souvenir Relevé">
+      <rect width="300" height="400" fill="#10231f"/>
+      <g fill="none" stroke="#b8662f" stroke-width=".9" opacity=".7"><path d="M-10 80 C 60 50, 140 120, 310 60"/><path d="M-10 100 C 70 70, 150 140, 310 82"/><path d="M-10 124 C 80 96, 150 162, 310 108"/><ellipse cx="190" cy="210" rx="30" ry="16"/><ellipse cx="190" cy="210" rx="56" ry="30"/><ellipse cx="190" cy="210" rx="84" ry="46"/><path d="M-10 290 C 60 270, 170 320, 310 280"/><path d="M-10 312 C 70 292, 160 342, 310 304"/></g>
+      <path d="M150 50 C 140 110, 170 160, 160 210 S 120 280, 110 330" stroke="#5fd0c8" stroke-width="2.4" fill="none"/>
+      <g fill="#10231f" stroke="#5fd0c8" stroke-width="2"><circle cx="150" cy="50" r="5"/><circle cx="160" cy="210" r="5"/><circle cx="110" cy="330" r="5"/></g>
+      <g font-family="JetBrains Mono" font-size="7" fill="#9fb3ad"><text x="160" y="48">PORTO 41°09′N</text><text x="170" y="214">COIMBRA 40°12′N</text><text x="120" y="334">LISBOA 38°43′N</text></g>
+      <text x="20" y="372" font-family="Archivo" font-stretch="125%" font-weight="800" font-size="26" fill="#e6ece6">PORTUGAL</text>
+      <text x="20" y="388" font-family="JetBrains Mono" font-size="7.5" fill="#9fb3ad">OCTOBRE 2026 · 9 JOURS · 450 KM · 3 COMPAGNONS</text>
+    </svg></div>
+    <div class="panel"><h4>Le souvenir, version Relevé</h4><p>En fin de voyage, Cap Nord génère une affiche : relief réel du parcours, tracé, coordonnées des étapes. Exportable en fond d'écran, en story, ou imprimée. C'est le seul endroit où la DA devient décorative, et elle reste faite de données.</p></div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Bilan Relevé</h3><span>A.9</span></div>
+  <div class="verdict">
+    <p class="plus"><b>Forces</b>Découle du nom et du produit. Le système de calques répond exactement au mélange plan perso + astuces + météo + actus. Les trajets se codent par le trait, ce qui le rend accessible. Aucun concurrent direct sur ce territoire.</p>
+    <p class="minus"><b>Risques</b>Les verts évoquent les apps de randonnée (AllTrails, Komoot). La différence passe par le glacier, le bistre et la typo étendue. Il faut aussi montrer des écrans urbains dès la présentation.</p>
+    <p><b>Production</b>Courbes de niveau générées à partir de données d'altitude ouvertes. Prévoir un développement spécifique pour le rendu des calques sur la carte.</p>
+  </div>
+</section>
+
+<!-- ============ LIGNE ============ -->
+<div class="chapter chL" id="ligne">
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <span class="k">Piste B · 4 lignes · 3 stations</span>
+    <h2>Ligne</h2>
+    <p>Un plan de métro, c'est l'information la plus simplifiée qui soit : on enlève la géographie et on garde l'ordre, les correspondances et les temps. Ligne dessine le voyage de la même façon. On voit d'un coup d'œil où l'on est, d'où l'on vient et ce qui reste.</p>
+  </div>
+  <svg class="deco" viewBox="0 0 300 220" aria-hidden="true">
+    <path class="draw" d="M30 190 V120 L90 60 H200" stroke="#7b5cd6" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path class="draw" d="M90 60 V20" stroke="#0a7b6c" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path class="draw" d="M200 60 L260 120 V190" stroke="#a87400" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <g fill="#fbfbf8" stroke="#16181d" stroke-width="4"><circle cx="30" cy="190" r="9"/><circle cx="90" cy="60" r="11"/><circle cx="200" cy="60" r="11"/><circle cx="260" cy="190" r="9"/></g>
+  </svg>
+</div>
+
+<section class="block">
+  <div class="sub-h"><h3>Idée et principes</h3><span>B.1</span></div>
+  <div class="cols">
+    <div class="panel"><h4>1. L'ordre avant la géographie</h4><p>La vue principale n'est pas une carte mais un schéma. Les étapes sont espacées régulièrement, les lignes ne font que des angles de 45° et 90°. La carte reste disponible, en second plan.</p></div>
+    <div class="panel"><h4>2. Une couleur, un mode</h4><p>Six lignes, six modes de transport, toujours doublés d'un pictogramme. Le code est le même dans tous les pays, comme le M du métro.</p></div>
+    <div class="panel"><h4>3. Le vocabulaire des transports</h4><p>Info trafic pour les actus, état de la ligne pour la météo, correspondances pour les astuces. Des mots que tout voyageur connaît déjà.</p></div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Logo</h3><span>B.2</span></div>
+  <div class="logo-grid">
+    <div class="logo-tile" style="background:#fbfbf8;color:#16181d;border-color:#e3e4e0">
+      <div class="wmL">
+        <svg width="46" height="46" viewBox="0 0 64 64" aria-hidden="true"><path d="M14 52 V14 L50 50 V12" stroke="#0a7b6c" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g fill="#fbfbf8" stroke="#16181d" stroke-width="3.5"><circle cx="14" cy="52" r="6"/><circle cx="50" cy="12" r="6"/></g></svg>
+        cap nord
+      </div>
+      <small>Logotype principal · fond Papier</small>
+    </div>
+    <div class="logo-tile" style="background:#0a7b6c;color:#fbfbf8;border-color:#0a7b6c">
+      <div class="wmL">
+        <svg width="46" height="46" viewBox="0 0 64 64" aria-hidden="true"><path d="M14 52 V14 L50 50 V12" stroke="#fbfbf8" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g fill="#0a7b6c" stroke="#fbfbf8" stroke-width="3.5"><circle cx="14" cy="52" r="6"/><circle cx="50" cy="12" r="6"/></g></svg>
+        cap nord
+      </div>
+      <small>Version inversée · fond Ligne Nord</small>
+    </div>
+    <div class="logo-tile" style="background:var(--surface)">
+      <div class="icons-row">
+        <svg width="96" height="96" viewBox="0 0 64 64" aria-label="Icône 1024 px"><rect width="64" height="64" fill="#0a7b6c"/><path d="M17 50 V16 L47 46 V14" stroke="#fbfbf8" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g fill="#0a7b6c" stroke="#fbfbf8" stroke-width="3"><circle cx="17" cy="50" r="5.5"/><circle cx="47" cy="14" r="5.5"/></g></svg>
+        <svg width="60" height="60" viewBox="0 0 64 64" aria-label="Icône 60 px"><rect width="64" height="64" fill="#0a7b6c"/><path d="M17 50 V16 L47 46 V14" stroke="#fbfbf8" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><g fill="#0a7b6c" stroke="#fbfbf8" stroke-width="3.5"><circle cx="17" cy="50" r="6"/><circle cx="47" cy="14" r="6"/></g></svg>
+        <svg width="29" height="29" viewBox="0 0 64 64" aria-label="Icône 29 px"><rect width="64" height="64" fill="#0a7b6c"/><path d="M17 50 V16 L47 46 V14" stroke="#fbfbf8" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <small>Icône d'app · 1024, 60 et 29 px</small>
+    </div>
+  </div>
+  <div class="rules">
+    <p><b>Construction</b>Un N, comme Nord, tracé d'un seul trait avec les angles d'un plan de métro, une station au départ et une à l'arrivée. Un trajet qui forme une lettre.</p>
+    <p><b>Wordmark</b>« cap nord » en minuscules, Figtree 900, approche serrée. Simple et amical, sans majuscules à traduire.</p>
+    <p><b>Simplification</b>Sous 32 px, les stations disparaissent et le N reste.</p>
+    <p><b>Mouvement</b>À l'ouverture, le N se trace de la station de départ à celle d'arrivée.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Couleurs</h3><span>B.3</span></div>
+  <div class="sw-grid">
+    <div class="sw"><i style="background:#16181d"></i><div><b>Encre</b><small>#16181D</small><small>Texte, stations</small></div></div>
+    <div class="sw"><i style="background:#fbfbf8"></i><div><b>Papier plan</b><small>#FBFBF8</small><small>Fond clair</small></div></div>
+    <div class="sw"><i style="background:#0a7b6c"></i><div><b>Ligne Nord</b><small>#0A7B6C</small><small>Marque · voiture et route</small></div></div>
+    <div class="sw"><i style="background:#7b5cd6"></i><div><b>Ligne Air</b><small>#7B5CD6</small><small>Avion</small></div></div>
+    <div class="sw"><i style="background:#a87400"></i><div><b>Ligne Rail</b><small>#A87400</small><small>Train</small></div></div>
+    <div class="sw"><i style="background:#e2502a"></i><div><b>Ligne Bus</b><small>#E2502A</small><small>Bus, tram</small></div></div>
+    <div class="sw"><i style="background:#1f78c8"></i><div><b>Ligne Mer</b><small>#1F78C8</small><small>Bateau, ferry</small></div></div>
+    <div class="sw"><i style="background:#c23e6e"></i><div><b>Ligne Pas</b><small>#C23E6E</small><small>À pied, vélo</small></div></div>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Couleur sur Papier plan</th><th>Contraste</th><th>Seuil des éléments graphiques (3 : 1)</th><th>Seuil du texte (4,5 : 1)</th></tr></thead>
+      <tbody>
+        <tr><td>Encre</td><td class="num">17,1 : 1</td><td class="ok">Oui</td><td class="ok">AAA</td></tr>
+        <tr><td>Ligne Nord</td><td class="num">5,0 : 1</td><td class="ok">Oui</td><td class="ok">AA</td></tr>
+        <tr><td>Ligne Air</td><td class="num">4,7 : 1</td><td class="ok">Oui</td><td class="ok">AA</td></tr>
+        <tr><td>Ligne Pas</td><td class="num">4,8 : 1</td><td class="ok">Oui</td><td class="ok">AA</td></tr>
+        <tr><td>Ligne Mer</td><td class="num">4,4 : 1</td><td class="ok">Oui</td><td class="ko">Non : nom de ligne en Encre</td></tr>
+        <tr><td>Ligne Rail</td><td class="num">3,9 : 1</td><td class="ok">Oui</td><td class="ko">Non : nom de ligne en Encre</td></tr>
+        <tr><td>Ligne Bus</td><td class="num">3,7 : 1</td><td class="ok">Oui</td><td class="ko">Non : nom de ligne en Encre</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="rules">
+    <p><b>Règle n° 1</b>Les couleurs de ligne ne servent qu'aux lignes et à leurs pastilles. Le texte est toujours en Encre.</p>
+    <p><b>Règle n° 2</b>Jamais de couleur sans pictogramme : chaque pastille de ligne porte son mode.</p>
+    <p><b>Mode sombre</b>Lignes éclaircies sur fond #121418 : toutes entre 6,6 et 10 : 1.</p>
+  </div>
+  <div class="cols">
+    <div class="spec-box" style="background:#fbfbf8;color:#16181d;border:1px solid #e3e4e0">
+      <span class="spec-label">Statuts · forme de la station</span>
+      <div class="spec-row" style="--f:'Figtree'">
+        <span class="chip" style="background:#16181d;color:#fbfbf8;font-family:Figtree"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="#fbfbf8" stroke="#16181d" stroke-width="0"/><circle cx="7" cy="7" r="2.5" fill="#16181d"/></svg>Réservé</span>
+        <span class="chip" style="background:#16181d;color:#fbfbf8;font-family:Figtree"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="#fbfbf8"/></svg>Payé</span>
+        <span class="chip" style="border:1.5px dashed #16181d;color:#16181d;font-family:Figtree"><svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2 2"/></svg>À faire</span>
+        <span class="chip" style="border:1px solid #c9cbd0;color:#6b6f78;font-family:Figtree"><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>Fait</span>
+      </div>
+    </div>
+    <div class="spec-box" style="background:#16181d;color:#fbfbf8">
+      <span class="spec-label">Cercles de partage · zones du réseau</span>
+      <div class="spec-row" style="color:#3fc1ae">
+        <span class="share" style="font-family:Figtree"><svg><use href="#sh1"/></svg><span style="color:#fbfbf8">Moi</span></span>
+        <span class="share" style="font-family:Figtree"><svg><use href="#sh2"/></svg><span style="color:#fbfbf8">Compagnons</span></span>
+        <span class="share" style="font-family:Figtree"><svg><use href="#sh3"/></svg><span style="color:#fbfbf8">Amis</span></span>
+        <span class="share" style="font-family:Figtree"><svg><use href="#sh4"/></svg><span style="color:#fbfbf8">Voyageurs</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Typographie</h3><span>B.4</span></div>
+  <div class="type-scale" style="background:#fbfbf8;color:#16181d;border:1px solid #e3e4e0">
+    <div class="ts"><small>Nom de station<br>Figtree 900 · 34/36</small><span style="font:900 34px/1 'Figtree';letter-spacing:-.03em">Lisbonne</span></div>
+    <div class="ts"><small>Titre d'écran<br>Figtree 800 · 22/26</small><span style="font:800 22px/1.2 'Figtree';letter-spacing:-.02em">Jour 6 · Belém, LX Factory et fado</span></div>
+    <div class="ts"><small>Texte<br>Figtree 500 · 15/22</small><span style="font:500 15px/1.5 'Figtree'">Prendre le tram 28 au terminus : on a une place assise et on évite 40 minutes de queue.</span></div>
+    <div class="ts"><small>Horaire<br>JetBrains Mono 700 · 13</small><span style="font:700 13px 'JetBrains Mono';font-variant-numeric:tabular-nums">10:00 → 12:30 · 3 stations · 48,00 €</span></div>
+    <div class="ts"><small>Signalétique<br>Figtree 800 · 10 · capitales +8 %</small><span style="font:800 10px 'Figtree';letter-spacing:.08em;text-transform:uppercase">Info trafic · correspondances</span></div>
+  </div>
+  <div class="rules">
+    <p><b>Libre</b>Figtree : géométrique, très lisible, chiffres nets. Couvre le latin étendu.</p>
+    <p><b>Production</b>Option premium : une police de signalétique sous licence (type Transport New, dérivée des panneaux routiers britanniques).</p>
+    <p><b>International</b>Complément Noto Sans pour les autres écritures. Les noms de station s'affichent en langue locale, avec la transcription en dessous.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Pictogrammes : pastilles de ligne</h3><span>B.5</span></div>
+  <div class="legend" style="background:#fbfbf8;color:#16181d;border:1px solid #e3e4e0">
+    <span class="lg-item"><span class="lg-sq" style="background:#7b5cd6;color:#fff"><svg><use href="#i-avion"/></svg></span>Avion</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#a87400;color:#fff"><svg><use href="#i-train"/></svg></span>Train</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#0a7b6c;color:#fff"><svg><use href="#i-voiture"/></svg></span>Voiture</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#0a7b6c;color:#fff"><svg><use href="#i-van"/></svg></span>Van</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#e2502a;color:#fff"><svg><use href="#i-bus"/></svg></span>Bus, tram</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#1f78c8;color:#fff"><svg><use href="#i-bateau"/></svg></span>Bateau</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#c23e6e;color:#fff"><svg><use href="#i-pied"/></svg></span>À pied, vélo</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#16181d;color:#fbfbf8"><svg><use href="#i-nuit"/></svg></span>Nuit</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#16181d;color:#fbfbf8"><svg><use href="#i-resa"/></svg></span>Réservation</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#16181d;color:#fbfbf8"><svg><use href="#i-doc"/></svg></span>Document</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#16181d;color:#fbfbf8"><svg><use href="#i-budget"/></svg></span>Budget</span>
+    <span class="lg-item"><span class="lg-sq" style="border:2px solid #16181d"><svg><use href="#i-astuce"/></svg></span>Astuce</span>
+    <span class="lg-item"><span class="lg-sq" style="border:2px solid #16181d"><svg><use href="#i-meteo"/></svg></span>État de la ligne</span>
+    <span class="lg-item"><span class="lg-sq" style="background:#f2b53a;color:#16181d"><svg><use href="#i-actu"/></svg></span>Info trafic</span>
+  </div>
+  <p class="note">Les pastilles de transport utilisent un pictogramme blanc (contraste 4,6 à 5,2 : 1 sur Air, Nord et Mer). Sur Rail et Bus, le pictogramme est assez épais pour rester lisible ; à vérifier en test utilisateur.</p>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Composants</h3><span>B.6</span></div>
+  <div class="comp-grid">
+    <div class="comp Lg" style="border:1px solid #e3e4e0">
+      <small>Segment de ligne · un trajet</small>
+      <svg viewBox="0 0 300 92" aria-label="Segment Porto vers Coimbra" style="width:100%;height:auto">
+        <path d="M20 46 H280" stroke="#0a7b6c" stroke-width="8" stroke-linecap="round"/>
+        <g fill="#fbfbf8" stroke="#16181d" stroke-width="3.5"><circle cx="20" cy="46" r="8"/><circle cx="280" cy="46" r="8"/></g>
+        <g font-family="Figtree" fill="#16181d"><text x="8" y="24" font-size="13" font-weight="800">Porto</text><text x="232" y="24" font-size="13" font-weight="800">Coimbra</text><text x="150" y="76" font-size="11" text-anchor="middle" fill="#6b6f78">121 km · 1 h 25 · péage 8,90 €</text></g>
+        <rect x="136" y="35" width="28" height="22" rx="6" fill="#0a7b6c"/><use href="#i-voiture" x="141" y="37" width="18" height="18" style="color:#fff"/>
+      </svg>
+    </div>
+    <div class="comp Lg" style="border:1px solid #e3e4e0">
+      <small>Correspondance · une astuce</small>
+      <div class="corr">
+        <div><svg style="color:#0a7b6c"><use href="#sh4"/></svg><span><b>Prendre le tram 28 au terminus</b>Place assise, 40 min de queue en moins.<br><small>VOYAGEUR VÉRIFIÉ · 12 « UTILE »</small></span></div>
+        <div><svg style="color:#0a7b6c"><use href="#sh2"/></svg><span><b>Réserver le fado pour 20 h 30</b>Tom l'a fait pour nous 4.<br><small>TOM · COMPAGNON · HIER</small></span></div>
+      </div>
+    </div>
+    <div class="comp Lg" style="border:1px solid #e3e4e0">
+      <small>Info trafic · état de la ligne</small>
+      <div class="traffic"><svg width="18" height="18" style="color:#f2b53a;flex:none"><use href="#i-actu"/></svg><span><b>Info trafic · Lisbonne</b>Marathon dimanche : centre fermé de 8 h à 14 h.</span></div>
+      <div class="state">État de la ligne : 21° ensoleillé <span>COUCHER 19:02</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Écrans clés</h3><span>B.7</span></div>
+  <div class="screens">
+    <!-- L1 Voyage -->
+    <div class="phone-col">
+      <div class="phone Lg"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="sm">PORTUGAL · 9 JOURS · 3 VILLES</span>
+          <span class="ttl">Votre ligne</span>
+          <svg viewBox="0 0 232 300" aria-label="Plan de réseau du voyage" style="width:100%;height:auto">
+            <path d="M22 18 V70" stroke="#7b5cd6" stroke-width="7" stroke-linecap="round"/>
+            <path d="M22 70 V122 L64 164" stroke="#0a7b6c" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M64 164 V230" stroke="#0a7b6c" stroke-width="7" stroke-linecap="round"/>
+            <path d="M64 230 V280" stroke="#7b5cd6" stroke-width="7" stroke-dasharray="2 9" stroke-linecap="round"/>
+            <g fill="#fbfbf8" stroke="#16181d" stroke-width="3"><circle cx="22" cy="18" r="7"/><circle cx="22" cy="70" r="9"/><circle cx="64" cy="230" r="9"/></g>
+            <circle cx="64" cy="164" r="11" fill="#16181d"/><circle cx="64" cy="164" r="4.5" fill="#fbfbf8"/>
+            <circle cx="64" cy="280" r="8" fill="#fbfbf8" stroke="#16181d" stroke-width="2.5" stroke-dasharray="3 3"/>
+            <g font-family="Figtree" fill="#16181d">
+              <text x="40" y="22" font-size="12" font-weight="700">Paris</text>
+              <text x="40" y="68" font-size="15" font-weight="900">Porto</text><text x="40" y="83" font-size="10" fill="#6b6f78">3 nuits · fait</text>
+              <text x="84" y="160" font-size="15" font-weight="900">Coimbra</text><text x="84" y="175" font-size="10" fill="#0a7b6c" font-weight="700">VOUS ÊTES ICI · 1 nuit</text>
+              <text x="84" y="228" font-size="15" font-weight="900">Lisbonne</text><text x="84" y="243" font-size="10" fill="#6b6f78">4 nuits · payé · 3 astuces</text>
+              <text x="84" y="284" font-size="12" font-weight="700">Paris</text><text x="120" y="284" font-size="10" fill="#6b6f78">vol à réserver</text>
+            </g>
+          </svg>
+          <div class="tabbar"><span class="on"><svg><use href="#i-carte"/></svg>Ligne</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Votre ligne</b>Le voyage entier, position et statuts</span>
+    </div>
+    <!-- L2 Jour -->
+    <div class="phone-col">
+      <div class="phone Lg"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="sm">LISBONNE · JOUR 6</span>
+          <span class="ttl">Belém et fado</span>
+          <svg viewBox="0 0 232 310" aria-label="Programme du jour en ligne" style="width:100%;height:auto">
+            <path d="M30 14 V80" stroke="#e2502a" stroke-width="7" stroke-linecap="round"/>
+            <path d="M30 80 V146" stroke="#c23e6e" stroke-width="7" stroke-linecap="round"/>
+            <path d="M30 146 V212" stroke="#e2502a" stroke-width="7" stroke-linecap="round"/>
+            <path d="M30 212 V290" stroke="#c23e6e" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 0"/>
+            <g fill="#fbfbf8" stroke="#16181d" stroke-width="3"><circle cx="30" cy="14" r="7"/><circle cx="30" cy="146" r="8"/><circle cx="30" cy="212" r="8"/></g>
+            <circle cx="30" cy="80" r="10" fill="#16181d"/><circle cx="30" cy="80" r="4" fill="#fbfbf8"/>
+            <circle cx="30" cy="290" r="10" fill="#16181d"/><circle cx="30" cy="290" r="4" fill="#fbfbf8"/>
+            <g font-family="JetBrains Mono" font-size="9.5" font-weight="700" fill="#6b6f78"><text x="50" y="10">09:15</text><text x="50" y="76">10:00</text><text x="50" y="142">13:00</text><text x="50" y="208">16:30</text><text x="50" y="286">20:30</text></g>
+            <g font-family="Figtree" fill="#16181d"><text x="50" y="24" font-size="13" font-weight="800">Casa do Alfama</text>
+              <text x="50" y="90" font-size="13" font-weight="800">Hiéronymites</text><text x="50" y="104" font-size="10" fill="#6b6f78">réservé · 2 billets</text>
+              <text x="50" y="156" font-size="13" font-weight="800">Pastéis &amp; cafés</text><text x="50" y="170" font-size="10" fill="#6b6f78">1 astuce d'ami</text>
+              <text x="50" y="222" font-size="13" font-weight="800">LX Factory</text>
+              <text x="50" y="300" font-size="13" font-weight="800">Dîner fado à Alfama</text></g>
+            <g font-family="Figtree" font-size="9" fill="#6b6f78"><text x="140" y="50">tram 15E · 25 min</text><text x="140" y="116">à pied · 8 min</text><text x="140" y="182">bus 728 · 20 min</text><text x="140" y="254">à pied · 35 min</text></g>
+          </svg>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Ligne</span><span class="on"><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Jour</b>La journée en ligne de bus, avec les temps</span>
+    </div>
+    <!-- L3 Station -->
+    <div class="phone-col">
+      <div class="phone Lg"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="sm">STATION · J5 → J9</span>
+          <div style="display:flex;align-items:center;justify-content:space-between"><span class="ttl">Lisbonne</span><span class="badges"><span class="badge" style="background:#0a7b6c;color:#fff"><svg><use href="#i-voiture"/></svg></span><span class="badge" style="background:#7b5cd6;color:#fff"><svg><use href="#i-avion"/></svg></span></span></div>
+          <div class="traffic"><svg width="16" height="16" style="color:#f2b53a;flex:none"><use href="#i-actu"/></svg><span><b>Info trafic</b>Marathon dimanche : centre fermé de 8 h à 14 h.</span></div>
+          <div class="state">État : 21° ensoleillé <span>COUCHER 19:02</span></div>
+          <span class="sm">CORRESPONDANCES · 3 ASTUCES</span>
+          <div class="corr">
+            <div><svg style="color:#0a7b6c"><use href="#sh4"/></svg><span><b>Tram 28 au terminus</b>40 min de queue en moins.<br><small>VOYAGEUR VÉRIFIÉ</small></span></div>
+            <div><svg style="color:#0a7b6c"><use href="#sh3"/></svg><span><b>Miradouro au coucher</b>Venir 30 min avant.<br><small>LÉA · AMIE</small></span></div>
+            <div><svg style="color:#0a7b6c"><use href="#sh2"/></svg><span><b>Fado réservé 20 h 30</b><small>TOM · COMPAGNON</small></span></div>
+          </div>
+          <div class="tabbar"><span><svg><use href="#i-carte"/></svg>Ligne</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span class="on"><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Station</b>Info trafic, état de la ligne, correspondances</span>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Mouvement, son, souvenir</h3><span>B.8</span></div>
+  <div class="cols">
+    <div class="panel"><h4>Mouvement</h4><ul><li>Les lignes se tracent de station en station (ouverture, ajout d'étape).</li><li>La station en cours pulse lentement, comme un « vous êtes ici ».</li><li>L'info trafic défile une fois, puis se fige.</li><li>Tout est désactivé si l'utilisateur réduit les animations.</li></ul></div>
+    <div class="panel"><h4>Son et haptique</h4><ul><li>Un double ton court, façon annonce de quai, à l'arrivée sur une étape en mode Live.</li><li>Un clic quand une station passe à « fait ».</li></ul></div>
+  </div>
+  <div class="posters">
+    <div class="poster"><svg viewBox="0 0 300 400" aria-label="Affiche souvenir Ligne">
+      <rect width="300" height="400" fill="#fbfbf8"/>
+      <text x="22" y="44" font-family="Figtree" font-weight="900" font-size="30" fill="#16181d" letter-spacing="-1">Réseau Portugal</text>
+      <text x="22" y="62" font-family="JetBrains Mono" font-size="8" fill="#6b6f78">OCTOBRE 2026 · 9 JOURS · 4 VOYAGEURS</text>
+      <path d="M50 100 V160 L110 220 H200 L240 260 V330" stroke="#0a7b6c" stroke-width="9" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M50 100 L130 100" stroke="#7b5cd6" stroke-width="9" stroke-linecap="round"/>
+      <path d="M200 220 V150 H260" stroke="#e2502a" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M240 330 H120" stroke="#1f78c8" stroke-width="9" stroke-linecap="round"/>
+      <g fill="#fbfbf8" stroke="#16181d" stroke-width="3.5"><circle cx="50" cy="100" r="9"/><circle cx="110" cy="220" r="9"/><circle cx="200" cy="220" r="11"/><circle cx="240" cy="330" r="9"/><circle cx="260" cy="150" r="7"/><circle cx="120" cy="330" r="7"/><circle cx="130" cy="100" r="7"/></g>
+      <g font-family="Figtree" font-weight="800" font-size="12" fill="#16181d"><text x="64" y="128">Porto</text><text x="122" y="244">Coimbra</text><text x="214" y="214">Lisboa</text><text x="250" y="352" text-anchor="end">Belém</text><text x="236" y="140">Sintra</text><text x="108" y="352">Cacilhas</text><text x="120" y="90">Paris</text></g>
+    </svg></div>
+    <div class="panel"><h4>Le souvenir, version Ligne</h4><p>En fin de voyage, Cap Nord dessine le plan de réseau du voyage, avec toutes les excursions en lignes secondaires. Très reconnaissable et très partageable : c'est le visuel le plus « marque » des deux pistes.</p></div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="sub-h"><h3>Bilan Ligne</h3><span>B.9</span></div>
+  <div class="verdict">
+    <p class="plus"><b>Forces</b>Vue d'ensemble imbattable, la plus fonctionnelle des pistes. Le vocabulaire du transport (info trafic, correspondances) rend les astuces et les actus évidentes. Le N est un logo simple et fort.</p>
+    <p class="minus"><b>Risques</b>Six couleurs à tenir avec discipline. Territoire proche de Citymapper et des apps de transport. Moins pertinent pour un voyage en itinérance libre (van, rando) sans enchaînement net.</p>
+    <p><b>Production</b>Schéma généré automatiquement depuis l'itinéraire : demande un algorithme de mise en page (angles 45°/90°), plus complexe qu'une simple liste.</p>
+  </div>
+</section>
+
+<!-- ============ COMPARAISON ============ -->
+<section class="block" id="comparaison">
+  <header>
+    <span class="eyebrow">03 · Comparaison</span>
+    <h2>Relevé ou Ligne : ce qui les sépare</h2>
+  </header>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Critère</th><th>Relevé</th><th>Ligne</th></tr></thead>
+      <tbody>
+        <tr><td>Vue d'ensemble du voyage</td><td>Profil des distances + liste</td><td class="ok">Plan de réseau, lisible en 2 secondes</td></tr>
+        <tr><td>Carte, astuces, météo, actus</td><td class="ok">Calques sur la carte, système natif</td><td>Vocabulaire « station » efficace, carte secondaire</td></tr>
+        <tr><td>Accessibilité couleur</td><td class="ok">Trajets codés par le trait, peu de couleurs</td><td>Six couleurs, toujours doublées d'un pictogramme</td></tr>
+        <tr><td>Lien avec le nom Cap Nord</td><td class="ok">Aiguille, coordonnées du cap Nord</td><td>N tracé comme une ligne</td></tr>
+        <tr><td>Voyage en itinérance (van, rando)</td><td class="ok">Naturel</td><td>Moins adapté</td></tr>
+        <tr><td>Voyage urbain, multi-transports</td><td>À démontrer</td><td class="ok">Naturel</td></tr>
+        <tr><td>Souvenir partageable</td><td>Affiche de relief, élégante</td><td class="ok">Plan de réseau, très reconnaissable</td></tr>
+        <tr><td>Risque de ressemblance</td><td>Apps de randonnée</td><td>Apps de transport urbain</td></tr>
+        <tr><td>Complexité de développement</td><td>Rendu des calques et du relief</td><td>Mise en page automatique du schéma</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ HYBRIDE ============ -->
+<section class="block" id="hybride">
+  <header>
+    <span class="eyebrow">04 · Recommandation</span>
+    <h2>L'identité Relevé, avec la vue Ligne</h2>
+    <p class="lead">Les deux pistes ne se concurrencent pas vraiment : l'une sert la carte, l'autre la vue d'ensemble. La proposition est de garder Relevé pour l'identité (logo, couleurs, typo, calques) et de dessiner l'écran « Voyage » en schéma de ligne, avec les conventions de trait de Relevé plutôt que six couleurs.</p>
+  </header>
+  <div class="hybrid">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="panel"><h4>Ce que l'hybride garde</h4><ul>
+        <li><b>De Relevé :</b> l'aiguille et les coordonnées, la palette forêt, glacier et bistre, Archivo, les calques (mon plan, amis, voyageurs, météo, actus).</li>
+        <li><b>De Ligne :</b> le schéma du voyage comme écran d'accueil, les stations et leurs statuts, les mots « info trafic » et « correspondances ».</li>
+        <li><b>Commun :</b> les anneaux de partage, déjà identiques dans les deux pistes.</li>
+      </ul></div>
+      <div class="panel"><h4>Pourquoi c'est plus solide</h4><ul>
+        <li>Une seule couleur de marque forte, au lieu de six couleurs de ligne.</li>
+        <li>Les trajets se distinguent par le trait (plein, hachuré, tirets, points) : accessible, imprimable, cohérent avec la carte.</li>
+        <li>Fonctionne aussi bien pour un road trip en van que pour un city trip en tram.</li>
+      </ul></div>
+      <div class="panel"><h4>Prochaine étape proposée</h4><ol>
+        <li>Valider la direction (Relevé, Ligne ou l'hybride).</li>
+        <li>Finaliser le logo : 3 variantes d'aiguille, test à 16 px, test hors contexte.</li>
+        <li>Construire le design system : composants, mode sombre, tous les statuts.</li>
+        <li>Maquetter les 8 écrans du parcours principal dans l'app réelle.</li>
+      </ol></div>
+    </div>
+    <div class="phone-col">
+      <div class="phone R"><span class="notch"></span>
+        <div class="ph-in">
+          <span class="coord">41°09′N → 38°43′N · 9 JOURS</span>
+          <span class="ttl">Portugal</span>
+          <svg viewBox="0 0 232 300" aria-label="Schéma du voyage façon Relevé" style="width:100%;height:auto">
+            <path d="M22 18 Q 10 44 22 70" stroke="#10231f" stroke-width="1.6" fill="none"/>
+            <path d="M22 70 V122 L64 164" stroke="#10231f" stroke-width="5" stroke-linejoin="round" fill="none"/>
+            <path d="M64 164 V230" stroke="#10231f" stroke-width="5"/>
+            <path d="M64 230 V280" stroke="#10231f" stroke-width="1.6" stroke-dasharray="4 4"/>
+            <path d="M64 230 L120 230" stroke="#10231f" stroke-width="4"/><path d="M74 225v10M86 225v10M98 225v10M110 225v10" stroke="#10231f" stroke-width="1.2"/>
+            <g fill="#ecefe8" stroke="#10231f" stroke-width="2.5"><circle cx="22" cy="18" r="6"/><circle cx="22" cy="70" r="8"/><circle cx="64" cy="230" r="8"/><circle cx="120" cy="230" r="6"/></g>
+            <circle cx="64" cy="164" r="9" fill="#5fd0c8" stroke="#10231f" stroke-width="3"/>
+            <circle cx="64" cy="280" r="7" fill="none" stroke="#9a5222" stroke-width="2" stroke-dasharray="3 3"/>
+            <g font-family="Archivo" fill="#10231f">
+              <text x="38" y="22" font-size="11" font-weight="700">Paris</text>
+              <text x="38" y="68" font-size="14" font-weight="800">Porto</text><text x="38" y="82" font-size="9" fill="#4e6660" font-family="JetBrains Mono">3 NUITS · FAIT</text>
+              <text x="82" y="160" font-size="14" font-weight="800">Coimbra</text><text x="82" y="174" font-size="9" fill="#0b6f69" font-family="JetBrains Mono" font-weight="700">ICI · 21° · 1 NUIT</text>
+              <text x="70" y="252" font-size="14" font-weight="800">Lisbonne</text><text x="70" y="265" font-size="9" fill="#4e6660" font-family="JetBrains Mono">4 NUITS · PAYÉ · ◆3</text>
+              <text x="126" y="226" font-size="10" font-weight="700">Sintra</text>
+              <text x="80" y="284" font-size="11" font-weight="700">Paris</text><text x="112" y="284" font-size="9" fill="#9a5222" font-family="JetBrains Mono">À RÉSERVER</text>
+            </g>
+          </svg>
+          <div class="alert"><b>ACTU · LISBONNE</b>Marathon dimanche, centre fermé 8 h – 14 h.</div>
+          <div class="tabbar"><span class="on"><svg><use href="#i-carte"/></svg>Voyage</span><span><svg><use href="#i-jour"/></svg>Jour</span><span><svg><use href="#i-gps"/></svg>Carte</span><span><svg><use href="#i-budget"/></svg>Budget</span><span><svg><use href="#i-astuce"/></svg>Astuces</span></div>
+        </div>
+      </div>
+      <span class="phone-cap"><b>Hybride · écran Voyage</b>Schéma de ligne, trait de carte : vol en arc, route pleine, rail hachuré, à réserver en pointillé</span>
+    </div>
+  </div>
+</section>
+
+</div>

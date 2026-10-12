@@ -1,30 +1,32 @@
 :root {
-  /* Palette Cap Nord : sapin profond, abricot vif, neutres légèrement teintés de vert */
-  --bg: #f3f6f5;
-  --surface: #ffffff;
-  --surface-2: #ecf1ef;
-  --text: #0c1b1a;
-  --muted: #5d6f6b;
-  --line: #dfe7e4;
-  --brand: #7a2436;
-  --brand-2: #7a2436;
-  --accent: #d9a441;
-  --accent-ink: #3b2508;
-  --brass: #d9a441;
-  --brand-ink: #ffffff;
-  --ok: #0f9f62;
-  --ok-bg: #dcf5e9;
-  --warn: #c2620a;
-  --warn-bg: #fff0dd;
-  --danger: #e5484d;
-  --shadow: 0 1px 2px rgba(12, 27, 26, .05), 0 6px 18px rgba(12, 27, 26, .07);
-  --shadow-lg: 0 18px 48px rgba(12, 27, 26, .22);
-  --r: 18px;
+  /* Etapa · charte « Tracé » : forêt, glacier, bistre ; les couleurs sont rares et ont toutes un sens */
+  --bg: #ecefe8;
+  --surface: #f7f8f4;
+  --surface-2: #e4e9e2;
+  --text: #10231f;
+  --muted: #4e6660;
+  --line: #d3dad3;
+  --brand: #10231f;
+  --brand-2: #0b6f69;
+  --accent: #5fd0c8;
+  --accent-ink: #10231f;
+  --brass: #b8662f;
+  --brand-ink: #ecefe8;
+  --ok: #0b6f69;
+  --ok-bg: #d4eeeb;
+  --warn: #9a5222;
+  --warn-bg: #f3e4d7;
+  --danger: #ab3626;
+  --eau: #3d6fb6;
+  --shadow: 0 1px 2px rgba(16, 35, 31, .05), 0 4px 14px rgba(16, 35, 31, .05);
+  --shadow-lg: 0 18px 44px rgba(16, 35, 31, .22);
+  --r: 12px;
   --trip: var(--brand);
   --spring: cubic-bezier(.2, .9, .25, 1.12);
-  /* Typographie minimaliste : la police système (SF Pro sur iPhone), serrée et nette */
-  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
+  /* Une famille (Archivo, trois largeurs) + une police de données (JetBrains Mono) */
+  --font: 'Archivo', 'Noto Sans', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Archivo', 'Noto Sans', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
   --ease: cubic-bezier(.22, .8, .3, 1);
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
@@ -32,14 +34,14 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0a1312; --surface: #11201e; --surface-2: #182b28; --text: #e7f0ed; --muted: #8ea39f; --line: #22362f;
-    --brand: #e68a9b; --brand-2: #e68a9b; --accent: #e3b55c; --accent-ink: #2b1a05; --brand-ink: #2a0b12; --ok: #3ddc97; --ok-bg: #0f2f22; --warn: #ffb547; --warn-bg: #33240a; --danger: #ff6b70;
+    --bg: #0b1916; --surface: #10231f; --surface-2: #17302a; --text: #e6ece6; --muted: #9fb3ad; --line: #24403a;
+    --brand: #5fd0c8; --brand-2: #5fd0c8; --accent: #5fd0c8; --accent-ink: #10231f; --brass: #d98a55; --brand-ink: #10231f; --ok: #5fd0c8; --ok-bg: #123a35; --warn: #d98a55; --warn-bg: #33220f; --danger: #ff7a66; --eau: #7fa8e0;
     --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .3); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0a1312; --surface: #11201e; --surface-2: #182b28; --text: #e7f0ed; --muted: #8ea39f; --line: #22362f;
-  --brand: #e68a9b; --brand-2: #e68a9b; --accent: #e3b55c; --accent-ink: #2b1a05; --brand-ink: #2a0b12; --ok: #3ddc97; --ok-bg: #0f2f22; --warn: #ffb547; --warn-bg: #33240a; --danger: #ff6b70;
+  --bg: #0b1916; --surface: #10231f; --surface-2: #17302a; --text: #e6ece6; --muted: #9fb3ad; --line: #24403a;
+    --brand: #5fd0c8; --brand-2: #5fd0c8; --accent: #5fd0c8; --accent-ink: #10231f; --brass: #d98a55; --brand-ink: #10231f; --ok: #5fd0c8; --ok-bg: #123a35; --warn: #d98a55; --warn-bg: #33220f; --danger: #ff7a66; --eau: #7fa8e0;
   --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .3); color-scheme: dark;
 }
 
@@ -784,7 +786,7 @@ body.show-map .fab { display: none; }
 /* ---------- Identité Cap Nord */
 .brandmark { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 var(--font-display); letter-spacing: .26em; text-transform: uppercase; color: var(--brand); }
 .brandmark svg { width: 16px; height: 16px; color: var(--brand); }
-.boot { background: #7a2436; }
+.boot { background: #10231f; }
 .boot img { border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 .home-top h1 { font-family: var(--font-display); font-weight: 700; }
 
@@ -1165,3 +1167,128 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 .dest-head .dh-tips .ico { width: 14px; height: 14px; color: currentColor; }
 .dest-head .dh-tips.on { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .dest-head:has(.dh-tips) .dh-title { padding-right: 132px; }
+
+/* =====================================================================
+   ETAPA · charte « Tracé »
+   Une légende, pas de décoration : stations cerclées, traits par mode,
+   glacier = ici / réservé, bistre = à faire, balise = alerte.
+   ===================================================================== */
+body { font-family: var(--font); font-stretch: 100%; }
+h1, h2, h3, .home-top h1 { font-family: var(--font-display); font-weight: 800; font-stretch: 110%; letter-spacing: -.02em; }
+input, select, textarea, button { font-family: inherit; }
+.num, .dt-b, .stats b, .tk-code, time { font-variant-numeric: tabular-nums; }
+
+/* Étiquettes et données : police de données, capitales espacées */
+.eyebrow, .h-sec, .fld > span, .fld-l, .sec h4 small, .card h4 small, .dh-sub, .stats span, .hint-mono {
+  font-family: var(--mono); font-weight: 500; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.sec h4, .card h4 { font: 700 15px/1.25 var(--font-display); font-stretch: 110%; letter-spacing: -.005em; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.sec, .card, .step, .feat, .stats > div { border-radius: var(--r); box-shadow: none; }
+.sec { border-color: var(--line); }
+
+/* Boutons : plein encre, contour encre, lien glacier */
+.btn { border-radius: 10px; border: 1.5px solid var(--text); background: transparent; color: var(--text); font-weight: 600; }
+.btn:hover { background: color-mix(in srgb, var(--text) 6%, transparent); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+.btn.ghost { border: 1.5px dashed color-mix(in srgb, var(--text) 55%, transparent); color: var(--text); background: transparent; }
+.btn.sm { border-radius: 8px; }
+.btn.danger { border-color: var(--danger); }
+a { color: var(--brand-2); }
+.chip { border-radius: 999px; font-weight: 600; }
+.chip.ok, .badge.ok { background: var(--ok-bg); color: var(--ok); }
+input, select, textarea { border-radius: 10px !important; }
+
+/* Identité : E en lacets */
+.boot { background: #10231f; }
+.brandmark { gap: 7px; font: 800 13px/1 var(--font-display); font-stretch: 125%; letter-spacing: .04em; text-transform: uppercase; color: var(--text); }
+.brandmark svg { width: 15px; height: 19px; color: var(--text); --mark-dot: #5fd0c8; }
+.empty-logo { border-radius: 22%; box-shadow: 0 14px 30px rgba(16, 35, 31, .28); }
+.trip-badge { border-radius: 10px; background: var(--c, #10231f); color: #5fd0c8; --mark-dot: #fff; box-shadow: none; }
+.trip-badge svg { width: 20px; height: 24px; }
+.trip-badge.light { background: rgba(255, 255, 255, .1); }
+.trip-badge.light svg { width: 28px; height: 34px; }
+.feat-card { background: var(--c, #10231f); color: #e6ece6; border-radius: var(--r); }
+.feat-card .live-chip { color: #10231f; background: #5fd0c8; }
+
+/* Navigation */
+.bn.active { color: var(--text); }
+.bn.active::before { background: var(--accent); }
+.tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+/* Liste des étapes : des stations */
+.num { width: 30px; height: 30px; background: var(--surface); color: var(--text); border: 2.5px solid var(--text); font: 700 12px var(--mono); }
+.step.past .num { background: var(--text); color: var(--bg); border-color: var(--text); }
+.step.now { border-color: var(--text); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+.step.now .num { background: var(--accent); color: #10231f; border-color: #10231f; animation: station 2.4s infinite; }
+@keyframes station { 0%, 100% { box-shadow: 0 0 0 0 rgba(95, 208, 200, .55); } 60% { box-shadow: 0 0 0 9px rgba(95, 208, 200, 0); } }
+.step-dates, .conn-label small { font-family: var(--mono); font-size: 11px; letter-spacing: .03em; }
+
+/* Carte : stations et position */
+.mk { background: #f7f8f4; color: #10231f; border: 3px solid #10231f; font: 700 12px var(--mono); box-shadow: 0 1px 4px rgba(16, 35, 31, .3); }
+.mk.past { background: #10231f; color: #ecefe8; border-color: #10231f; }
+.mk.now { background: #5fd0c8; color: #10231f; border-color: #10231f; animation: station 2.4s infinite; }
+.mk.sel { background: #10231f; color: #5fd0c8; }
+.mk-here { background: #10231f; color: #5fd0c8; font: 700 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; border-radius: 6px; }
+.me-dot { background: #5fd0c8; border: 4px solid #10231f; animation: station 2.4s infinite; }
+
+/* En-tête de destination : bandeau forêt, nom en Archivo large */
+.drawer-head.dest-head { background: var(--c, #10231f); }
+.dest-head .dh-name { font: 800 30px/1.05 var(--font-display); font-stretch: 125%; letter-spacing: -.01em; text-shadow: none; color: #e6ece6; }
+.dest-head .dh-sub { color: #9fb3ad; font-size: 10.5px; margin-top: 2px; }
+.dest-head .dh-nav .btn { background: transparent; border: 1.5px solid rgba(230, 236, 230, .35); color: #e6ece6; border-radius: 8px; font-weight: 600; }
+.dest-head .dh-nav .btn .ico { color: #5fd0c8; }
+.dest-head .dh-close { background: rgba(230, 236, 230, .1); color: #e6ece6; }
+.dest-head .dh-tips { color: #9fb3ad; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
+.dest-head .dh-tips .ico { color: #5fd0c8; }
+.dest-head .dh-tips.on { color: #5fd0c8; }
+/* « Vous êtes ici » : la station glacier cerclée d'encre */
+.dest-head .pin-body { fill: #5fd0c8; stroke: #10231f; stroke-width: 2.5px; }
+.dest-head .pin-dot { fill: #10231f; }
+.dest-head .pin-wave { border-color: #5fd0c8; }
+
+/* Jours et onglets */
+.dayline button { border-radius: 10px; background: var(--surface); border-color: var(--line); }
+.dayline button b { font: 800 20px/1.1 var(--font-display); font-stretch: 110%; }
+.dayline button small { font: 500 9.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.dayline button.on { background: var(--c, #10231f); border-color: var(--c, #10231f); color: #e6ece6; box-shadow: none; }
+.dayline button.on small, .dayline button.on.today small { color: #9fb3ad !important; }
+.dayline .dl-day.today::after, .dayline .dl-day.on.today::after { background: #5fd0c8; box-shadow: 0 0 0 1.5px #10231f; }
+.dtab { border-radius: 10px; background: var(--surface); }
+.dtab.active { background: var(--c, #10231f); border-color: var(--c, #10231f); color: #e6ece6; box-shadow: none; }
+.dtab.active .dt-ic { color: #5fd0c8; }
+.dt-b { font-family: var(--mono); font-weight: 700; border-radius: 6px; }
+.dt-b.warn { background: transparent; color: var(--warn); border: 1.5px dashed var(--warn); }
+
+/* Trajet : ticket et traits */
+.leg-head { background: var(--surface-2); }
+.leg-head .kind-chip { background: var(--text); color: var(--bg); }
+.ticket { border-radius: var(--r); box-shadow: none; border: 1px solid var(--line); }
+.tk-code, .ticket b { font-family: var(--font-display); font-weight: 800; font-stretch: 125%; }
+
+/* Statuts : la forme d'abord, la couleur ensuite */
+.st-todo, .chip.todo { border: 1.5px dashed var(--warn); color: var(--warn); background: transparent; }
+
+/* Astuces : source, cercle, date */
+.tip { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+
+/* Thème sombre (route et Live) : le glacier remplace l'encre pour ce qui est actif */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .dayline button.on, :root:not([data-theme="light"]) .dtab.active { background: #5fd0c8; border-color: #5fd0c8; color: #10231f; }
+  :root:not([data-theme="light"]) .dayline button.on small { color: #10231f !important; }
+  :root:not([data-theme="light"]) .dtab.active .dt-ic { color: #10231f; }
+  :root:not([data-theme="light"]) .drawer-head.dest-head { background: #17302a; }
+}
+:root[data-theme="dark"] .dayline button.on, :root[data-theme="dark"] .dtab.active { background: #5fd0c8; border-color: #5fd0c8; color: #10231f; }
+:root[data-theme="dark"] .dayline button.on small { color: #10231f !important; }
+:root[data-theme="dark"] .dtab.active .dt-ic { color: #10231f; }
+:root[data-theme="dark"] .drawer-head.dest-head { background: #17302a; }
+
+/* Légende de la carte : mêmes stations que sur la carte */
+.lgd, .mp-dot { width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; display: inline-block; flex: none; }
+.lgd.done { background: var(--text); border: 0; }
+.lgd.now, .mp-dot.now { background: #5fd0c8; border: 2px solid #10231f; box-shadow: 0 0 0 3px rgba(95, 208, 200, .35); }
+.lgd.todo, .mp-dot { background: var(--surface); border: 2px dashed var(--text); }
+.mp-legend { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.dest-head .dh-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dest-head.has-cover::after { background: rgba(16, 35, 31, .66); }
+:root { accent-color: var(--text); }

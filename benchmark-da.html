@@ -231,12 +231,12 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 <div class="hero">
   <span class="eyebrow">Direction artistique · état des lieux & pistes · v2</span>
   <h1>Gérer un voyage ne devrait pas ressembler à remplir un tableur.</h1>
-  <p class="lead">Cap Nord est d'abord un outil pour gérer son voyage : étapes, nuits, trajets, réservations, documents, budget, carte, météo, change, GPS. Le partage et le souvenir passent au second plan. Ce document compare Cap Nord aux apps de gestion de voyage, synthétise leurs retours utilisateurs et propose cinq directions artistiques.</p>
-  <div class="meta"><span>Projet : Cap Nord, carnet de route (nom de travail)</span><span>Version 2 · 12 octobre 2026</span><span>Périmètre : apps de planification et de gestion de voyage</span></div>
+  <p class="lead">Cap Nord est d'abord un outil pour gérer son voyage : étapes, nuits, trajets, réservations, documents, budget, carte, change, GPS. Elle est connectée : astuces partagées entre voyageurs, amis et compagnons, météo et actualités de la destination. Le souvenir passe au second plan. Ce document compare Cap Nord aux apps de gestion de voyage, synthétise leurs retours utilisateurs et propose cinq directions artistiques.</p>
+  <div class="meta"><span>Projet : Cap Nord, carnet de route (nom de travail)</span><span>Version 3 · 12 octobre 2026</span><span>Périmètre : apps de planification et de gestion de voyage</span></div>
   <div class="thesis">
     <div><b>4 sur 5</b><span>des apps de gestion de voyage étudiées utilisent un rouge-orange et/ou un bleu comme couleur principale.</span></div>
-    <div><b>≈ 40 $/an</b><span>l'abonnement Pro de Wanderlog et de Tripsy. Cap Nord est gratuit et sans compte.</span></div>
-    <div><b>1 milliard</b><span>de points de localisation Polarsteps accessibles via une API mal protégée (enquête Follow the Money, 2026). Cap Nord garde les données sur le téléphone.</span></div>
+    <div><b>≈ 40 $/an</b><span>l'abonnement Pro de Wanderlog et de Tripsy, souvent pour des fonctions de base (hors-ligne, synchro, partage).</span></div>
+    <div><b>1 milliard</b><span>de points de localisation Polarsteps accessibles via une API mal protégée (enquête Follow the Money, 2026). Maîtriser ce qu'on partage, et avec qui, devient un argument.</span></div>
     <div><b>0</b><span>de ces apps n'a une identité visuelle qui tienne sans son logo. Il y a de la place pour un outil qui a du caractère.</span></div>
   </div>
 </div>
@@ -350,7 +350,7 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
         </div>
       </div>
       <dl class="brand-body">
-        <div class="kv"><dt>Positionnement</dt><dd>Leader du secteur (≈ 23 M d'utilisateurs). Né pour suivre et raconter le voyage, il ajoute un planificateur IA sur carte (2025) puis la planification sur le web (2026). C'est le concurrent qui se rapproche de Cap Nord.</dd></div>
+        <div class="kv"><dt>Positionnement</dt><dd>Leader du secteur (≈ 23 M d'utilisateurs). Né pour suivre et raconter le voyage, il ajoute un planificateur IA sur carte (2025) puis la planification sur le web (2026). Planification à plusieurs via « Travel Together », mais une personne à la fois avec synchro manuelle. C'est le concurrent qui se rapproche de Cap Nord.</dd></div>
         <div class="kv"><dt>Identité</dt><dd>Police propriétaire « Polarsteps Fellix » + Inter. Carte au centre, tracé rouge, grandes photos. La plus aboutie de la niche, mais tournée vers l'émotion.</dd></div>
         <div class="kv"><dt>Modèle</dt><dd>Gratuit, revenus via les livres photo imprimés.</dd></div>
         <div class="verdict">
@@ -375,7 +375,7 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
   <header>
     <span class="eyebrow">02 · Lecture du marché</span>
     <h2>Rouge-orange et bleu partout, un coin vide en haut à gauche</h2>
-    <p class="lead">Les apps de gestion sont fonctionnelles mais génériques (Inter, Source Sans, gris Bootstrap). Celles qui ont une vraie identité (Polarsteps) misent sur l'émotion. Toutes demandent un compte et stockent le voyage sur leurs serveurs.</p>
+    <p class="lead">Les apps de gestion sont fonctionnelles mais génériques (Inter, Source Sans, gris Bootstrap). Celles qui ont une vraie identité (Polarsteps) misent sur l'émotion. Et l'information qu'elles affichent est surtout celle que l'utilisateur a saisie : les astuces d'autres voyageurs, la météo et l'actualité locale restent dans d'autres apps.</p>
   </header>
 
   <div style="display:flex;flex-direction:column;gap:8px">
@@ -386,44 +386,44 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
   </div>
 
   <div class="mapbox">
-    <svg viewBox="0 0 680 440" role="img" aria-label="Carte de positionnement : axe gérer vers raconter, axe compte et cloud vers données sur l'appareil">
+    <svg viewBox="0 0 680 440" role="img" aria-label="Carte de positionnement : axe gérer vers raconter, axe information figée vers information vivante">
       <line class="ax" x1="40" y1="220" x2="660" y2="220" stroke-width="1"/>
       <line class="ax" x1="350" y1="20" x2="350" y2="410" stroke-width="1"/>
       <text class="axt" x="40" y="238">GÉRER LE VOYAGE</text>
       <text class="axt" x="660" y="238" text-anchor="end">RACONTER LE VOYAGE</text>
-      <text class="axt" x="358" y="30">SANS COMPTE · SUR L'APPAREIL</text>
-      <text class="axt" x="358" y="406">COMPTE · DONNÉES SUR SERVEUR</text>
+      <text class="axt" x="358" y="30">INFO VIVANTE · ASTUCES, MÉTÉO, ACTUS</text>
+      <text class="axt" x="358" y="406">INFO FIGÉE · CE QUE JE SAISIS</text>
 
-      <circle cx="80" cy="345" r="9" fill="#f37021"/><text class="lbl" x="95" y="349">TripIt</text>
-      <circle cx="150" cy="300" r="9" fill="#3f52e3"/><text class="lbl" x="165" y="304">Wanderlog</text>
-      <circle cx="215" cy="360" r="9" fill="#ffc14a"/><text class="lbl" x="230" y="364">Stippl</text>
-      <circle cx="120" cy="262" r="9" fill="#df6426"/><text class="lbl" x="135" y="266">Tripsy</text><text class="sub" x="135" y="280">synchro iCloud en Pro</text>
-      <circle cx="430" cy="320" r="9" fill="#f11f4c"/><text class="lbl" x="445" y="324">Polarsteps</text><text class="sub" x="445" y="338">glisse vers la planification ←</text>
-      <circle cx="530" cy="290" r="9" fill="#ff4f12"/><text class="lbl" x="545" y="294">FindPenguins</text>
+      <circle cx="80" cy="290" r="9" fill="#f37021"/><text class="lbl" x="95" y="294">TripIt</text><text class="sub" x="95" y="308">alertes vols en Pro</text>
+      <circle cx="165" cy="195" r="9" fill="#3f52e3"/><text class="lbl" x="180" y="199">Wanderlog</text><text class="sub" x="180" y="213">guides, suggestions IA</text>
+      <circle cx="215" cy="330" r="9" fill="#ffc14a"/><text class="lbl" x="230" y="334">Stippl</text>
+      <circle cx="110" cy="370" r="9" fill="#df6426"/><text class="lbl" x="125" y="374">Tripsy</text>
+      <circle cx="430" cy="180" r="9" fill="#f11f4c"/><text class="lbl" x="445" y="184">Polarsteps</text><text class="sub" x="445" y="198">Explore, abonnés · glisse vers ←</text>
+      <circle cx="530" cy="260" r="9" fill="#ff4f12"/><text class="lbl" x="545" y="264">FindPenguins</text>
       <circle cx="600" cy="365" r="9" fill="#5a87d6"/><text class="lbl" x="560" y="388">Journi</text>
 
-      <ellipse class="target" cx="185" cy="96" rx="150" ry="48"/>
-      <text class="tlabel" x="185" y="90" text-anchor="middle">Cap Nord</text>
-      <text class="sub" x="185" y="108" text-anchor="middle">outil de gestion, privé, hors-ligne</text>
-      <text class="sub" x="185" y="122" text-anchor="middle">+ un volet souvenir léger</text>
+      <ellipse class="target" cx="170" cy="86" rx="140" ry="46"/>
+      <text class="tlabel" x="170" y="80" text-anchor="middle">Cap Nord</text>
+      <text class="sub" x="170" y="98" text-anchor="middle">outil de gestion + infos vivantes</text>
+      <text class="sub" x="170" y="112" text-anchor="middle">(astuces, météo, actus) au même endroit</text>
     </svg>
   </div>
-  <p class="note">Positionnement qualitatif, établi à partir des fonctionnalités et des politiques de données publiques de chaque app.</p>
+  <p class="note">Positionnement qualitatif, établi à partir des fonctionnalités publiques de chaque app. Wanderlog est le plus proche du territoire visé.</p>
 </section>
 
 <!-- ============ 3. RETOURS UTILISATEURS ============ -->
 <section id="retours">
   <header>
     <span class="eyebrow">03 · Ce que disent les utilisateurs</span>
-    <h2>Sept constats, sept règles de direction artistique</h2>
-    <p class="lead">Synthèse d'avis App Store, Google Play, Trustpilot et Setapp, de tests presse (MacStories, TapSmart) et d'enquêtes. Les six premiers portent sur la gestion du voyage, le dernier sur le souvenir.</p>
+    <h2>Huit constats, huit règles de direction artistique</h2>
+    <p class="lead">Synthèse d'avis App Store, Google Play, Trustpilot et Setapp, de tests presse (MacStories, TapSmart) et d'enquêtes. Les sept premiers portent sur la gestion du voyage et l'information partagée, le dernier sur le souvenir.</p>
   </header>
   <div class="insights">
     <div class="ins">
       <span class="fig">Fiabilité</span>
       <h3>La peur de perdre ses données</h3>
       <p>Étapes qui disparaissent (Stippl), e-mails qui n'arrivent jamais dans l'itinéraire (TripIt), tracé faux (Polarsteps), plantages (Tripsy). L'angoisse principale : « est-ce que c'est bien enregistré ? »</p>
-      <p class="so"><b>Règle :</b> chaque état doit se voir. Réservé, payé, fait, enregistré sur l'appareil : un code de forme et de couleur stable, jamais ambigu.</p>
+      <p class="so"><b>Règle :</b> chaque état doit se voir. Réservé, payé, fait, synchronisé : un code de forme et de couleur stable, jamais ambigu.</p>
     </div>
     <div class="ins">
       <span class="fig">Saisie</span>
@@ -444,10 +444,16 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
       <p class="so"><b>Règle :</b> contrastes AAA sur les infos clés, mode sombre réel (économise l'écran OLED), lisible à bout de bras.</p>
     </div>
     <div class="ins">
+      <span class="fig">Astuces</span>
+      <h3>Une astuce ne vaut que si on sait d'où elle vient</h3>
+      <p>Tripadvisor a bloqué 2,7 M de faux avis en 2024, dont 54 % d'auto-promotion par les établissements. Les voyageurs se méfient des recommandations anonymes et des suggestions IA qui encombrent (Wanderlog).</p>
+      <p class="so"><b>Règle :</b> chaque astuce affiche sa source (compagnon, ami, voyageur passé sur place), sa date et son lieu. Un code visuel distinct sépare mes données, les astuces des autres et l'info en direct (météo, actus).</p>
+    </div>
+    <div class="ins">
       <span class="fig">Vie privée</span>
       <h3>Un sujet devenu public</h3>
       <p>L'enquête de Follow the Money sur Polarsteps (2026) : données de localisation et domiciles retrouvables, y compris de militaires. Le ministère néerlandais de la Défense a interdit l'app sur ses appareils.</p>
-      <p class="so"><b>Règle :</b> rendre visible le fait que tout reste sur le téléphone (un signe dédié, présent mais discret). C'est un argument commercial à part entière.</p>
+      <p class="so"><b>Règle :</b> privé par défaut, partage choisi. Un signe stable indique pour chaque élément qui le voit (moi, compagnons, amis, tous les voyageurs). C'est un argument commercial à part entière.</p>
     </div>
     <div class="ins">
       <span class="fig">Abonnements</span>
@@ -494,7 +500,7 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
         <dl class="kv"><dt>Signature</dt><dd>La légende. Chaque type d'élément (nuit, trajet, réservation, document) a un symbole cartographique. L'interface se lit comme une carte. Animation : l'aiguille du logo s'oriente vers la prochaine étape.</dd><dt style="margin-top:10px">Souvenir</dt><dd>En fin de voyage, les courbes de niveau du parcours deviennent une affiche ou une couverture unique.</dd></dl>
       </div>
       <div class="risk">
-        <p class="plus"><b>Force</b>Seule piste qui découle à la fois du nom et du produit (GPS, carte, hors-ligne). Aucune app de la niche n'utilise ce territoire ni ces couleurs. Les coordonnées et les pictogrammes se lisent sans traduction.</p>
+        <p class="plus"><b>Force</b>Seule piste qui découle à la fois du nom et du produit (GPS, carte, météo, astuces géolocalisées). Aucune app de la niche n'utilise ce territoire ni ces couleurs. Les coordonnées et les pictogrammes se lisent sans traduction.</p>
         <p class="minus"><b>Risque</b>Image « randonnée » qui pourrait éloigner le voyage urbain. Réponse : courbes appliquées au relief des villes (les collines de Lisbonne) et typographie très contemporaine.</p>
       </div>
     </div>
@@ -509,8 +515,9 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
             <div class="leg"><span class="h">10:00</span>Bibliothèque Joanina<span class="tag">Réservé</span></div>
             <div class="leg"><span class="h">14:30</span>Route → Lisbonne · 206 km<span class="tag o">2 h 10</span></div>
             <div class="leg"><span class="h">17:00</span>Casa do Alfama<span class="tag">Payé</span></div>
+            <div class="leg"><span class="h">◆</span>Astuce de Léa : entrer avant 10 h<span class="tag o">Amis</span></div>
           </div>
-          <div class="scale"><i></i>1:25 000 · 21 °C · 1 € = 1,00 € · hors-ligne</div>
+          <div class="scale"><i></i>1:25 000 · 21 °C ensoleillé · 3 astuces ici</div>
         </div>
       </div>
       <span class="phone-cap">Étape du jour</span>
@@ -725,7 +732,8 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
       <h3>Pourquoi Relevé</h3>
       <ul>
         <li>Une carte est un outil avant d'être une image : la piste sert d'abord la gestion du voyage.</li>
-        <li>Elle découle du nom (Cap Nord, l'aiguille) et du produit (GPS, carte, hors-ligne, météo, altitude).</li>
+        <li>Elle découle du nom (Cap Nord, l'aiguille) et du produit (GPS, carte, météo, altitude).</li>
+        <li>Les astuces des voyageurs, la météo et les actus deviennent des calques posés sur la carte, comme les annotations d'une carte papier. Un seul langage pour l'info personnelle et l'info partagée.</li>
         <li>Forêt, glacier et bistre : aucune app de la niche n'occupe ces couleurs.</li>
         <li>Coordonnées, échelles et symboles se lisent sans traduction, ce qui facilite le lancement dans d'autres pays.</li>
       </ul>
@@ -783,6 +791,8 @@ tr.best td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
     <li><a href="https://www.stork.ai/en/stippl" target="_blank" rel="noopener">Stork, fiche Stippl</a></li>
     <li><a href="https://justuseapp.com/en/app/721334305/findpenguins/reviews" target="_blank" rel="noopener">JustUseApp, avis FindPenguins</a></li>
     <li><a href="https://justuseapp.com/en/app/884030844/journi-blog-travel-tracker/reviews" target="_blank" rel="noopener">JustUseApp, avis Journi</a></li>
+    <li><a href="https://www.hospitalitynet.org/news/4126305/tripadvisors-2025-transparency-report-reveals-strong-review-submissions-and-improved-fraud-detection" target="_blank" rel="noopener">Hospitality Net, rapport de transparence Tripadvisor 2025</a></li>
+    <li><a href="https://support.polarsteps.com/hc/en-us/articles/24266937975570-Can-we-plan-a-trip-with-Travel-Together" target="_blank" rel="noopener">Polarsteps, planifier à plusieurs (Travel Together)</a></li>
     <li><a href="https://www.phocuswire.com/freedom-flexibility-transparency-what-gen-z-travelers-want-need" target="_blank" rel="noopener">PhocusWire, ce que veulent les voyageurs Gen Z</a></li>
     <li><a href="https://www.bloomberg.com/news/articles/2025-06-13/apple-airbnb-ditch-flat-app-icons-for-new-3d-ui-design" target="_blank" rel="noopener">Bloomberg, la fin du design plat</a></li>
     <li><a href="https://mantlr.com/blog/liquid-glass-vs-material-expressive" target="_blank" rel="noopener">Mantlr, Liquid Glass vs Material 3 Expressive</a></li>

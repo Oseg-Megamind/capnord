@@ -1,5 +1,5 @@
 // Service worker : app utilisable hors-ligne + cache des tuiles de carte consultées
-const APP = 'capnord-app-v38';
+const APP = 'capnord-app-v39';
 const TILES = 'voyage-tiles-v1';
 const SHELL = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png',
@@ -7,6 +7,7 @@ const SHELL = [
   'share.html', 'css/share.css', 'vendor/supabase.js',
   'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.js', 'vendor/sortable.min.js',
 ];
+const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 const TILE_HOSTS = ['basemaps.cartocdn.com', 'tile.openstreetmap.org', 'tile.opentopomap.org', 'server.arcgisonline.com'];
 
 self.addEventListener('install', (e) => {
@@ -27,7 +28,8 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
 
   // Tuiles : cache d'abord (elles changent rarement), réseau sinon
-  if (TILE_HOSTS.some((h) => url.hostname.endsWith(h))) {
+  // Polices de la charte : gardées en cache pour fonctionner hors-ligne
+  if (TILE_HOSTS.some((h) => url.hostname.endsWith(h)) || FONT_HOSTS.includes(url.hostname)) {
     e.respondWith(
       caches.open(TILES).then(async (c) => {
         const hit = await c.match(req.url);

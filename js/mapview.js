@@ -69,7 +69,11 @@ export class MapView {
       if (!s.place) return;
       if (prev) {
         const mode = MODES[s.transport?.mode];
-        const color = mode?.color || '#94a3b8';
+        // Système de trait Tracé : un trait par mode, encre (claire en thème sombre), l'eau seule en bleu
+        const dark = document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+        const ink = dark ? '#e6ece6' : '#10231f';
+        const color = mode?.color === '#3d6fb6' ? (dark ? '#7fa8e0' : '#3d6fb6') : mode ? ink : (dark ? '#9fb3ad' : '#4e6660');
+        const todo = s.transport?.status === 'todo';
         let coords = [ll(prev.place), ll(s.place)];
         if (mode?.arc) coords = arc(prev.place, s.place);
         else if (mode?.road && routing) {
@@ -80,8 +84,12 @@ export class MapView {
         // Trajet effectué = on est arrivé à l'étape (faite ou en cours)
         const done = states[i] === 'done' || states[i] === 'now';
         const sel = s.id === selectedLegId;
-        L.polyline(coords, { color: '#fff', weight: sel ? 13 : done ? 9 : 7, opacity: sel ? 0.9 : done ? 0.75 : 0.45, interactive: false }).addTo(route);
-        L.polyline(coords, { color: done ? color : '#94a3b8', weight: sel ? 7 : done ? 5 : 3.5, opacity: sel ? 0.95 : done ? 0.95 : 0.8, dashArray: done ? mode?.dash || null : '2 8', lineCap: 'round', interactive: false }).addTo(route);
+        const w = mode?.w || 3;
+        L.polyline(coords, { color: dark ? '#0b1916' : '#f7f8f4', weight: (sel ? w + 4 : w) + 4, opacity: sel ? 0.9 : 0.6, interactive: false }).addTo(route);
+        // Trajet à réserver : tirets bistre (le statut prime sur le mode) ; à venir : même trait, plus léger
+        L.polyline(coords, todo
+          ? { color: dark ? '#d98a55' : '#b8662f', weight: sel ? 4 : 2.5, opacity: 0.95, dashArray: '6 6', lineCap: 'round', interactive: false }
+          : { color, weight: sel ? w + 2 : w, opacity: done || sel ? 0.95 : 0.5, dashArray: mode?.dash || null, lineCap: 'round', interactive: false }).addTo(route);
         // Ligne invisible plus large : facile à toucher au doigt
         const from = prev;
         L.polyline(coords, { color: '#000', weight: 22, opacity: 0, className: 'leg-hit' })

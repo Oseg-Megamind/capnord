@@ -61,8 +61,8 @@ const iLike = (target) => S.likes.some((l) => l.target === target && l.device ==
 // ---------- Rendu
 function render() {
   const D = S.data;
-  document.title = `${D.name} · Cap Nord`;
-  document.documentElement.style.setProperty('--trip', D.color || '#7a2436');
+  document.title = `${D.name} · Etapa`;
+  document.documentElement.style.setProperty('--trip', D.color || '#10231f');
   const st = status(D);
   const steps = D.steps || [];
   const idx = currentIdx(steps);
@@ -109,7 +109,7 @@ function render() {
       <h4>💬 Un mot pour ${esc(D.author || 'les voyageurs')} ?</h4>
       ${thread('trip', true)}
     </section>
-    <p class="sh-foot">Ajoutez cette page à votre écran d’accueil pour suivre le voyage.<br>Créé avec Cap Nord</p>
+    <p class="sh-foot">Ajoutez cette page à votre écran d’accueil pour suivre le voyage.<br>Créé avec Etapa</p>
   </main>`;
 
   mountMap(D, steps, photos, idx);

@@ -207,5 +207,5 @@ export function unwatchAll() {
   for (const ch of channels.values()) client()?.removeChannel(ch);
   channels.clear();
 }
-export const inviteText = (trip, url) => `Rejoins notre voyage « ${trip.name} » sur Cap Nord !\n1. Ouvre ${url}\n2. Touche « Rejoindre un voyage »\n3. Tape le code : ${trip.collab.code}`;
+export const inviteText = (trip, url) => `Rejoins notre voyage « ${trip.name} » sur Etapa !\n1. Ouvre ${url}\n2. Touche « Rejoindre un voyage »\n3. Tape le code : ${trip.collab.code}`;
 export const SUPA = SUPABASE_URL;
