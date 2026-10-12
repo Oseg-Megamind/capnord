@@ -829,12 +829,13 @@ function mountItin(t, p) {
 
 // Appui long (doigt immobile ~0,55 s) ; le clic qui suit est ignoré
 function longPress(el, fn) {
-  let timer = null, x0 = 0, y0 = 0;
-  const cancel = () => { clearTimeout(timer); timer = null; el.classList.remove('pressing'); };
+  let timer = null, pressT = null, x0 = 0, y0 = 0;
+  const cancel = () => { clearTimeout(timer); clearTimeout(pressT); timer = null; el.classList.remove('pressing'); };
   el.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1 || e.target.closest('.drag, input, textarea, select')) return;
+    // Pas sur la bande de miniatures : elle doit pouvoir défiler librement
+    if (e.touches.length !== 1 || e.target.closest('.drag, input, textarea, select, .ph-strip')) return;
     x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
-    el.classList.add('pressing');
+    pressT = setTimeout(() => timer && el.classList.add('pressing'), 180);
     timer = setTimeout(() => {
       timer = null;
       el.classList.remove('pressing');
@@ -3172,7 +3173,10 @@ async function pullFeedback(t = T()) {
     const d = await cloud.fetchShare(t.share.token);
     if (!d) return;
     const before = fb[t.id] ? unreadNotifs(t) : null;
-    fb[t.id] = { comments: d.comments || [], likes: d.likes || [] };
+    const next = { comments: d.comments || [], likes: d.likes || [] };
+    // Rien de nouveau : on ne redessine pas (sinon un défilement en cours serait interrompu)
+    if (fb[t.id] && JSON.stringify(fb[t.id]) === JSON.stringify(next)) return;
+    fb[t.id] = next;
     const after = unreadNotifs(t);
     // Nouvelle réaction depuis le dernier passage : petite alerte (bannière si autorisée)
     const latest = notifList(t)[0];

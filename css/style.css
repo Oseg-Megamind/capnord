@@ -1965,3 +1965,5 @@ textarea.lb-caption { resize: none; font-size: 16px; }
 .step .badge, .conn .badge { padding: 1px 6px; font-size: 10px; border-radius: 5px; }
 button.step-rx { background: none; border: 0; padding: 2px; cursor: pointer; font: inherit; color: inherit; }
 #step-thread .thread { margin-top: 4px; }
+.step .ph-strip { overflow-x: auto !important; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
+.step .ph-strip .ph-mini { touch-action: pan-x pan-y; }
