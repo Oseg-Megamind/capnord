@@ -932,7 +932,7 @@ function stepDrawerHTML(t, s) {
   <div class="drawer-head dest-head ${cover ? 'has-cover' : ''}" data-scope>
     ${cover ? `<img class="dh-cover" data-thumb="${cover.thumbId}" alt="">` : ''}
     <button class="icon-btn dh-close" data-act="close-drawer" aria-label="Fermer">✕</button>
-    <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><input class="title-input" data-f="name" placeholder="Nom de l’étape" autocomplete="off" aria-label="Nom de l’étape"></div>
+    <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><h2 class="title-input dh-name" data-act="dtab" data-k="place" title="Changer de lieu : onglet Lieu → Modifier">${esc(s.name || 'Lieu à choisir')}</h2></div>
     <p class="dh-sub">${s.arrival ? (n ? `Du ${fmtDay(s.arrival, { day: 'numeric', month: 'long' })} au ${fmtDay(s.departure, { day: 'numeric', month: 'long' })}` : fmtDayLong(s.arrival)) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1} sur ${t.steps.length}</p>
   <div class="drawer-nav dh-nav">
     ${prev ? `<button class="btn sm" data-act="open-leg" data-id="${s.id}">‹ Trajet depuis ${esc(prev.name)}</button>` : '<button class="btn sm" disabled>‹ Départ</button>'}
@@ -1146,7 +1146,9 @@ function mountStepDrawer(t, s, root) {
     light();
   });
   mountPlaceFields(body, s, (p) => {
-    if (!s.name) { s.name = p.name; $('.title-input', head).value = p.name; }
+    // Le nom de la destination est toujours celui du lieu choisi sur la carte
+    s.name = p.name;
+    $('.dh-name', head).textContent = p.name;
     ensureCurrency(t, stepCurrency(s));
     loadWeather(s);
     light();

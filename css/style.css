@@ -1156,3 +1156,6 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 .ns-days { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); height: 44px; }
 .ns-days b { font-size: 20px; min-width: 32px; text-align: center; }
 .ns-step { width: 44px; height: 42px; border: 0; background: none; font-size: 20px; font-weight: 700; color: var(--brand); }
+
+/* Nom de destination : affiché, non modifiable à la main (vient du lieu choisi) */
+.dest-head .dh-name { margin: 0; color: #fff; font: 700 28px/1.1 var(--font-display); letter-spacing: -.035em; text-shadow: 0 1px 10px rgba(0, 0, 0, .2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; cursor: pointer; border: 0 !important; background: none !important; padding: 0 !important; }
