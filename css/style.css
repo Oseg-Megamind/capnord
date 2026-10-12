@@ -1490,3 +1490,31 @@ button.bg-row { cursor: pointer; }
 .tpl-plus { flex: none; width: 26px; text-align: center; color: var(--text); font-weight: 700; }
 .tpl-add input { flex: 1; min-width: 0; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 10px 4px !important; }
 .tpl-add input:focus { outline: none; }
+
+/* Nouveau voyage : bouton compagnons */
+.nt-collab-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px; border-radius: var(--r); border: 1.5px dashed color-mix(in srgb, var(--text) 40%, var(--line)); background: var(--surface); color: var(--text); cursor: pointer; }
+.nt-collab-btn > span:not(.ntc-plus) { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nt-collab-btn b { font: 800 15px/1.2 var(--font-display); font-stretch: 110%; }
+.nt-collab-btn small { color: var(--muted); font-size: 12.5px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nt-collab-btn .kind-ic { margin: 0; }
+.nt-collab-btn.on { border-style: solid; border-color: var(--text); }
+.nt-collab-btn.on .kind-ic { background: var(--brand); color: #5fd0c8; }
+.ntc-plus { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font-weight: 700; }
+
+/* Petite fenêtre au-dessus d'une autre (e-mails des compagnons) */
+.mini-pop { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 16px; }
+.mini-pop .mp-back { position: absolute; inset: 0; background: rgba(16, 35, 31, .45); opacity: 0; transition: opacity .2s; }
+.mini-pop .mp-card { position: relative; width: min(420px, 100%); max-height: calc(100% - 32px); overflow-y: auto; background: var(--bg); border-radius: 16px; padding: 18px; box-shadow: var(--shadow-lg); transform: translateY(16px) scale(.97); opacity: 0; transition: transform .3s var(--spring), opacity .2s; display: flex; flex-direction: column; gap: 10px; }
+.mini-pop.open .mp-back { opacity: 1; }
+.mini-pop.open .mp-card { transform: none; opacity: 1; }
+.mp-card h3 { margin: 0; font: 800 19px var(--font-display); font-stretch: 110%; }
+.mp-card .hint { margin: 0; }
+.mp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mp-chips:empty { display: none; }
+.mp-chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 4px 5px 10px; border-radius: 99px; background: var(--brand); color: var(--brand-ink); font-size: 13px; animation: rise .25s var(--ease) both; }
+.mp-chip button { border: 0; background: none; color: inherit; opacity: .7; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; }
+.mp-add { display: flex; gap: 6px; }
+.mp-add input { flex: 1; min-width: 0; }
+.mp-add input.bad { border-color: var(--danger) !important; }
+.member.invited { border-style: dashed; color: var(--muted); }
+.mail-go { padding: 14px; font-size: 16px; text-decoration: none; }

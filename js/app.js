@@ -442,17 +442,15 @@ A['new-trip'] = () => openModal(`
       </div>
     </div>
     <div class="grid2">
-      <label class="fld"><span>Début (facultatif)</span><input type="date" name="start"></label>
-      <label class="fld"><span>Fin (facultatif)</span><input type="date" name="end"></label>
+      <label class="fld"><span>Début</span><input type="date" name="start"></label>
+      <label class="fld"><span>Fin</span><input type="date" name="end"></label>
     </div>
     <div class="grid3">
       <label class="fld"><span>Devise</span><select name="currency">${CURRENCIES.map((c) => `<option>${c}</option>`).join('')}</select></label>
       <label class="fld"><span>Budget total</span><input type="number" name="budget" min="0" step="any" inputmode="decimal"></label>
       <label class="fld"><span>Voyageurs</span><input type="number" name="travelers" value="1" min="1" inputmode="numeric"></label>
     </div>
-    <div class="colors">${COLORS.map((c, i) => `<label class="color"><input type="radio" name="color" value="${c}" ${i === 0 ? 'checked' : ''}><span style="background:${c}"></span></label>`).join('')}</div>
-    ${cloud.cloudReady() ? `<label class="nt-collab"><input type="checkbox" name="withCompanions"><span class="ntc-box"><i class="kind-ic">${icon('users')}</i><span><b>Ajouter des compagnons de voyage</b><small>Ils complètent le carnet avec vous. Vous recevez un code à leur envoyer.</small></span><i class="ntc-check" aria-hidden="true"></i></span></label>
-    <label class="fld nt-me hidden"><span>Votre prénom</span><input name="me" value="${esc(state.settings.myName || '')}" placeholder="ex : Fanny" maxlength="40"></label>` : ''}
+    ${cloud.cloudReady() ? `<button type="button" class="nt-collab-btn" id="nt-collab"><i class="kind-ic">${icon('users')}</i><span><b>Ajouter des compagnons de voyage</b><small>Ils gèrent les infos du voyage avec vous.</small></span><span class="ntc-plus" aria-hidden="true">＋</span></button>` : ''}
     <div class="actions"><button type="button" class="btn" data-act="close-modal">Annuler</button><button class="btn primary">Créer le voyage</button></div>
   </form>`, (m) => {
   const syncRoad = () => {
@@ -462,35 +460,29 @@ A['new-trip'] = () => openModal(`
     $('[name=conso]', m).placeholder = v.conso;
   };
   $$('[name=kind], [name=vehicle]', m).forEach((r) => (r.onchange = syncRoad));
-  const wc = $('[name=withCompanions]', m);
-  if (wc) wc.onchange = () => { $('.nt-me', m).classList.toggle('hidden', !wc.checked); if (wc.checked && !$('[name=me]', m).value) $('[name=me]', m).focus(); };
+  // Compagnons : petite fenêtre pour saisir leurs e-mails
+  let invite = null;
+  const nc = $('#nt-collab', m);
+  const showInvite = () => {
+    nc.classList.toggle('on', !!invite);
+    $('b', nc).textContent = invite ? plural(invite.emails.length, 'compagnon') + ' à inviter' : 'Ajouter des compagnons de voyage';
+    $('small', nc).textContent = invite ? invite.emails.join(', ') : 'Ils gèrent les infos du voyage avec vous.';
+    $('.ntc-plus', nc).textContent = invite ? '✎' : '＋';
+  };
+  if (nc) nc.onclick = () => emailPopup(m, { emails: invite?.emails, onDone: (r) => { invite = r.emails.length ? r : null; showInvite(); } });
   $('form', m).onsubmit = async (e) => {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(e.target));
-    const me = (f.me || '').trim();
-    if (f.withCompanions && !me) { $('[name=me]', m).focus(); return toast('Indiquez votre prénom pour inviter vos compagnons'); }
     const road = f.kind === 'roadtrip';
-    const t = newTrip({ name: f.name.trim() || 'Nouveau voyage', emoji: f.emoji === '🌍' && road ? VEHICLES[f.vehicle].icon : f.emoji || '🌍', start: f.start, end: f.end, currency: f.currency, budget: f.budget ? +f.budget : null, travelers: +f.travelers || 1, color: f.color,
+    const t = newTrip({ name: f.name.trim() || 'Nouveau voyage', emoji: f.emoji === '🌍' && road ? VEHICLES[f.vehicle].icon : f.emoji || '🌍', start: f.start, end: f.end, currency: f.currency, budget: f.budget ? +f.budget : null, travelers: +f.travelers || 1, color: COLORS[0],
       kind: f.kind, vehicle: f.vehicle || 'car', conso: f.conso ? +f.conso : null, fuelPrice: f.fuelPrice ? +f.fuelPrice : null });
     if (road) t.checklists.push({ id: uid(), name: 'Road trip', collapsed: false, items: (templates()['Road trip'] || LIST_TEMPLATES['Road trip']).map((text) => ({ id: uid(), text, done: false, note: '', due: '', subs: [] })) });
     state.trips.push(t);
     save();
     closeModal();
     go(`#/trip/${t.id}/itin`);
-    // Compagnons : on crée le carnet partagé et on affiche tout de suite le code à envoyer
-    if (f.withCompanions) {
-      state.settings.myName = me;
-      try {
-        await collab.createCollab(t, me);
-        save();
-        collab.watchCollab(t, () => collabSync(t));
-        await collabSync(t);
-        renderTripHeader(t);
-      } catch (err) { toast(`Invitation impossible pour l’instant : ${esc(err.message || 'réseau')}`); }
-      A.share();
-      ui.shareView = 'collab';
-      renderShareModal();
-    }
+    // Compagnons : on crée le carnet partagé puis on prépare l'e-mail d'invitation
+    if (invite) await inviteByEmail(t, invite);
   };
 });
 
@@ -3042,8 +3034,7 @@ function companionsHTML(t, ready) {
   if (!ready) return '';
   if (!c) return `
     <div class="collab-card">
-      <label class="fld"><span>Votre prénom</span><input id="collab-me" value="${esc(state.settings.myName || t.share?.author || '')}" placeholder="ex : Fanny" maxlength="40"></label>
-      <button class="btn primary full" data-act="collab-start">Créer le code d’invitation</button>
+      <button class="btn primary full" data-act="collab-email">Inviter par e-mail</button>
       <small class="hint">Vos documents marqués « Visible uniquement par moi » (passeport…) ne sont jamais partagés.</small>
     </div>`;
   const members = (c.members || []).map((m) => `<span class="member ${m.me ? 'me' : ''}">${esc(m.name)}${m.me ? ' (vous)' : ''}</span>`).join('');
@@ -3051,13 +3042,81 @@ function companionsHTML(t, ready) {
     <div class="collab-card on">
       <div class="collab-code"><small>Code d’invitation</small><b>${c.code.slice(0, 3)}-${c.code.slice(3)}</b></div>
       <div class="row-btns wrap">
-        <button class="btn primary" data-act="collab-invite">Envoyer l’invitation</button>
-        <button class="btn" data-act="collab-copy">Copier</button>
+        <button class="btn primary" data-act="collab-email">Inviter par e-mail</button>
+        <button class="btn" data-act="collab-invite">Autre moyen</button>
+        <button class="btn" data-act="collab-copy">Copier le lien</button>
       </div>
-      <div class="members">${members || '<span class="muted">Personne n’a encore rejoint le voyage.</span>'}</div>
+      <div class="members">${members || '<span class="muted">Personne n’a encore rejoint le voyage.</span>'}${(c.invited || []).filter((e) => !(c.members || []).some((x) => x.name?.toLowerCase() === e)).map((e) => `<span class="member invited">${esc(e)} · invité</span>`).join('')}</div>
       <small class="hint">${c.error ? `Synchronisation impossible (${esc(c.error)}). Nouvel essai automatique.` : c.syncedAt ? `Synchronisé ${new Date(c.syncedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : 'Synchronisation…'}</small>
     </div>`;
 }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// Petite fenêtre au-dessus de la fenêtre en cours : e-mails des compagnons (+ prénom s'il n'est pas encore connu)
+function emailPopup(host, { emails = [], onDone }) {
+  const list = [...(emails || [])];
+  const needName = !state.settings.myName;
+  const pop = document.createElement('div');
+  pop.className = 'mini-pop';
+  pop.innerHTML = `<div class="mp-back"></div><div class="mp-card" role="dialog" aria-modal="true" aria-label="Inviter des compagnons">
+    <h3>Inviter des compagnons</h3>
+    <p class="hint">Ils pourront ajouter et modifier les infos du voyage avec vous. Ils recevront un e-mail avec un lien pour vous rejoindre.</p>
+    <div class="mp-chips"></div>
+    <div class="mp-add"><input type="email" inputmode="email" autocomplete="email" placeholder="adresse@email.com" aria-label="E-mail d’un compagnon" enterkeyhint="done"><button type="button" class="btn sm">Ajouter</button></div>
+    ${needName ? '<label class="fld"><span>Votre prénom (vu par vos compagnons)</span><input class="mp-name" maxlength="40" placeholder="ex : Fanny"></label>' : ''}
+    <div class="actions"><button type="button" class="btn mp-cancel">Annuler</button><button type="button" class="btn primary mp-ok">Valider</button></div>
+  </div>`;
+  ($('#modal-root') || document.body).appendChild(pop);
+  const input = $('.mp-add input', pop), chips = $('.mp-chips', pop);
+  const draw = () => { chips.innerHTML = list.map((e, i) => `<span class="mp-chip">${esc(e)}<button type="button" data-i="${i}" aria-label="Retirer ${esc(e)}">✕</button></span>`).join(''); };
+  const add = () => {
+    const parts = input.value.split(/[\s,;]+/).map((x) => x.trim().toLowerCase()).filter(Boolean);
+    const bad = parts.filter((x) => !EMAIL_RE.test(x));
+    parts.filter((x) => EMAIL_RE.test(x) && !list.includes(x)).forEach((x) => list.push(x));
+    input.value = bad.join(' ');
+    input.classList.toggle('bad', !!bad.length);
+    draw();
+    return !bad.length;
+  };
+  const close = () => { pop.classList.remove('open'); setTimeout(() => pop.remove(), 200); };
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ',' || e.key === ' ') { e.preventDefault(); add(); } });
+  $('.mp-add .btn', pop).onclick = () => { add(); input.focus(); };
+  chips.onclick = (e) => { const b = e.target.closest('button[data-i]'); if (b) { list.splice(+b.dataset.i, 1); draw(); } };
+  $('.mp-back', pop).onclick = close;
+  $('.mp-cancel', pop).onclick = close;
+  $('.mp-ok', pop).onclick = () => {
+    if (input.value.trim() && !add()) return toast('Cette adresse e-mail n’est pas valide');
+    const name = needName ? $('.mp-name', pop).value.trim() : state.settings.myName;
+    if (list.length && !name) { $('.mp-name', pop).focus(); return toast('Indiquez votre prénom'); }
+    if (needName && name) { state.settings.myName = name; save(); }
+    close();
+    onDone({ emails: list, name });
+  };
+  draw();
+  requestAnimationFrame(() => { pop.classList.add('open'); input.focus(); });
+}
+// Crée le carnet partagé si besoin, puis ouvre l'e-mail d'invitation prêt à envoyer
+async function inviteByEmail(t, { emails }) {
+  try {
+    if (!t.collab) {
+      await collab.createCollab(t, state.settings.myName || 'Moi');
+      collab.watchCollab(t, () => collabSync(t));
+      collabSync(t);
+    }
+    t.collab.invited = [...new Set([...(t.collab.invited || []), ...emails])];
+    save();
+    renderTripHeader(t);
+  } catch (err) { return toast(`Invitation impossible pour l’instant : ${esc(err.message || 'réseau')}`); }
+  const mail = `mailto:${emails.join(",")}?subject=${encodeURIComponent(`Rejoins notre voyage « ${t.name} » sur Etapa`)}&body=${encodeURIComponent(collab.inviteText(t, appUrl()))}`;
+  openModal(`
+    <h2>Invitations prêtes</h2>
+    <p class="hint">Votre application e-mail va s’ouvrir avec le message déjà rédigé pour ${esc(emails.join(', '))}. Il ne reste qu’à l’envoyer.</p>
+    <a class="btn primary full mail-go" href="${mail}" id="mail-go">Envoyer l’e-mail d’invitation</a>
+    <div class="row-btns wrap" style="margin-top:10px"><button class="btn sm" data-act="collab-invite">Envoyer autrement (SMS, WhatsApp…)</button><button class="btn sm" data-act="collab-copy">Copier le lien</button></div>
+    <div class="actions"><button class="btn" data-act="close-modal">Terminé</button></div>`);
+  setTimeout(() => { location.href = mail; }, 350);
+}
+A['collab-email'] = () => { const t = T(); emailPopup(null, { onDone: (r) => r.emails.length && inviteByEmail(t, r) }); };
 
 A['collab-start'] = async (el) => {
   const t = T();
