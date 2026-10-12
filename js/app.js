@@ -139,18 +139,25 @@ function stayForNight(t, d) {
   return null;
 }
 
+// Une seule notion : une nuit est « à réserver » tant qu'aucun hébergement réservé ne la couvre (rien de prévu, ou hébergement noté mais pas encore réservé)
+function nightsToBook(t, only) {
+  const out = [];
+  for (const s of t.steps) {
+    if (only && s !== only) continue;
+    for (let k = 0; k < nights(s); k++) {
+      const d = addDays(s.arrival, k), f = stayForNight(t, d);
+      if (!f || f.stay.status === 'todo') out.push({ d, s, stay: f?.stay || null });
+    }
+  }
+  return out;
+}
+
 function tripWarnings(t) {
   const w = [];
-  const missing = [];
-  for (const s of t.steps) for (let k = 0; k < nights(s); k++) {
-    const d = addDays(s.arrival, k);
-    if (!stayForNight(t, d)) missing.push({ d, s });
-  }
+  const missing = nightsToBook(t);
   if (missing.length) {
-    w.push({ icon: '🛏️', text: `${plural(missing.length, 'nuit')} sans hébergement`, ...(missing.length > 1 ? { act: 'warn-list', kind: 'nights' } : { act: 'open-step', id: missing[0].s.id, focus: `night:${missing[0].d}` }) });
+    w.push({ icon: '🛏️', text: `${plural(missing.length, 'nuit')} à réserver`, ...(missing.length > 1 ? { act: 'warn-list', kind: 'nights' } : { act: 'open-step', id: missing[0].s.id, focus: missing[0].stay ? `stay:${missing[0].stay.id}` : `night:${missing[0].d}` }) });
   }
-  const todo = t.steps.flatMap((s) => s.stays.filter((x) => x.status === 'todo').map((x) => ({ s, x })));
-  if (todo.length) w.push({ icon: '⏳', text: `${plural(todo.length, 'hébergement')} encore à réserver`, ...(todo.length > 1 ? { act: 'warn-list', kind: 'stays' } : { act: 'open-step', id: todo[0].s.id, focus: `stay:${todo[0].x.id}` }) });
   const ttodo = t.steps.filter((s) => s.transport.status === 'todo');
   if (ttodo.length) w.push({ icon: '🎫', text: `${plural(ttodo.length, 'trajet')} encore à réserver`, ...(ttodo.length > 1 ? { act: 'warn-list', kind: 'legs' } : { act: 'open-leg', id: ttodo[0].id }) });
   for (let i = 1; i < t.steps.length; i++) {
@@ -757,8 +764,9 @@ function stepCardHTML(t, s, i, cur, today) {
   const done = s.subs.filter((x) => x.done).length;
   const cost = stepCost(t, s);
   const chips = [];
-  if (s.stays.length) chips.push(`<button class="chip ${staysOk.length === s.stays.length ? 'ok' : 'warn'}" data-act="open-step" data-id="${s.id}" data-focus="stays">🛏️ ${esc(s.stays[0].name || 'Hébergement')}${s.stays.length > 1 ? ' +' + (s.stays.length - 1) : ''}</button>`);
-  else if (n) chips.push(`<button class="chip warn" data-act="open-step" data-id="${s.id}" data-focus="stays">🛏️ Nuit à trouver</button>`);
+  const toBook = nightsToBook(t, s).length;
+  if (toBook) chips.push(`<button class="chip warn" data-act="open-step" data-id="${s.id}" data-focus="stays">🛏️ ${toBook === n ? 'À réserver' : `${plural(toBook, 'nuit')} à réserver`}</button>`);
+  else if (staysOk.length) chips.push(`<button class="chip ok" data-act="open-step" data-id="${s.id}" data-focus="stays">🛏️ ${esc(staysOk[0].name || 'Hébergement')}${staysOk.length > 1 ? ' +' + (staysOk.length - 1) : ''}</button>`);
   if (s.subs.length) chips.push(`<button class="chip" data-act="open-step" data-id="${s.id}" data-focus="subs">📌 ${done}/${s.subs.length}</button>`);
   if (s.notes) chips.push(`<button class="chip" data-act="open-step" data-id="${s.id}" data-focus="notes" aria-label="Notes">📝</button>`);
   const nph = stepPhotos(t, s).length;
@@ -771,7 +779,7 @@ function stepCardHTML(t, s, i, cur, today) {
       <div class="step-top">
         <h3>${esc(s.name || 'Étape sans nom')}</h3>
         ${status === 'now' ? '<span class="now-badge">Vous êtes ici</span>' : ''}
-        ${rx ? `<span class="step-rx">${rxHTML(rx)}</span>` : ''}
+        ${rx ? `<button class="step-rx" data-act="step-thread" data-id="${s.id}" aria-label="Voir les commentaires">${rxHTML(rx)}</button>` : ''}
       </div>
       <div class="step-dates">${s.arrival ? `${fmtWeekday(s.arrival)}${n ? ' → ' + fmtWeekday(s.departure) : ''} · ${n ? plural(n, 'nuit') : 'de passage'}` : '<span class="muted">Dates à définir</span>'}${s.place ? '' : ' · <span class="muted">lieu à définir</span>'}</div>
       ${chips.length ? `<div class="chips">${chips.join('')}</div>` : ''}
@@ -880,15 +888,9 @@ A['warn-list'] = (el) => {
   const t = T();
   const kind = el.dataset.kind;
   let title = '', rows = [];
-  if (kind === 'nights') {
-    title = 'Nuits sans hébergement';
-    for (const s of t.steps) for (let k = 0; k < nights(s); k++) {
-      const d = addDays(s.arrival, k);
-      if (!stayForNight(t, d)) rows.push({ act: 'open-step', id: s.id, focus: `night:${d}`, main: `Nuit du ${fmtDay(d, { weekday: 'long', day: 'numeric', month: 'long' })}`, sub: `${s.name || 'Étape'} · jour ${tripDayNo(t, d)}`, ic: 'bed' });
-    }
-  } else if (kind === 'stays') {
-    title = 'Hébergements à réserver';
-    for (const s of t.steps) for (const x of s.stays.filter((y) => y.status === 'todo')) rows.push({ act: 'open-step', id: s.id, focus: `stay:${x.id}`, main: x.name || 'Hébergement', sub: `${s.name || 'Étape'}${x.checkIn ? ` · ${fmtDay(x.checkIn)}` : s.arrival ? ` · ${fmtDay(s.arrival)}` : ''}`, ic: 'bed' });
+  if (kind === 'nights' || kind === 'stays') {
+    title = 'Nuits à réserver';
+    for (const n of nightsToBook(t)) rows.push({ act: 'open-step', id: n.s.id, focus: n.stay ? `stay:${n.stay.id}` : `night:${n.d}`, main: `Nuit du ${fmtDay(n.d, { weekday: 'long', day: 'numeric', month: 'long' })}`, sub: `${n.s.name || 'Étape'} · jour ${tripDayNo(t, n.d)}${n.stay ? ` · ${n.stay.name && n.stay.name !== 'À réserver' ? `« ${n.stay.name} » ` : ''}pas encore réservé` : ' · rien de prévu'}`, ic: 'bed' });
   } else if (kind === 'legs') {
     title = 'Trajets à réserver';
     t.steps.forEach((s, i) => { if (i && s.transport.status === 'todo') rows.push({ act: 'open-leg', id: s.id, focus: '', main: `${t.steps[i - 1].name || 'Étape'} → ${s.name || 'Étape'}`, sub: `${MODES[s.transport.mode]?.label || 'Trajet'}${s.arrival ? ` · ${fmtDay(s.arrival)}` : ''}`, ic: 'route' }); });
@@ -2891,11 +2893,12 @@ document.addEventListener('change', async (e) => {
 function photoStripHTML(t, s) {
   const ph = [...t.photos.filter((p) => p.stepId === s.id && p.onLeg), ...stepPhotos(t, s)].filter((p, i, a) => a.indexOf(p) === i);
   if (!ph.length) return '';
+  rxSort(t, ph);
   return `<div class="ph-strip ${ph.length > 4 ? 'scroll' : ''}">${ph.map((p) => { const r = reactions(t, [`photo:${p.id}`]); return `<button class="ph-mini ${isVideo(p) ? 'vid' : ''} ${r ? 'has-rx' : ''}" data-act="view-photo" data-id="${p.id}" ${r ? 'data-cm="1"' : ''} aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="">${isVideo(p) ? '<em class="ph-play">▶</em>' : ''}${r ? `<span class="ph-rx">${rxHTML(r)}</span>` : ''}</button>`; }).join('')}</div>`;
 }
 
 function photosPaneHTML(t, s, leg = false, day = null) {
-  const ph = stepPhotos(t, s, leg).filter((p) => !day || photoDay(p) === day);
+  const ph = rxSort(t, stepPhotos(t, s, leg).filter((p) => !day || photoDay(p) === day));
   return `
     <div class="ph-grid">
       <label class="ph add"><span>＋</span><small>Photo / vidéo</small><input type="file" accept="image/*,video/*" multiple data-ph-add data-step="${s.id}" data-leg="${leg ? 1 : 0}" data-day="${day || ''}" hidden></label>
@@ -3030,6 +3033,15 @@ function reactions(t, targets) {
   const nl = likes.filter(isNew).length, nc = comments.filter(isNew).length;
   return nl || nc ? { likes: nl, comments: nc } : null;
 }
+// Photos triées par réactions : d'abord celles avec des j'aime / commentaires non vus, puis par réaction la plus récente, puis ordre d'ajout
+function rxSort(t, ph) {
+  const f = fb[t.id];
+  if (!f) return ph;
+  const last = {};
+  for (const x of [...f.likes, ...f.comments.filter((c) => !c.is_owner)]) if (x.target?.startsWith('photo:') && x.created_at) { const k = x.target.slice(6), v = new Date(x.created_at).getTime(); if (!(last[k] >= v)) last[k] = v; }
+  const key = (p) => [reactions(t, [`photo:${p.id}`]) ? 1 : 0, last[p.id] || 0];
+  return ph.sort((a, b) => { const ka = key(a), kb = key(b); return kb[0] - ka[0] || kb[1] - ka[1]; });
+}
 // Petit cœur rouge (nouveaux j'aime) et petit stylo (nouveaux commentaires), avec leur nombre
 const RX_PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
 const rxHTML = (r) => (r ? `${r.likes ? `<span class="rx-l" aria-label="${r.likes} nouveaux j’aime">${RX_HEART}<b>${r.likes}</b></span>` : ''}${r.comments ? `<span class="rx-c" aria-label="${r.comments} nouveaux commentaires">${RX_PEN}<b>${r.comments}</b></span>` : ''}` : '');
@@ -3049,21 +3061,29 @@ function unreadNotifs(t) {
   const seen = t.share?.notifSeenAt || 0, ph = t.share?.seenPhotos || {};
   return notifList(t).filter((n) => new Date(n.at).getTime() > Math.max(seen, n.target.startsWith('photo:') ? ph[n.target.slice(6)] || 0 : 0)).length;
 }
+function notifResolve(t, target) {
+  if (target?.startsWith('comment:')) { const c = fb[t.id]?.comments.find((x) => x.id === target.slice(8)); return c ? notifResolve(t, c.target) : { k: 'trip' }; }
+  if (!target || target === 'trip') return { k: 'trip' };
+  const [k, id] = target.split(':');
+  if (k === 'step') return { k, id, step: t.steps.find((x) => x.id === id) };
+  const p = t.photos.find((x) => x.id === id);
+  return p ? { k: 'photo', id, photo: p } : { k: 'trip' };
+}
+function notifTargetLabel(t, target) {
+  const comment = target?.startsWith('comment:');
+  const r = notifResolve(t, target);
+  if (comment) return 'votre commentaire';
+  return r.k === 'step' ? `l’étape ${r.step?.name || ''}` : r.k === 'photo' ? (r.photo.kind === 'video' ? 'votre vidéo' : 'votre photo') : 'votre voyage';
+}
 A.notifs = () => {
   const t = T();
   const seen = t.share?.notifSeenAt || 0;
   const list = notifList(t);
-  const what = (target) => {
-    if (target === 'trip') return { label: 'votre voyage' };
-    const [k, id] = target.split(':');
-    if (k === 'step') { const s = t.steps.find((x) => x.id === id); return { label: `l’étape ${s?.name || ''}`, step: id }; }
-    const p = t.photos.find((x) => x.id === id);
-    return { label: p?.kind === 'video' ? 'votre vidéo' : 'votre photo', photo: p };
-  };
+  const what = (target) => { const r = notifResolve(t, target); return { label: notifTargetLabel(t, target), photo: r.photo, step: r.step && r.id }; };
   openModal(`
     <h2>Notifications</h2>
     ${!isShared(t) ? '<p class="hint">Partagez le voyage avec vos proches (Partager → Amis et famille) : leurs j’aime et commentaires apparaîtront ici.</p>' : ''}
-    <div class="nt-list">${list.map((n, i) => { const w = what(n.target); return `<button class="nt-row ${new Date(n.at).getTime() > seen ? 'new' : ''}" style="--i:${i}" ${w.photo ? `data-act="notif-photo" data-id="${w.photo.id}"` : w.step ? `data-act="open-step" data-id="${w.step}"` : 'data-act="share"'}>
+    <div class="nt-list">${list.map((n, i) => { const w = what(n.target); return `<button class="nt-row ${new Date(n.at).getTime() > seen ? 'new' : ''}" style="--i:${i}" data-act="notif-go" data-target="${esc(n.target)}">
         <span class="nt-av">${esc((n.who || '?').slice(0, 1).toUpperCase())}<i class="${n.kind}">${n.kind === 'like' ? '<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4 7.2 4c2 0 3.6 1.1 4.8 2.8C13.2 5.1 14.8 4 16.8 4c3.6 0 5.8 3.6 4.5 7.1-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M20 15.5a2 2 0 0 1-2 2H8l-4 3.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>'}</i></span>
         <span class="nt-txt"><span><b>${esc(n.who)}</b> ${n.kind === 'like' ? `a aimé ${w.label}` : n.reply ? `a répondu sur ${w.label}` : `a commenté ${w.label}`}</span>${n.body ? `<em>« ${esc(n.body.slice(0, 120))} »</em>` : ''}<small>${ago(n.at)}</small></span>
         ${w.photo ? `<img class="nt-th" data-thumb="${w.photo.thumbId}" alt="">` : ''}
@@ -3071,11 +3091,41 @@ A.notifs = () => {
     <div class="actions"><button class="btn primary" data-act="close-modal">Fermer</button></div>`, (m) => loadThumbs(m));
   t.share ||= {};
   t.share.notifSeenAt = Date.now();
+  updateAppBadge();
   save();
   renderTripHeader(t);
   pullFeedback(t);
 };
-A['notif-photo'] = (el) => { closeModal(); viewPhoto(el.dataset.id); };
+// Toucher une notification : on ferme la liste et on va droit à la photo (ou l'étape) commentée
+A['notif-go'] = (el) => {
+  const t = T();
+  const r = notifResolve(t, el.dataset.target);
+  closeModal();
+  if (r.k === 'photo') setTimeout(() => viewPhoto(r.id, true), 60);
+  else if (r.k === 'step') setTimeout(() => openStepThread(r.id), 60);
+  else A.share?.();
+};
+A['notif-photo'] = (el) => { closeModal(); viewPhoto(el.dataset.id, true); };
+// Commentaires laissés sur une étape (lus et répondus depuis l'app)
+function openStepThread(id) {
+  const t = T(), s = t.steps.find((x) => x.id === id);
+  if (!s) return;
+  openModal(`<h2>${esc(s.name || 'Étape')}</h2><p class="hint">Commentaires de vos proches sur cette étape</p><div id="step-thread" data-id="${id}"></div><div class="actions"><button class="btn" data-act="close-modal">Fermer</button></div>`, () => renderStepThread());
+  t.share ||= {};
+  t.share.notifSeenAt = Math.max(t.share.notifSeenAt || 0, Date.now());
+  save();
+  renderTripHeader(t);
+  if ($('#trip-layout')) renderPanel();
+  updateAppBadge();
+}
+function renderStepThread() {
+  const box = $('#step-thread');
+  if (!box) return;
+  const t = T();
+  if (box.contains(document.activeElement)) return;
+  box.innerHTML = threadHTML(t, `step:${box.dataset.id}`);
+}
+A['step-thread'] = (el, e) => { e?.stopPropagation?.(); openStepThread(el.dataset.id); };
 
 function newComments(t) {
   const f = fb[t.id];
@@ -3121,16 +3171,46 @@ async function pullFeedback(t = T()) {
   try {
     const d = await cloud.fetchShare(t.share.token);
     if (!d) return;
+    const before = fb[t.id] ? unreadNotifs(t) : null;
     fb[t.id] = { comments: d.comments || [], likes: d.likes || [] };
+    const after = unreadNotifs(t);
+    // Nouvelle réaction depuis le dernier passage : petite alerte (bannière si autorisée)
+    const latest = notifList(t)[0];
+    const lastAlert = t.share.alertedAt || 0;
+    if (latest && after > 0 && new Date(latest.at).getTime() > lastAlert && (before === null || after > before)) {
+      t.share.alertedAt = new Date(latest.at).getTime();
+      save();
+      const tl = notifTargetLabel(t, latest.target);
+      reactNotify(t, `${latest.who} ${latest.kind === 'like' ? `a aimé ${tl}` : `a commenté ${tl}`}`, latest.body || t.name);
+    }
+    updateAppBadge();
     if (t.id === ui.tripId) {
       renderTripHeader(t);
       if ($('#trip-layout') && !document.activeElement?.matches?.('input, textarea')) renderPanel();
       if ($('#share-modal')) renderShareModal();
-      if ($('#lb-thread')) renderLbThread();
-    }
+      if ($('#lb-thread')) renderLbThread(); renderStepThread();
+      if ($('#step-thread')) renderStepThread();
+    } else if (!ui.tripId && $('.trip-cards') && !$('#modal-root.open')) renderHome();
   } catch { /* réessai plus tard */ }
 }
-setInterval(() => document.visibilityState === 'visible' && pullFeedback(), 60000);
+// Les réactions de tous les voyages partagés : au lancement, au retour dans l'app, et chaque minute
+const pullAllFeedback = () => state.trips.filter(isShared).forEach((t) => pullFeedback(t));
+setInterval(() => document.visibilityState === 'visible' && pullAllFeedback(), 45000);
+document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && pullAllFeedback());
+addEventListener('online', pullAllFeedback);
+setTimeout(pullAllFeedback, 1500);
+function updateAppBadge() {
+  const n = state.trips.filter((t) => fb[t.id]).reduce((a, t) => a + unreadNotifs(t), 0);
+  try { if (navigator.setAppBadge) n ? navigator.setAppBadge(n) : navigator.clearAppBadge(); } catch { /* non pris en charge */ }
+}
+async function reactNotify(t, title, body) {
+  if (t.id !== ui.tripId || document.visibilityState !== 'visible') {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try { const reg = await navigator.serviceWorker?.getRegistration(); reg?.showNotification(title, { body, icon: 'icons/etapa-192.png', badge: 'icons/etapa-192.png', tag: `rx-${t.id}`, data: { trip: t.id } }); } catch { /* refusé */ }
+    }
+  }
+  if (document.visibilityState === 'visible') toast(`<b>${esc(title)}</b>${body && body !== t.name ? ` · ${esc(body.slice(0, 60))}` : ''}`, { ms: 6000 });
+}
 
 function renderShareStatus() {
   const el = $('#share-status');
@@ -3172,7 +3252,7 @@ document.addEventListener('submit', async (e) => {
     (fb[t.id] ||= { comments: [], likes: [] }).comments.push(c);
     input.value = '';
     if ($('#share-modal')) renderShareModal();
-    if ($('#lb-thread')) renderLbThread();
+    if ($('#lb-thread')) renderLbThread(); renderStepThread();
   } catch (err) {
     toast(`Envoi impossible : ${esc(err.message || 'réseau')}`);
   }
@@ -3199,7 +3279,7 @@ A['cm-del'] = async (el) => {
     await cloud.deleteComment(t.share.token, el.dataset.id);
     fb[t.id].comments = fb[t.id].comments.filter((c) => c.id !== el.dataset.id && c.parent_id !== el.dataset.id);
     if ($('#share-modal')) renderShareModal();
-    if ($('#lb-thread')) renderLbThread();
+    if ($('#lb-thread')) renderLbThread(); renderStepThread();
   } catch { toast('Suppression impossible'); }
 };
 

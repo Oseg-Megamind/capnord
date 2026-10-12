@@ -1,5 +1,5 @@
 // Service worker : app utilisable hors-ligne + cache des tuiles de carte consultées
-const APP = 'capnord-app-v96';
+const APP = 'capnord-app-v98';
 const TILES = 'voyage-tiles-v1';
 const SHELL = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest', 'icons/etapa.svg', 'icons/etapa-180.png', 'icons/etapa-192.png',
@@ -59,4 +59,15 @@ self.addEventListener('fetch', (e) => {
         .catch(() => caches.match(req).then((r) => r || caches.match('index.html'))),
     );
   }
+});
+
+// Toucher une notification de réaction : rouvre l'app
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const c = all.find((x) => x.url.startsWith(self.registration.scope));
+    if (c) return c.focus();
+    return self.clients.openWindow(self.registration.scope);
+  })());
 });
