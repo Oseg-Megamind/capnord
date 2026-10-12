@@ -1132,3 +1132,4 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 .dayline .dl-day.today::after { content: ''; position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 .dayline button.today { border-color: var(--line); }
 .dayline .dl-day.on.today::after { background: #fff; }
+.dayline .dl-day.today::after { top: auto; bottom: 4px; right: auto; left: 50%; margin-left: -3px; width: 6px; height: 6px; }
