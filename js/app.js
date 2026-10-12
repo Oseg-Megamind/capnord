@@ -915,7 +915,7 @@ function stepDrawerHTML(t, s) {
   if (ui.dday !== 'all' && !days.includes(ui.dday)) ui.dday = days[0] || 'all';
   const D = ui.dday;
   const dayMode = D !== 'all';
-  const okTabs = dayMode ? ['subs', 'photos', 'night', 'notes', 'place'] : ['place', 'stays', 'subs', 'photos', 'notes'];
+  const okTabs = dayMode ? ['subs', 'photos', 'night', 'notes', 'place', 'tips'] : ['place', 'stays', 'subs', 'photos', 'notes', 'tips'];
   if (!okTabs.includes(ui.dtab)) ui.dtab = dayMode ? 'subs' : 'place';
   const pane = (k) => (ui.dtab === k ? '' : 'hidden');
   const cover = t.photos.find((p) => p.id === s.coverId) || stepPhotos(t, s).at(-1);
@@ -932,8 +932,9 @@ function stepDrawerHTML(t, s) {
   <div class="drawer-head dest-head ${cover ? 'has-cover' : ''}" data-scope>
     ${cover ? `<img class="dh-cover" data-thumb="${cover.thumbId}" alt="">` : ''}
     <button class="icon-btn dh-close" data-act="close-drawer" aria-label="Fermer">✕</button>
-    <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><h2 class="title-input dh-name" data-act="dtab" data-k="place" title="Changer de lieu : onglet Lieu → Modifier">${esc(s.name || 'Lieu à choisir')}</h2></div>
+    <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><h2 class="dh-name">${esc(s.name || 'Lieu à choisir')}</h2></div>
     <p class="dh-sub">${s.arrival ? (n ? `Du ${fmtDay(s.arrival, { day: 'numeric', month: 'long' })} au ${fmtDay(s.departure, { day: 'numeric', month: 'long' })}` : fmtDayLong(s.arrival)) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1} sur ${t.steps.length}</p>
+  ${s.place ? `<button class="dh-tips ${ui.dtab === 'tips' ? 'on' : ''}" data-act="dtab" data-k="${ui.dtab === 'tips' ? (dayMode ? 'subs' : 'place') : 'tips'}" aria-pressed="${ui.dtab === 'tips'}">${icon('tip')} Astuces de voyageurs</button>` : ''}
   <div class="drawer-nav dh-nav">
     ${prev ? `<button class="btn sm" data-act="open-leg" data-id="${s.id}">‹ Trajet depuis ${esc(prev.name)}</button>` : '<button class="btn sm" disabled>‹ Départ</button>'}
     ${s.place ? `<button class="btn sm" data-act="focus-step" data-id="${s.id}">${icon('map')} Carte</button>` : ''}
@@ -972,7 +973,7 @@ function stepDrawerHTML(t, s) {
         <a class="btn sm" href="https://news.google.com/search?q=${encodeURIComponent(s.name || shortLabel(s.place.label))}&hl=fr&gl=FR&ceid=FR:fr" target="_blank" rel="noopener">Plus d’actualités</a>
       </div>
     </section>
-    <section class="sec ${pane('place')}">
+    <section class="sec ${pane('tips')}">
       <h4>Astuces des voyageurs <small>partagées avec tous</small></h4>
       <div id="tips" class="tips"></div>
     </section>` : ''}
@@ -1225,7 +1226,8 @@ function mountStepDrawer(t, s, root) {
     refresh({ header: false, map: false });
     $(`[data-sub-add-day="${day}"] input`)?.focus();
   }));
-  if (s.place && ui.dtab === 'place') { loadWeather(s); loadNews(s); loadTips(s); }
+  if (s.place && ui.dtab === 'place') { loadWeather(s); loadNews(s); }
+  if (s.place && ui.dtab === 'tips') loadTips(s);
 }
 
 async function loadWeather(s) {
