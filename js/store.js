@@ -5,7 +5,7 @@ import { COLORS, LIST_TEMPLATES } from './constants.js';
 export const state = {
   version: 1,
   trips: [],
-  settings: { theme: 'auto', routing: true, basemap: 'auto', recordingTripId: null },
+  settings: { theme: 'light', routing: true, basemap: 'auto', recordingTripId: null },
   routeCache: {},
 };
 
@@ -49,6 +49,8 @@ export async function load() {
   if (saved) {
     state.trips = saved.trips || [];
     Object.assign(state.settings, saved.settings || {});
+    // Charte Tracé : thème clair par défaut (le sombre reste au choix dans les réglages)
+    if (!state.settings.lightDefault) { if (state.settings.theme === 'auto') state.settings.theme = 'light'; state.settings.lightDefault = true; }
     state.routeCache = saved.routeCache || {};
   }
   state.trips.forEach(normalizeTrip);
