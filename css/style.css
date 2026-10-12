@@ -1133,3 +1133,18 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 .dayline button.today { border-color: var(--line); }
 .dayline .dl-day.on.today::after { background: #fff; }
 .dayline .dl-day.today::after { top: auto; bottom: 4px; right: auto; left: 50%; margin-left: -3px; width: 6px; height: 6px; }
+
+/* ---------- En-tête de destination compact, navigation intégrée au bandeau ---------- */
+.drawer-head.dest-head { min-height: 0; padding: calc(14px + var(--safe-t)) 14px 12px 16px; gap: 4px; margin-bottom: 6px; }
+.dest-head .dh-title { padding-right: 44px; }
+.dh-title .pin { width: 34px; height: 44px; }
+.dest-head .dh-title .title-input { font-size: 28px !important; }
+.dest-head .dh-close { top: calc(10px + var(--safe-t)); }
+.dest-head .dh-sub { font-size: 14px; margin: 0; }
+.dest-head .dh-nav { position: relative; z-index: 1; padding: 6px 0 0; gap: 6px; }
+.dest-head .dh-nav .btn { background: rgba(255, 255, 255, .16); border: 0; color: #fff; box-shadow: none; padding: 6px 10px; font-size: 12.5px; }
+.dest-head .dh-nav .btn:disabled { opacity: .45; }
+.dest-head .dh-nav .btn .ico { color: #fff; }
+.drawer.dest .dayline { padding-top: 4px; }
+/* Jour sélectionné : tout le texte en blanc */
+.dayline button.on small, .dayline button.on.today small { color: rgba(255, 255, 255, .9) !important; }

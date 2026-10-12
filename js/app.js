@@ -913,15 +913,15 @@ function stepDrawerHTML(t, s) {
     <button class="icon-btn dh-close" data-act="close-drawer" aria-label="Fermer">✕</button>
     <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><input class="title-input" data-f="name" placeholder="Nom de l’étape" autocomplete="off" aria-label="Nom de l’étape"></div>
     <p class="dh-sub">${s.arrival ? (n ? `Du ${fmtDay(s.arrival, { day: 'numeric', month: 'long' })} au ${fmtDay(s.departure, { day: 'numeric', month: 'long' })}` : fmtDayLong(s.arrival)) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1} sur ${t.steps.length}</p>
-  </div>
-  ${days.length ? `<div class="dayline" role="tablist" aria-label="Jours de l’étape">
-    ${days.map((d, k) => `<button class="dl-day ${D === d ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="dday" data-d="${d}" role="tab" ${d === today ? 'aria-label="Aujourd’hui"' : ''}><small>Jour ${k + 1}</small><b>${fmtDay(d, { day: 'numeric' })}</b><small>${fmtDay(d, { weekday: 'short' })}</small></button>`).join('')}
-  </div>` : ''}
-  <div class="drawer-nav">
+  <div class="drawer-nav dh-nav">
     ${prev ? `<button class="btn sm" data-act="open-leg" data-id="${s.id}">‹ Trajet depuis ${esc(prev.name)}</button>` : '<button class="btn sm" disabled>‹ Départ</button>'}
     ${s.place ? `<button class="btn sm" data-act="focus-step" data-id="${s.id}">${icon('map')} Carte</button>` : ''}
     ${next ? `<button class="btn sm" data-act="open-leg" data-id="${next.id}">Trajet vers ${esc(next.name)} ›</button>` : '<button class="btn sm" disabled>Arrivée ›</button>'}
   </div>
+  </div>
+  ${days.length ? `<div class="dayline" role="tablist" aria-label="Jours de l’étape">
+    ${days.map((d, k) => `<button class="dl-day ${D === d ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="dday" data-d="${d}" role="tab" ${d === today ? 'aria-label="Aujourd’hui"' : ''}><small>Jour ${k + 1}</small><b>${fmtDay(d, { day: 'numeric' })}</b><small>${fmtDay(d, { weekday: 'short' })}</small></button>`).join('')}
+  </div>` : ''}
   <nav class="dtabs" role="tablist">
     ${tabs
       .map(([k, ic, l, b]) => `<button class="dtab ${ui.dtab === k ? 'active' : ''}" data-act="dtab" data-k="${k}" role="tab" aria-selected="${ui.dtab === k}"><span class="dt-ic">${ic}</span><span class="dt-l">${l}</span>${b !== '' ? `<i class="dt-b ${b === '!' ? 'warn' : ''}">${b}</i>` : ''}</button>`).join('')}
