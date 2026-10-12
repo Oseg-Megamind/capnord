@@ -285,7 +285,7 @@ function placeFieldHTML(place, label = 'Lieu', ph = 'Rechercher une ville, une a
     <div class="place-cur ${place ? '' : 'hidden'}"><span class="pc-ic">${icon('pin')}</span><span class="pc-label">${esc(shortLabel(place?.label))}</span><button type="button" class="link" data-pf="change">Modifier</button></div>
     <div class="place-search ${place ? 'hidden' : ''}">
       <input type="search" placeholder="${ph}" autocomplete="off" enterkeyhint="search">
-      <button type="button" class="icon-btn sm" data-pf="here" title="Utiliser ma position">◎</button>
+      <button type="button" class="icon-btn sm" data-pf="here" title="Utiliser ma position" aria-label="Utiliser ma position">${icon('gps')}</button>
     </div>
     <div class="place-results"></div>
   </div>`;
@@ -748,10 +748,6 @@ function newStepModal(index) {
           <small class="hint" id="ns-days-h"></small>
         </div>
       </div>
-      <div class="ns-quick">
-        <button type="button" class="btn" data-act="ns-here">◎ Ma position actuelle</button>
-        <button type="button" class="btn" data-act="ns-map">🗺️ Toucher la carte</button>
-      </div>
       ${first ? '<p class="hint">Ce sera le point de départ de votre itinéraire. Vous ajouterez ensuite les étapes suivantes.</p>'
         : `<label class="fld"><span>Placer après</span><select id="ns-after">${t.steps.map((x, i) => `<option value="${i + 1}" ${(index ?? t.steps.length) === i + 1 ? 'selected' : ''}>${i + 1}. ${esc(x.name || 'Étape')}</option>`).join('')}</select></label>`}
     </div>
@@ -772,19 +768,9 @@ function newStepModal(index) {
       const st = addStep(at, p, { days, arrival });
       ensureCurrency(T(), stepCurrency(st));
     };
+    // À droite du champ : le rond « ma position » (déjà dans le champ) + une petite carte pour toucher le lieu
+    $('#ns-form .place-search', m).insertAdjacentHTML('beforeend', `<button type="button" class="icon-btn sm" data-act="ns-map" title="Choisir sur la carte" aria-label="Choisir sur la carte">${icon('map')}</button>`);
     mountPlaceFields($('#ns-form', m), tmp, (p) => create(p));
-    $('[data-act="ns-here"]', m).onclick = async (e) => {
-      e.target.disabled = true;
-      e.target.textContent = 'Localisation…';
-      try {
-        const me = ui.me || (await getPositionOnce());
-        create(await svc.reverse(me.lat, me.lng));
-      } catch (err) {
-        e.target.disabled = false;
-        e.target.textContent = '◎ Ma position actuelle';
-        toast(esc(geoErr(err)));
-      }
-    };
     $('[data-act="ns-map"]', m).onclick = () => {
       ui.nsIndex = $('#ns-after', m) ? +$('#ns-after', m).value : undefined;
       ui.nsOpts = { days, arrival: $('#ns-arrival', m)?.value || undefined };
