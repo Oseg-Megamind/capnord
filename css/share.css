@@ -295,3 +295,9 @@
 .shx-pin { width: 36px; height: 36px; border-radius: 10px; border-width: 2px; }
 .shx-pin img { border-radius: 8px; }
 .shx-pin b { top: -7px; right: -7px; min-width: 18px; height: 18px; font-size: 10px; }
+/* Le contenu du tiroir défile dans la partie visible, quelle que soit sa hauteur */
+.shx-sheet .shx-body { max-height: calc(var(--peek) - 32px); }
+.shx-sheet.full .shx-body { max-height: none; }
+.shx-body { touch-action: pan-y; }
+.shx-strip { touch-action: pan-x pan-y; }
+@media (min-width: 900px) { .shx-sheet .shx-body { max-height: none; } }

@@ -664,6 +664,8 @@ function stepStates(t, d = todayStr()) {
 function renderMapProgress(t) {
   const el = $('#map-progress');
   if (!el) return;
+  // Le panneau défile au doigt sans faire bouger la carte en dessous
+  if (!el.dataset.iso && window.L) { L.DomEvent.disableScrollPropagation(el); L.DomEvent.disableClickPropagation(el); el.dataset.iso = '1'; }
   const st = tripStatus(t), states = stepStates(t);
   const done = states.filter((x) => x === 'done').length, n = t.steps.length;
   const idx = states.indexOf('now'), cur = t.steps[idx];
@@ -836,7 +838,6 @@ function stepActions(id) {
     <h2>${esc(s.name || 'Étape')}</h2>
     <p class="hint">Étape ${i + 1} sur ${t.steps.length}${s.arrival ? ` · ${fmtRange(s.arrival, s.departure)}` : ''}</p>
     <div class="sa-list">
-      <button class="sa-row" data-act="open-step" data-id="${s.id}">${icon('pin')}<span>Ouvrir l’étape</span></button>
       <button class="sa-row danger" id="sa-del">${icon('trash')}<span>Supprimer l’étape</span></button>
     </div>
     <div class="sa-confirm hidden" id="sa-confirm">
@@ -1073,9 +1074,9 @@ function stepDrawerHTML(t, s) {
   const nightStays = dayMode ? s.stays.filter((st) => (st.checkIn && st.checkOut ? st.checkIn <= D && D < st.checkOut : true)) : s.stays;
   const tabs = dayMode
     ? [['subs', icon('list'), 'Activités', daySubs.length ? `${daySubs.filter((x) => x.done).length}/${daySubs.length}` : ''],
-      ['night', icon('bed'), 'Nuit', nightStays.length ? '✓' : (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.dayNotes?.[D] ? '•' : ''], ['place', icon('pin'), 'Lieu', ''], ['photos', icon('camera'), 'Photos', dayPh.length || '']]
-    : [['subs', icon('list'), 'Activités', s.subs.length ? `${done}/${s.subs.length}` : ''], ['stays', icon('bed'), 'Hébergement', s.stays.length || (n ? '!' : '')],
-      ['notes', icon('note'), 'Notes', s.notes ? '•' : ''], ['place', icon('pin'), 'Lieu', ''], ['photos', icon('camera'), 'Photos', stepPhotos(t, s).length || '']];
+      ['place', icon('pin'), 'Lieu', ''], ['night', icon('bed'), 'Nuit', nightStays.length ? '✓' : (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.dayNotes?.[D] ? '•' : ''], ['photos', icon('camera'), 'Photos', dayPh.length || '']]
+    : [['subs', icon('list'), 'Activités', s.subs.length ? `${done}/${s.subs.length}` : ''], ['place', icon('pin'), 'Lieu', ''],
+      ['stays', icon('bed'), 'Hébergement', s.stays.length || (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.notes ? '•' : ''], ['photos', icon('camera'), 'Photos', stepPhotos(t, s).length || '']];
   const today = todayStr();
   return `
   <div class="drawer-head dest-head ${cover ? 'has-cover' : ''}" data-scope>
