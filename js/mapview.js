@@ -49,7 +49,7 @@ export class MapView {
     this.g = {};
     for (const k of ['route', 'track', 'photos', 'steps', 'subs', 'me']) this.g[k] = L.layerGroup().addTo(this.map);
     this.map.on('click', (e) => this.h.onMapClick?.(e.latlng));
-    this.map.on('zoomend', () => this.updateDetailVisibility());
+    this.map.on('zoomend', () => { this.updateDetailVisibility(); this.drawSteps(); });
     this.map.on('dragstart', () => this.h.onUserPan?.());
     this.base = null;
     this.baseKey = null;
@@ -121,21 +121,11 @@ export class MapView {
       prev = s;
     });
 
-    // Étapes
+    // Étapes : dessinées à part pour pouvoir les regrouper quand elles se chevauchent
+    this.stepPts = trip.steps.map((s, i) => (s.place ? { s, i, status: states[i] === 'done' ? 'past' : states[i] === 'now' ? 'now' : 'todo', sel: s.id === selectedId } : null)).filter(Boolean);
+    this.drawSteps();
     trip.steps.forEach((s, i) => {
       if (!s.place) return;
-      const sel = s.id === selectedId;
-      const status = states[i] === 'done' ? 'past' : states[i] === 'now' ? 'now' : '';
-      const icon = L.divIcon({
-        className: 'mk-wrap',
-        html: `<div class="mk ${sel ? 'sel' : ''} ${status} ${live ? 'calm' : ''}" style="--c:${trip.color}"><span>${status === 'past' ? '✓' : i + 1}</span>${status === 'now' && !live ? '<b class="mk-here">Vous êtes ici</b>' : ''}</div>`,
-        iconSize: [32, 32], iconAnchor: [16, 16],
-      });
-      L.marker(ll(s.place), { icon, zIndexOffset: sel ? 1000 : status === 'now' ? 500 : 0, keyboard: true, title: s.name })
-        .bindTooltip(`<b>${i + 1}. ${esc(s.name || 'Étape')}</b>${s.arrival ? `<br>${fmtRange(s.arrival, s.departure)}` : ''}`, { direction: 'top', offset: [0, -16] })
-        .on('click', () => this.h.onStepClick?.(s.id))
-        .addTo(steps);
-
       // Détails : hébergements + sous-étapes
       for (const st of s.stays) {
         if (!st.place) continue;
@@ -184,8 +174,8 @@ export class MapView {
       const src = this.h.thumbUrl?.(p.thumbId, () => this.scheduleRerender()) || '';
       const icon = L.divIcon({
         className: 'mk-wrap',
-        html: `<div class="mk-photo" ${src ? `style="background-image:url('${src}')"` : ''}>${src ? '' : '📷'}</div>`,
-        iconSize: [44, 44], iconAnchor: [22, 22],
+        html: `<div class="mk-photo" ${src ? `style="background-image:url('${src}')"` : ''}>${src ? '' : '📷'}${list.length > 1 ? `<i>${list.length}</i>` : ''}</div>`,
+        iconSize: [30, 30], iconAnchor: [-6, 40],
       });
       L.marker([at.lat, at.lng], { icon, zIndexOffset: -100 })
         .bindTooltip(esc(p.caption || `${list.length} photo${list.length > 1 ? 's' : ''}`), { direction: 'top', offset: [0, -22] })
@@ -205,9 +195,61 @@ export class MapView {
     this.rerender = setTimeout(() => this.trip && this.render(this.trip, this.opts), 150);
   }
 
+  // Stations lisibles : faite (✓ pleine), en cours (glacier), à venir (pointillés). Regroupées si elles se touchent.
+  drawSteps() {
+    const layer = this.g.steps, live = this.opts?.live, trip = this.trip;
+    layer.clearLayers();
+    if (!this.stepPts?.length) return;
+    // Regroupement en pixels : on fusionne tant que deux groupes se touchent
+    const R = 46;
+    let groups = this.stepPts.map((p) => ({ pt: this.map.latLngToLayerPoint(ll(p.s.place)), items: [p] }));
+    for (let merged = true; merged;) {
+      merged = false;
+      outer: for (let a = 0; a < groups.length; a++) for (let b = a + 1; b < groups.length; b++) {
+        if (groups[a].pt.distanceTo(groups[b].pt) < R) {
+          const items = [...groups[a].items, ...groups[b].items];
+          const pts = items.map((x) => this.map.latLngToLayerPoint(ll(x.s.place)));
+          groups[a] = { items, pt: L.point(pts.reduce((n, q) => n + q.x, 0) / pts.length, pts.reduce((n, q) => n + q.y, 0) / pts.length) };
+          groups.splice(b, 1);
+          merged = true;
+          break outer;
+        }
+      }
+    }
+    for (const g of groups) {
+      if (g.items.length === 1) {
+        const { s, i, status, sel } = g.items[0];
+        const icon = L.divIcon({
+          className: 'mk-wrap',
+          html: `<div class="mk st-${status} ${sel ? 'sel' : ''} ${status === 'now' ? 'now' : status === 'past' ? 'past' : ''} ${live ? 'calm' : ''}" style="--c:${trip.color}"><span>${status === 'past' ? '✓' : i + 1}</span>${status === 'now' && !live ? '<b class="mk-here">Vous êtes ici</b>' : ''}</div>`,
+          iconSize: [34, 34], iconAnchor: [17, 17],
+        });
+        L.marker(ll(s.place), { icon, zIndexOffset: sel ? 1000 : status === 'now' ? 800 : 400, keyboard: true, title: s.name })
+          .bindTooltip(`<b>${i + 1}. ${esc(s.name || 'Étape')}</b>${s.arrival ? `<br>${fmtRange(s.arrival, s.departure)}` : ''}`, { direction: 'top', offset: [0, -18] })
+          .on('click', () => this.h.onStepClick?.(s.id))
+          .addTo(layer);
+      } else {
+        const it = g.items.sort((x, y) => x.i - y.i), nums = it.map((x) => x.i + 1);
+        const consecutive = nums.every((n, k) => !k || n === nums[k - 1] + 1);
+        const lbl = consecutive ? `${nums[0]}–${nums.at(-1)}` : nums.length <= 3 ? nums.join(' · ') : `${nums[0]}…${nums.at(-1)}`;
+        const hasNow = it.some((x) => x.status === 'now'), allPast = it.every((x) => x.status === 'past'), allTodo = it.every((x) => x.status === 'todo');
+        const lat = it.reduce((n, x) => n + x.s.place.lat, 0) / it.length, lng = it.reduce((n, x) => n + x.s.place.lng, 0) / it.length;
+        const icon = L.divIcon({
+          className: 'mk-wrap',
+          html: `<div class="mk-group ${hasNow ? 'now' : allPast ? 'past' : allTodo ? 'todo' : 'mix'}"><span>${lbl}</span>${hasNow && !live ? '<b class="mk-here">Vous êtes ici</b>' : ''}</div>`,
+          iconSize: [60, 34], iconAnchor: [30, 17],
+        });
+        L.marker([lat, lng], { icon, zIndexOffset: 900 })
+          .bindTooltip(it.map((x) => `${x.i + 1}. ${esc(x.s.name || 'Étape')}`).join('<br>'), { direction: 'top', offset: [0, -20] })
+          .on('click', () => { const bottom = (document.querySelector('#map-progress:not(.hidden)')?.offsetHeight || 0) + 50; this.map.flyToBounds(it.map((x) => ll(x.s.place)), { paddingTopLeft: [60, 80], paddingBottomRight: [60, bottom], maxZoom: 13, duration: 0.8 }); })
+          .addTo(layer);
+      }
+    }
+  }
+
   updateDetailVisibility() {
     const z = this.map.getZoom();
-    for (const [k, min] of [['subs', 10], ['photos', 8]]) {
+    for (const [k, min] of [['subs', 11], ['photos', 10]]) {
       const show = z >= min, has = this.map.hasLayer(this.g[k]);
       if (show && !has) this.g[k].addTo(this.map);
       if (!show && has) this.map.removeLayer(this.g[k]);

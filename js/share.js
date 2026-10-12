@@ -333,7 +333,7 @@ function drawMap() {
   });
   for (const c of photoClusters()) {
     const p = c.photos.at(-1);
-    L.marker([c.at.lat, c.at.lng], { zIndexOffset: 1000, icon: L.divIcon({ className: 'mk-wrap', iconSize: [52, 52], iconAnchor: [26, 60],
+    L.marker([c.at.lat, c.at.lng], { zIndexOffset: 1000, icon: L.divIcon({ className: 'mk-wrap', iconSize: [36, 36], iconAnchor: [-4, 46],
       html: `<div class="shx-pin ${anim ? 'in' : ''}" style="--d:${400 + k++ * 70}ms"><img src="${urlOf(p.path, true)}" alt="">${c.photos.length > 1 ? `<b>${c.photos.length}</b>` : ''}</div>` }) })
       .on('click', () => openViewer(c.photos[0].id, c.photos.map((x) => x.id))).addTo(layer);
   }

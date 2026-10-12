@@ -1758,3 +1758,42 @@ label.lb-mi select { width: 100%; margin-top: 4px; background: rgba(230, 236, 23
 .ph-strip { padding-top: 2px; }
 .ph-strip .ph-rx b { inset: auto; top: -6px; right: -6px; left: auto; bottom: auto; width: auto; min-width: 16px; height: 16px; padding: 0 4px; display: block; font: 700 9.5px/16px var(--mono); border-radius: 8px; background: #10231f; color: #fff; border: 1.5px solid #fff; }
 .ph-strip .ph-rx .rx-l b { background: #ff4d3a; }
+
+/* Étape en cours : le rectangle complet en jaune (seule touche de jaune de l'app) */
+.step.now { background: #e9a23b; border-color: #e9a23b; box-shadow: 0 6px 18px rgba(233, 162, 59, .35); }
+.step.now .step-main, .step.now h3, .step.now .step-dates { color: #2b1a05; }
+.step.now .step-dates { opacity: .8; }
+.step.now .chip { background: rgba(255, 255, 255, .55); color: #2b1a05; border-color: transparent; }
+.step.now .chip.ok { background: rgba(255, 255, 255, .7); color: #0b6f69; }
+.step.now .now-badge { background: #10231f !important; color: #fff !important; }
+.step.now .num { background: #10231f; color: #fff; border-color: #10231f; animation: none; }
+.step.now .drag { color: #2b1a05; }
+
+/* =====================================================================
+   CARTE : stations lisibles, regroupées quand elles se chevauchent
+   ===================================================================== */
+.mk { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 800 13px var(--mono); transition: transform .15s; }
+.mk.st-past { background: #10231f; color: #fff; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(16, 35, 31, .45); }
+.mk.st-todo { background: #fff; color: #10231f; border: 2.5px dashed #10231f; box-shadow: 0 2px 6px rgba(16, 35, 31, .25); }
+.mk.st-now { background: #5fd0c8; color: #10231f; border: 3px solid #10231f; width: 40px; height: 40px; font-size: 15px; margin: -3px; }
+.mk.sel { transform: scale(1.25); }
+.mk-group { position: relative; min-width: 52px; height: 40px; padding: 0 8px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; box-shadow: 0 3px 10px rgba(16, 35, 31, .35); cursor: zoom-in; transition: transform .15s; }
+.mk-group:hover { transform: scale(1.06); }
+.mk-group span { font: 800 13px var(--mono); }
+.mk-group small { font: 600 8.5px var(--mono); text-transform: uppercase; letter-spacing: .04em; opacity: .75; margin-top: 2px; }
+.mk-group.past { background: #10231f; color: #fff; border: 3px solid #fff; }
+.mk-group.todo { background: #fff; color: #10231f; border: 2.5px dashed #10231f; }
+.mk-group.mix { background: linear-gradient(90deg, #10231f 50%, #fff 50%); color: #10231f; border: 3px solid #10231f; }
+.mk-group.mix span, .mk-group.mix small { background: #fff; border-radius: 6px; padding: 0 4px; }
+.mk-group.now { background: #5fd0c8; color: #10231f; border: 3px solid #10231f; animation: station 2.4s infinite; }
+.mk-group .mk-here { top: -28px; }
+
+/* Photos : petites, au-dessus du point, sans masquer les stations */
+.mk-photo { width: 30px; height: 30px; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(16, 35, 31, .35); transform: rotate(-3deg); }
+.mk-photo i { position: absolute; top: -6px; right: -7px; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 8px; background: #10231f; color: #fff; font: 700 9px/15px var(--mono); font-style: normal; text-align: center; }
+.mk-wrap:has(.mk-group) { display: grid; place-items: center; }
+.mk-group { min-width: 0; width: max-content; height: 34px; padding: 0 11px; flex-direction: row; white-space: nowrap; border-radius: 17px; }
+.mk-group span { font: 800 13px var(--mono); }
+.mk-group.mix { background: #fff; color: #10231f; border: 3px solid #10231f; }
+.mk-group.mix span { background: none; padding: 0; }
+.mk-group .mk-here { top: auto; bottom: calc(100% + 6px); }
