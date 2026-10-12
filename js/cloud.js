@@ -40,7 +40,7 @@ export const photoUrl = (path, thumb = false, ext = 'jpg') => `${SUPABASE_URL}/s
 // Ce que voient les amis : récits, étapes, photos. Jamais le budget, les documents ni les réservations.
 export function snapshot(trip, { start, end, me }) {
   const sh = trip.share || {};
-  const pos = sh.position || 'city';
+  const pos = 'city'; // toujours la ville de l'étape, jamais la position précise
   const r4 = (x) => +(+x).toFixed(4);
   const pts = trip.track || [];
   const step = Math.max(1, Math.ceil(pts.length / 800));

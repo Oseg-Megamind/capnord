@@ -1592,3 +1592,11 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .trip-title { cursor: pointer; }
 .trip-title h1::after { content: ' ⌄'; font-size: .7em; color: var(--muted); font-weight: 600; }
 .trip-wrap.tw-feat > .feat-card { width: 100%; }
+
+/* Compagnons : un lien personnel par prénom */
+.inv-list { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 10px; }
+.inv-row { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); animation: rise .3s var(--ease) both; }
+.inv-row b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inv-row small { font: 500 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ok); }
+.inv-row.joined { border-style: dashed; }
+.inv-row .tip-av { width: 30px; height: 30px; font-size: 13px; }

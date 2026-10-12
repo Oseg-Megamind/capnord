@@ -207,6 +207,7 @@ export function unwatchAll() {
   for (const ch of channels.values()) client()?.removeChannel(ch);
   channels.clear();
 }
-export const inviteLink = (trip, url) => `${url}#/join/${trip.collab.code}`;
-export const inviteText = (trip, url) => `Rejoins notre voyage « ${trip.name} » sur Etapa : on prépare et on complète le carnet de route ensemble.\n\nTouche ce lien pour nous rejoindre :\n${inviteLink(trip, url)}\n\n(Code d’invitation si besoin : ${trip.collab.code.slice(0, 3)}-${trip.collab.code.slice(3)})`;
+// Lien personnel : il ouvre directement le voyage, avec le prénom déjà rempli
+export const inviteLink = (trip, url, name = '') => `${url}#/join/${trip.collab.code}${name ? '/' + encodeURIComponent(name) : ''}`;
+export const inviteText = (trip, url, name = '') => `${name ? name + ', r' : 'R'}ejoins notre voyage « ${trip.name} » sur Etapa : on prépare et on complète le carnet de route ensemble.\n\nTouche ce lien pour nous rejoindre :\n${inviteLink(trip, url, name)}`;
 export const SUPA = SUPABASE_URL;
