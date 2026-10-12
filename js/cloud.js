@@ -48,7 +48,7 @@ export function snapshot(trip, { start, end, me }) {
     v: 1, name: trip.name, emoji: trip.emoji, color: trip.color, author: sh.author || '', start, end,
     position: pos,
     steps: trip.steps.map((s) => ({
-      id: s.id, name: s.name, type: s.type, arrival: s.arrival, departure: s.departure, mode: s.transport?.mode || '',
+      id: s.id, name: s.name, type: s.type, arrival: s.arrival, departure: s.departure, mode: s.transport?.mode || '', depart: s.transport?.depart || '', arrive: s.transport?.arrive || '',
       story: s.story || '', legStory: s.transport?.story || '', coverId: s.coverId || null, place: s.place ? { lat: r4(s.place.lat), lng: r4(s.place.lng) } : null,
     })),
     photos: trip.photos.filter((p) => p.remote).map((p) => ({

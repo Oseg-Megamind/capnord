@@ -1,6 +1,6 @@
 // Carte Leaflet : étapes numérotées, trajets par mode de transport, sous-étapes,
 // tracé GPS réel, carnet de bord et position en direct.
-import { MODES, SUB_TYPES } from './constants.js';
+import { MODES, SUB_TYPES, icon as svgIcon } from './constants.js';
 import { esc, fmtRange } from './utils.js';
 import * as svc from './services.js';
 
@@ -13,6 +13,19 @@ export const BASEMAPS = {
 };
 
 const ll = (p) => [p.lat, p.lng];
+// Point situé à la fraction f (0 à 1) d'un tracé
+export function alongPath(coords, f) {
+  const pts = coords.map((c) => (Array.isArray(c) ? c : [c.lat, c.lng]));
+  if (pts.length < 2) return pts[0];
+  const seg = []; let tot = 0;
+  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(d); tot += d; }
+  let goal = Math.min(1, Math.max(0, f)) * tot;
+  for (let i = 0; i < seg.length; i++) {
+    if (goal <= seg[i]) { const k = seg[i] ? goal / seg[i] : 0; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * k, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * k]; }
+    goal -= seg[i];
+  }
+  return pts.at(-1);
+}
 
 function arc(a, b, n = 40) {
   let bl = b.lng;
@@ -57,9 +70,9 @@ export class MapView {
     setTimeout(() => { if (!this.dead) this.map.invalidateSize(); }, 50);
   }
 
-  render(trip, { selectedId = null, selectedLegId = null, states = [], routing = true } = {}) {
+  render(trip, { selectedId = null, selectedLegId = null, states = [], routing = true, live = null } = {}) {
     this.trip = trip;
-    this.opts = { selectedId, selectedLegId, states, routing };
+    this.opts = { selectedId, selectedLegId, states, routing, live };
     const { route, steps, subs, track, photos } = this.g;
     route.clearLayers(); steps.clearLayers(); subs.clearLayers(); track.clearLayers(); photos.clearLayers();
 
@@ -90,6 +103,14 @@ export class MapView {
         L.polyline(coords, todo
           ? { color: dark ? '#d98a55' : '#b8662f', weight: sel ? 4 : 2.5, opacity: 0.95, dashArray: '6 6', lineCap: 'round', interactive: false }
           : { color, weight: sel ? w + 2 : w, opacity: done || sel ? 0.95 : 0.5, dashArray: mode?.dash || null, lineCap: 'round', interactive: false }).addTo(route);
+        // Trajet en cours : le trait s'anime et le véhicule avance selon l'heure
+        if (live && live.id === s.id) {
+          L.polyline(coords, { color: '#5fd0c8', weight: w + 8, opacity: 0.35, lineCap: 'round', className: 'leg-live-halo', interactive: false }).addTo(route);
+          L.polyline(coords, { color: '#5fd0c8', weight: Math.max(3, w), dashArray: '10 14', lineCap: 'round', className: 'leg-live', interactive: false }).addTo(route);
+          const at = alongPath(coords, live.f);
+          L.marker(at, { zIndexOffset: 2000, interactive: false, icon: L.divIcon({ className: 'mk-wrap', iconSize: [40, 40], iconAnchor: [20, 20],
+            html: `<div class="leg-veh">${svgIcon(s.transport?.mode || 'other')}<b>En route</b></div>` }) }).addTo(route);
+        }
         // Ligne invisible plus large : facile à toucher au doigt
         const from = prev;
         L.polyline(coords, { color: '#000', weight: 22, opacity: 0, className: 'leg-hit' })
@@ -107,7 +128,7 @@ export class MapView {
       const status = states[i] === 'done' ? 'past' : states[i] === 'now' ? 'now' : '';
       const icon = L.divIcon({
         className: 'mk-wrap',
-        html: `<div class="mk ${sel ? 'sel' : ''} ${status}" style="--c:${trip.color}"><span>${status === 'past' ? '✓' : i + 1}</span>${(trip.photos || []).some((p) => p.stepId === s.id) ? `<i class="mk-ph">${trip.photos.filter((p) => p.stepId === s.id).length}</i>` : ''}${status === 'now' ? '<b class="mk-here">Vous êtes ici</b>' : ''}</div>`,
+        html: `<div class="mk ${sel ? 'sel' : ''} ${status} ${live ? 'calm' : ''}" style="--c:${trip.color}"><span>${status === 'past' ? '✓' : i + 1}</span>${status === 'now' && !live ? '<b class="mk-here">Vous êtes ici</b>' : ''}</div>`,
         iconSize: [32, 32], iconAnchor: [16, 16],
       });
       L.marker(ll(s.place), { icon, zIndexOffset: sel ? 1000 : status === 'now' ? 500 : 0, keyboard: true, title: s.name })
@@ -147,8 +168,11 @@ export class MapView {
     const groups = new Map();
     for (const p of trip.photos || []) {
       const st = trip.steps.find((x) => x.id === p.stepId);
+      const pv = p.onLeg ? trip.steps[trip.steps.indexOf(st) - 1] : null;
+      const mid = pv?.place && st?.place ? { lat: (pv.place.lat + st.place.lat) / 2, lng: (pv.place.lng + st.place.lng) / 2 } : null;
+      const home = p.onLeg && mid ? mid : st?.place;
       let at = p.lat != null && !p.approx ? { lat: p.lat, lng: p.lng } : null;
-      if (st?.place && (!at || dist(at, st.place) > 50)) at = st.place;
+      if (home && (!at || dist(at, home) > (p.onLeg && mid ? dist(pv.place, st.place) / 2 + 50 : 50))) at = home;
       if (!at) continue;
       const k = `${at.lat.toFixed(3)},${at.lng.toFixed(3)}`;
       if (!groups.has(k)) groups.set(k, { at, list: [] });
@@ -160,7 +184,7 @@ export class MapView {
       const src = this.h.thumbUrl?.(p.thumbId, () => this.scheduleRerender()) || '';
       const icon = L.divIcon({
         className: 'mk-wrap',
-        html: `<div class="mk-photo" ${src ? `style="background-image:url('${src}')"` : ''}>${src ? '' : '📷'}${list.length > 1 ? `<b>${list.length}</b>` : ''}</div>`,
+        html: `<div class="mk-photo" ${src ? `style="background-image:url('${src}')"` : ''}>${src ? '' : '📷'}</div>`,
         iconSize: [44, 44], iconAnchor: [22, 22],
       });
       L.marker([at.lat, at.lng], { icon, zIndexOffset: -100 })

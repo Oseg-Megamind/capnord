@@ -56,6 +56,27 @@ function currentIdx(steps, d = todayStr()) {
   for (let i = steps.length - 1; i >= 0; i--) if (steps[i].arrival === d) return i;
   return -1;
 }
+// Trajet en cours (entre l'heure de départ et d'arrivée, ou la durée estimée)
+function liveLeg(steps, now = Date.now()) {
+  for (let i = 1; i < steps.length; i++) {
+    const s = steps[i], p = steps[i - 1];
+    if (!s.depart) continue;
+    const a = new Date(s.depart).getTime();
+    const est = p.place && s.place ? (km(p.place, s.place) / (MODES[s.mode]?.speed || 60)) * 3600e3 + (MODES[s.mode]?.arc ? 2 * 3600e3 : 0) : 0;
+    const b = s.arrive ? new Date(s.arrive).getTime() : est ? a + est : null;
+    if (b && now >= a && now <= b) return { id: s.id, i, f: (now - a) / (b - a) };
+  }
+  return null;
+}
+function alongPath(pts, f) {
+  if (pts.length < 2) return pts[0];
+  const seg = []; let tot = 0;
+  for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); seg.push(d); tot += d; }
+  let g = Math.min(1, Math.max(0, f)) * tot;
+  for (let i = 0; i < seg.length; i++) { if (g <= seg[i]) { const k = seg[i] ? g / seg[i] : 0; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * k, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * k]; } g -= seg[i]; }
+  return pts.at(-1);
+}
+
 // Dernière étape atteinte : celle en cours, ou la plus loin déjà commencée (dates passées ou photos prises)
 function lastDone(steps, d = todayStr()) {
   let k = currentIdx(steps, d);
@@ -89,12 +110,16 @@ function photoClusters() {
   const out = [];
   for (const p of photosAll()) {
     const s = stepById(p.stepId);
-    // GPS de la photo s'il est cohérent avec l'étape choisie (moins de 50 km), sinon le lieu de l'étape
-    let at = p.lat != null ? { lat: p.lat, lng: p.lng } : s?.place;
-    if (s?.place && at && km(at, s.place) > 50) at = s.place;
+    // GPS de la photo s'il est cohérent avec son étape (ou son trajet), sinon l'étape ou le milieu du trajet
+    const prev = p.onLeg ? (S.data.steps || [])[(S.data.steps || []).indexOf(s) - 1] : null;
+    const mid = prev?.place && s?.place ? { lat: (prev.place.lat + s.place.lat) / 2, lng: (prev.place.lng + s.place.lng) / 2 } : null;
+    const home = p.onLeg && mid ? mid : s?.place;
+    let at = p.lat != null ? { lat: p.lat, lng: p.lng } : home;
+    const limit = p.onLeg && mid ? km(prev.place, s.place) / 2 + 50 : 50;
+    if (home && at && km(at, home) > limit) at = home;
     if (!at) continue;
-    const c = out.find((x) => x.stepId === p.stepId && km(x.at, at) < 0.6);
-    if (c) c.photos.push(p); else out.push({ id: p.id, stepId: p.stepId, at, photos: [p] });
+    const c = out.find((x) => x.stepId === p.stepId && x.leg === !!p.onLeg && km(x.at, at) < 0.6);
+    if (c) c.photos.push(p); else out.push({ id: p.id, stepId: p.stepId, leg: !!p.onLeg, at, photos: [p] });
   }
   return out;
 }
@@ -137,14 +162,14 @@ function welcome(D) {
 }
 
 function renderTop() {
-  const D = S.data, st = status(D), steps = D.steps || [], idx = currentIdx(steps), cur = steps[idx];
+  const D = S.data, st = status(D), steps = D.steps || [], idx = currentIdx(steps), cur = steps[idx], live = liveLeg(steps);
   const totalLikes = S.likes.length;
   $('#shx-top').innerHTML = `
     <div class="shx-who"><span class="shx-av">${esc((D.author || '?').slice(0, 1).toUpperCase())}</span>
       <div><small>Le voyage de ${esc(D.author || 'vos proches')}</small><h1>${esc(D.name)}</h1></div></div>
     <div class="shx-status">
       <span class="shx-chip st-${st.key}">${st.key === 'now' ? '<i class="pulse"></i>' : ''}${st.label}</span>
-      ${cur ? `<span class="shx-here">${icon('pin')} ${esc(cur.name)}</span>` : ''}
+      ${live ? `<span class="shx-here live">${icon(steps[live.i].mode || 'route')} En route vers ${esc(steps[live.i].name)}</span>` : cur ? `<span class="shx-here">${icon('pin')} ${esc(cur.name)}</span>` : ''}
       <span class="shx-love">${P.heart}<b>${totalLikes}</b></span>
     </div>
     ${st.tot ? `<div class="shx-prog"><i style="--w:${Math.min(100, (st.day / st.tot) * 100)}%"></i></div>` : ''}`;
@@ -188,7 +213,7 @@ function momentCard(p, k = 0) {
   return `<article class="shx-moment" style="--i:${k}">
     <button class="shx-m-img" data-photo="${p.id}" data-scope="step" aria-label="Voir">
       <img src="${urlOf(p.path, p.kind === 'video' || k > 1)}" alt="${esc(p.caption)}" loading="lazy">${p.kind === 'video' ? `<em class="shx-play">${P.play}</em>` : ''}
-      <span class="shx-m-place">${icon('pin')} ${esc(s?.name || '')}</span>
+      <span class="shx-m-place">${p.onLeg ? icon('route') + ' Route vers ' : icon('pin') + ' '}${esc(s?.name || '')}</span>
     </button>
     ${p.caption ? `<p class="shx-m-cap">${esc(p.caption)}</p>` : ''}
     <div class="shx-react">${likeBtn(t)}<button class="shx-cmb" data-photo="${p.id}" data-scope="step" data-cm="1">${P.chat}<span>${commentsOf(t).length || 'Commenter'}</span></button><small>${new Date(p.t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</small></div>
@@ -197,7 +222,8 @@ function momentCard(p, k = 0) {
 
 function stepView(s) {
   const D = S.data, steps = D.steps, i = steps.indexOf(s), idx = currentIdx(steps), prev = steps[i - 1];
-  const ph = stepPhotos(s.id), t = `step:${s.id}`, mode = MODES[s.mode];
+  const all = stepPhotos(s.id), legPh = all.filter((p) => p.onLeg), ph = all.filter((p) => !p.onLeg), t = `step:${s.id}`, mode = MODES[s.mode];
+  const grid = (list, n0 = 0) => `<div class="shx-grid n${Math.min(list.length, 3)}">${list.map((p, k) => `<button class="shx-g" data-photo="${p.id}" data-scope="step" style="--i:${k + n0}"><img src="${urlOf(p.path, true)}" alt="" loading="lazy">${p.kind === 'video' ? `<em class="shx-play sm">${P.play}</em>` : ''}${likesOf('photo:' + p.id).length || commentsOf('photo:' + p.id).length ? `<i>${likesOf('photo:' + p.id).length ? P.heart + likesOf('photo:' + p.id).length : ''}${commentsOf('photo:' + p.id).length ? ' ' + P.chat + commentsOf('photo:' + p.id).length : ''}</i>` : ''}</button>`).join('')}</div>`;
   return `
     <div class="shx-step-h">
       <button class="shx-back" data-home aria-label="Retour">${P.back}</button>
@@ -206,8 +232,9 @@ function stepView(s) {
     </div>
     ${prev && (mode || s.legStory) ? `<div class="shx-leg">${mode ? icon(s.mode) : icon('route')}<span>${mode ? `En ${mode.label.toLowerCase()} depuis ${esc(prev.name)}` : `Depuis ${esc(prev.name)}`}${s.legStory ? `<em>${esc(s.legStory)}</em>` : ''}</span></div>` : ''}
     ${s.story ? `<p class="shx-story">${esc(s.story)}</p>` : ''}
-    ${ph.length ? `<div class="shx-grid n${Math.min(ph.length, 3)}">${ph.map((p, k) => `<button class="shx-g" data-photo="${p.id}" data-scope="step" style="--i:${k}"><img src="${urlOf(p.path, true)}" alt="" loading="lazy">${p.kind === 'video' ? `<em class="shx-play sm">${P.play}</em>` : ''}${likesOf('photo:' + p.id).length || commentsOf('photo:' + p.id).length ? `<i>${likesOf('photo:' + p.id).length ? P.heart + likesOf('photo:' + p.id).length : ''}${commentsOf('photo:' + p.id).length ? ' ' + P.chat + commentsOf('photo:' + p.id).length : ''}</i>` : ''}</button>`).join('')}</div>`
-      : `<div class="shx-empty">${icon('camera')}<p>${i > lastDone(steps) ? 'Étape à venir : revenez pendant le voyage !' : 'Pas de photos sur cette étape.'}</p></div>`}
+    ${legPh.length ? `<div class="shx-sub-h">${mode ? icon(s.mode) : icon('route')}<span>Sur la route${prev ? ` depuis ${esc(prev.name)}` : ''}</span><small>${plural(legPh.length, legPh.some((p) => p.kind === 'video') ? 'moment' : 'photo')}</small></div>${grid(legPh)}` : ''}
+    ${ph.length ? `${legPh.length ? `<div class="shx-sub-h">${icon('pin')}<span>À ${esc(s.name)}</span><small>${plural(ph.length, 'photo')}</small></div>` : ''}${grid(ph, legPh.length)}`
+      : legPh.length ? '' : `<div class="shx-empty">${icon('camera')}<p>${i > lastDone(steps) ? 'Étape à venir : revenez pendant le voyage !' : 'Pas de photos sur cette étape.'}</p></div>`}
     <div class="shx-react big">${likeBtn(t)}<span class="shx-cmcount">${P.chat}${commentsOf(t).length ? plural(commentsOf(t).length, 'commentaire') : 'Commenter l’étape'}</span></div>
     ${thread(t)}
     <div class="shx-stepnav">
@@ -239,7 +266,7 @@ function thread(target) {
 // ---------- Carte : tracé, stations, piles de photos
 let map = null, layer = null;
 function drawMap() {
-  const D = S.data, steps = D.steps || [], idx = currentIdx(steps), today = todayStr();
+  const D = S.data, steps = D.steps || [], idx = currentIdx(steps), today = todayStr(), live = liveLeg(steps);
   if (!map) {
     map = L.map('sh-map', { zoomControl: false, attributionControl: true });
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
@@ -258,15 +285,22 @@ function drawMap() {
     const done = i <= lastDone(steps, today);
     if (prev) {
       const m = MODES[s.mode];
+      if (live && live.id === s.id) {
+        const seg = [prev, p];
+        L.polyline(seg, { color: '#5fd0c8', weight: 12, opacity: 0.35, lineCap: 'round', className: 'leg-live-halo', interactive: false }).addTo(layer);
+        L.polyline(seg, { color: '#5fd0c8', weight: 4, dashArray: '10 14', lineCap: 'round', className: 'leg-live', interactive: false }).addTo(layer);
+        L.marker(alongPath(seg, live.f), { zIndexOffset: 4000, icon: L.divIcon({ className: 'mk-wrap', iconSize: [40, 40], iconAnchor: [20, 20], html: `<div class="leg-veh">${icon(s.mode || 'route')}<b>${esc(D.author || 'En route')} en route</b></div>` }) })
+          .on('click', () => openStep(s.id)).addTo(layer);
+      }
       L.polyline([prev, p], { color: '#f7f8f4', weight: (m?.w || 3) + 5, opacity: 0.8, interactive: false }).addTo(layer);
       L.polyline([prev, p], done
         ? { color: m?.color === '#3d6fb6' ? '#3d6fb6' : '#10231f', weight: m?.w || 3, dashArray: m?.dash || null, lineCap: 'round', className: anim && !m?.dash ? 'shx-draw' : '', interactive: false }
         : { color: '#10231f', weight: 2.5, opacity: 0.55, dashArray: '2 8', lineCap: 'round', interactive: false }).addTo(layer);
     }
     prev = p;
-    const cls = i === idx ? 'now' : done ? 'past' : 'todo';
+    const cls = i === idx && !live ? 'now' : done ? 'past' : 'todo';
     L.marker(p, { zIndexOffset: i === idx ? 3000 : 0, icon: L.divIcon({ className: 'mk-wrap', iconSize: [34, 34], iconAnchor: [17, 17],
-      html: `<div class="shx-st ${cls} ${anim ? 'in' : ''}" style="--d:${k++ * 90}ms"><span>${i + 1}</span>${i === idx ? `<b>${esc(D.author || 'Ici')} est ici</b>` : ''}</div>` }) })
+      html: `<div class="shx-st ${cls} ${anim ? 'in' : ''}" style="--d:${k++ * 90}ms"><span>${i + 1}</span>${i === idx && !live ? `<b>${esc(D.author || 'Ici')} est ici</b>` : ''}</div>` }) })
       .on('click', () => openStep(s.id)).addTo(layer);
   });
   for (const c of photoClusters()) {
@@ -361,7 +395,7 @@ function renderViewer(enter = false) {
   const typing = document.activeElement?.closest?.('#viewer-root .cm-form');
   if (typing && !enter) { $('.shx-v-react', vr).innerHTML = vReact(t); $('.shx-v-thread', vr).innerHTML = thread(t); return; }
   vr.innerHTML = `<div class="shx-viewer ${enter ? 'enter' : ''} ${v.cm ? 'cm-open' : ''}">
-    <div class="shx-v-top"><span>${esc(s?.name || '')}<small>${k + 1} / ${list.length}</small></span><button class="shx-v-close" data-vclose aria-label="Fermer">${P.close}</button></div>
+    <div class="shx-v-top"><span>${p.onLeg ? `Sur la route vers ${esc(s?.name || '')}` : esc(s?.name || '')}<small>${k + 1} / ${list.length}</small></span><button class="shx-v-close" data-vclose aria-label="Fermer">${P.close}</button></div>
     <div class="shx-v-dots">${list.map((x, i) => `<i class="${i === k ? 'on' : ''}"></i>`).join('')}</div>
     <div class="shx-v-media" id="v-media">
       ${p.kind === 'video' ? `<video controls playsinline autoplay preload="metadata" poster="${urlOf(p.path, true)}" src="${urlOf(p.path, false, p.ext)}"></video>` : `<img src="${urlOf(p.path)}" alt="${esc(p.caption)}">`}
@@ -468,6 +502,7 @@ document.addEventListener('submit', async (e) => {
   }
 });
 addEventListener('resize', () => map?.invalidateSize());
+setInterval(() => { if (S && liveLeg(S.data.steps || [])) { drawMap(); renderTop(); } }, 60000);
 
 // ---------- Chargement + mise à jour automatique
 async function load(first = false) {

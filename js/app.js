@@ -603,8 +603,9 @@ function renderTripHeader(t) {
       <span class="trip-badge" style="--c:${t.color}">${MARK}</span>
       <div><h1>${esc(t.name)}</h1><small>${tripStart(t) ? fmtRange(tripStart(t), tripEnd(t)) + ' · ' : ''}<span class="st-${st.key}">${st.label}</span></small></div>
     </div>
-    <button class="icon-btn share-btn ${isShared(t) ? 'on' : ''}" data-act="share" aria-label="Partager le voyage" title="Partager avec vos proches">📤${newComments(t) ? `<i class="nb">${newComments(t)}</i>` : ''}</button>
-    <button class="btn sm my-trips" data-act="home"><span class="mt-ic">🧳</span><span>Mes voyages</span></button>`;
+    <button class="icon-btn share-btn ${isShared(t) ? 'on' : ''}" data-act="share" aria-label="Partager le voyage" title="Partager">📤</button>
+    <button class="icon-btn notif-btn" data-act="notifs" aria-label="Notifications${unreadNotifs(t) ? ` : ${unreadNotifs(t)} nouvelles` : ''}" title="Notifications">${BELL}${unreadNotifs(t) ? `<i class="nb">${unreadNotifs(t) > 99 ? '99+' : unreadNotifs(t)}</i>` : ''}</button>
+    <button class="icon-btn my-trips-ic" data-act="home" aria-label="Mes voyages" title="Mes voyages">🧳</button>`;
 }
 
 A.tab = (el) => go(`#/trip/${ui.tripId}/${el.dataset.tab}`);
@@ -627,10 +628,25 @@ function renderPanel() {
 function renderMap() {
   const t = T();
   if (!mapView || !t) return;
-  mapView.render(t, { selectedId: ui.drawer?.type === 'step' ? ui.drawer.id : null, selectedLegId: ui.drawer?.type === 'leg' ? ui.drawer.id : null, states: stepStates(t), routing: state.settings.routing });
+  mapView.render(t, { selectedId: ui.drawer?.type === 'step' ? ui.drawer.id : null, selectedLegId: ui.drawer?.type === 'leg' ? ui.drawer.id : null, states: stepStates(t), routing: state.settings.routing, live: liveLeg(t) });
   renderMapProgress(t);
 }
 
+
+// Trajet en cours : entre l'heure de départ et l'heure d'arrivée (ou la durée estimée)
+function liveLeg(t, now = Date.now()) {
+  for (let i = 1; i < t.steps.length; i++) {
+    const s = t.steps[i], tr = s.transport || {};
+    if (!tr.depart) continue;
+    const a = new Date(tr.depart).getTime();
+    const min = legInfo(t.steps[i - 1], s)?.min;
+    const b = tr.arrive ? new Date(tr.arrive).getTime() : min ? a + min * 60000 : null;
+    if (b && now >= a && now <= b) return { id: s.id, f: (now - a) / (b - a), to: s.name, mode: tr.mode };
+  }
+  return null;
+}
+// La carte suit le trajet en direct : on la redessine chaque minute pendant un trajet
+setInterval(() => { const t = T(); if (t && liveLeg(t) && $('#trip-layout')) renderMap(); }, 60000);
 
 // État de chaque étape selon la date du jour : faite, en cours, à venir
 function stepStates(t, d = todayStr()) {
@@ -660,6 +676,11 @@ function renderMapProgress(t) {
   else { head = `<b>Jour ${st.day}${st.tot ? ' / ' + st.tot : ''}</b><small>${fmtDayLong(todayStr())}</small>`; }
   if (st.key === 'now') {
     const night = stayForNight(t, todayStr());
+    const lv = liveLeg(t);
+    if (lv) {
+      const to = t.steps.find((x) => x.id === lv.id);
+      body = `<button class="mp-row live" data-act="open-leg" data-id="${lv.id}"><span class="mp-veh">${icon(to.transport?.mode || 'route')}</span><span><small>En route · ${Math.round(lv.f * 100)} % du trajet</small><b>Vers ${esc(to.name)}</b><span class="mp-legbar"><i style="width:${Math.round(lv.f * 100)}%"></i></span></span><i>›</i></button>`;
+    } else
     body = `${cur ? `<button class="mp-row" data-act="open-step" data-id="${cur.id}"><span class="mp-dot now"></span><span><small>Vous êtes à</small><b>${esc(cur.name)}</b>${night ? `<small>🛏️ ${esc(night.stay.name || 'Hébergement')}</small>` : ''}</span><i>›</i></button>` : ''}
       ${next ? `<button class="mp-row" data-act="open-step" data-id="${next.id}"><span class="mp-dot"></span><span><small>Ensuite${next.arrival ? ' · ' + fmtWeekday(next.arrival) : ''}</small><b>${esc(next.name)}</b></span><i>›</i></button>` : ''}`;
   } else if (st.key === 'soon' && t.steps[0]) {
@@ -725,6 +746,8 @@ function stepCardHTML(t, s, i, cur, today) {
   const nph = stepPhotos(t, s).length;
   if (nph) chips.push(`<button class="chip" data-act="open-step" data-id="${s.id}" data-focus="photos">📸 ${nph}</button>`);
   if (cost) chips.push(`<span class="chip">💶 ${fmtMoney(cost, t.currency)}</span>`);
+  const rx = reactions(t, [`step:${s.id}`, ...stepPhotos(t, s).map((p) => `photo:${p.id}`), ...t.photos.filter((p) => p.stepId === s.id && p.onLeg).map((p) => `photo:${p.id}`)]);
+  if (rx) chips.unshift(`<button class="chip rx ${rx.fresh ? 'new' : ''}" data-act="open-step" data-id="${s.id}" data-focus="photos" aria-label="Réactions de vos proches">${rxHTML(rx)}${rx.fresh ? '<em>nouveau</em>' : ''}</button>`);
   return `<article class="step ${status} ${ui.drawer?.type === 'step' && ui.drawer.id === s.id ? 'sel' : ''}" data-id="${s.id}">
     <div class="step-rail"><span class="num">${status === 'past' ? '✓' : i + 1}</span></div>
     <div class="step-main" data-act="open-step" data-id="${s.id}" tabindex="0">
@@ -2817,7 +2840,10 @@ async function addPhotos(files, { stepId = null, onLeg = false, day = null } = {
       const s = stepId ? t.steps.find((x) => x.id === stepId) : stepForPhoto(t, p);
       p.stepId = s?.id || null;
       // Sans GPS, ou GPS loin de l'étape choisie (photo prise ailleurs) : la photo est placée sur l'étape
-      if (s?.place && (p.lat == null || haversine({ lat: p.lat, lng: p.lng }, s.place) > 50)) { p.lat = s.place.lat; p.lng = s.place.lng; p.approx = true; }
+      const pv = onLeg && s ? t.steps[t.steps.indexOf(s) - 1] : null;
+      const home = pv?.place && s?.place ? { lat: (pv.place.lat + s.place.lat) / 2, lng: (pv.place.lng + s.place.lng) / 2 } : s?.place;
+      const limit = pv?.place && s?.place ? haversine(pv.place, s.place) / 2 + 50 : 50;
+      if (home && (p.lat == null || haversine({ lat: p.lat, lng: p.lng }, home) > limit)) { p.lat = home.lat; p.lng = home.lng; p.approx = true; }
       t.photos.push(p);
       added.push(p);
     } catch (e) {
@@ -2856,7 +2882,7 @@ function photosPaneHTML(t, s, leg = false, day = null) {
   return `
     <div class="ph-grid">
       <label class="ph add"><span>＋</span><small>Photo / vidéo</small><input type="file" accept="image/*,video/*" multiple data-ph-add data-step="${s.id}" data-leg="${leg ? 1 : 0}" data-day="${day || ''}" hidden></label>
-      ${ph.map((p) => `<button class="ph ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}" aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="${esc(p.caption)}">${isVideo(p) ? `<em>▶ ${fmtClip(p.duration)}</em>` : ''}${p.caption ? '<i>Aa</i>' : ''}</button>`).join('')}
+      ${ph.map((p) => `<button class="ph ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}" aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="${esc(p.caption)}">${isVideo(p) ? `<em>▶ ${fmtClip(p.duration)}</em>` : ''}${p.caption ? '<i>Aa</i>' : ''}${(() => { const r = reactions(t, [`photo:${p.id}`]); return r ? `<b class="ph-rx ${r.fresh ? 'new' : ''}">${rxHTML(r)}</b>` : ''; })()}</button>`).join('')}
     </div>
     <p class="hint">Touchez <b>＋</b> : choisissez dans votre photothèque, ou prenez une photo ou une vidéo.</p>
     <label class="fld"><span>${leg ? 'Récit du trajet' : 'Récit de l’étape'}</span><textarea data-f="${leg ? 'transport.story' : 'story'}" rows="6" placeholder="${leg ? 'La route, les paysages, les pauses, les galères…' : 'Racontez ce moment : ce que vous avez vu, mangé, ressenti…'} Vos amis le verront avec les photos."></textarea></label>`;
@@ -2952,6 +2978,64 @@ const ago = (iso) => {
   if (h < 24) return `il y a ${h} h`;
   return `il y a ${Math.round(h / 24)} j`;
 };
+// Réactions des proches sur une étape ou une photo (nouvelles = depuis la dernière ouverture des notifications)
+const RX_HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4 7.2 4c2 0 3.6 1.1 4.8 2.8C13.2 5.1 14.8 4 16.8 4c3.6 0 5.8 3.6 4.5 7.1-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>';
+const RX_CHAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.5a2 2 0 0 1-2 2H8l-4 3.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>';
+function reactions(t, targets) {
+  const f = fb[t.id];
+  if (!f) return null;
+  const set = new Set(targets), seen = t.share?.notifSeenAt || 0;
+  const likes = f.likes.filter((l) => set.has(l.target));
+  const comments = f.comments.filter((c) => set.has(c.target) && !c.is_owner);
+  if (!likes.length && !comments.length) return null;
+  const fresh = [...likes, ...comments].some((x) => x.created_at && new Date(x.created_at).getTime() > seen);
+  return { likes: likes.length, comments: comments.length, fresh };
+}
+const rxHTML = (r) => (r ? `${r.likes ? `<span>${RX_HEART}${r.likes}</span>` : ''}${r.comments ? `<span>${RX_CHAT}${r.comments}</span>` : ''}` : '');
+
+// Notifications : j'aime et commentaires des proches, du plus récent au plus ancien
+const BELL = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
+function notifList(t) {
+  const f = fb[t.id];
+  if (!f) return [];
+  const items = [
+    ...f.comments.filter((c) => !c.is_owner).map((c) => ({ kind: 'comment', who: c.author, body: c.body, target: c.target, at: c.created_at, reply: !!c.parent_id })),
+    ...f.likes.filter((l) => l.created_at).map((l) => ({ kind: 'like', who: l.author || 'Quelqu’un', target: l.target, at: l.created_at })),
+  ];
+  return items.sort((a, b) => b.at.localeCompare(a.at));
+}
+function unreadNotifs(t) {
+  const seen = t.share?.notifSeenAt || 0;
+  return notifList(t).filter((n) => new Date(n.at).getTime() > seen).length;
+}
+A.notifs = () => {
+  const t = T();
+  const seen = t.share?.notifSeenAt || 0;
+  const list = notifList(t);
+  const what = (target) => {
+    if (target === 'trip') return { label: 'votre voyage' };
+    const [k, id] = target.split(':');
+    if (k === 'step') { const s = t.steps.find((x) => x.id === id); return { label: `l’étape ${s?.name || ''}`, step: id }; }
+    const p = t.photos.find((x) => x.id === id);
+    return { label: p?.kind === 'video' ? 'votre vidéo' : 'votre photo', photo: p };
+  };
+  openModal(`
+    <h2>Notifications</h2>
+    ${!isShared(t) ? '<p class="hint">Partagez le voyage avec vos proches (Partager → Amis et famille) : leurs j’aime et commentaires apparaîtront ici.</p>' : ''}
+    <div class="nt-list">${list.map((n, i) => { const w = what(n.target); return `<button class="nt-row ${new Date(n.at).getTime() > seen ? 'new' : ''}" style="--i:${i}" ${w.photo ? `data-act="notif-photo" data-id="${w.photo.id}"` : w.step ? `data-act="open-step" data-id="${w.step}"` : 'data-act="share"'}>
+        <span class="nt-av">${esc((n.who || '?').slice(0, 1).toUpperCase())}<i class="${n.kind}">${n.kind === 'like' ? '<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9.3-9.4C1.4 7.6 3.6 4 7.2 4c2 0 3.6 1.1 4.8 2.8C13.2 5.1 14.8 4 16.8 4c3.6 0 5.8 3.6 4.5 7.1-1.8 4.8-9.3 9.4-9.3 9.4z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M20 15.5a2 2 0 0 1-2 2H8l-4 3.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>'}</i></span>
+        <span class="nt-txt"><span><b>${esc(n.who)}</b> ${n.kind === 'like' ? `a aimé ${w.label}` : n.reply ? `a répondu sur ${w.label}` : `a commenté ${w.label}`}</span>${n.body ? `<em>« ${esc(n.body.slice(0, 120))} »</em>` : ''}<small>${ago(n.at)}</small></span>
+        ${w.photo ? `<img class="nt-th" data-thumb="${w.photo.thumbId}" alt="">` : ''}
+      </button>`; }).join('') || (isShared(t) ? '<p class="muted nt-empty">Pas encore de réactions. Elles arriveront dès que vos proches aimeront ou commenteront vos photos.</p>' : '')}</div>
+    <div class="actions"><button class="btn primary" data-act="close-modal">Fermer</button></div>`, (m) => loadThumbs(m));
+  t.share ||= {};
+  t.share.notifSeenAt = Date.now();
+  save();
+  renderTripHeader(t);
+  pullFeedback(t);
+};
+A['notif-photo'] = (el) => { closeModal(); viewPhoto(el.dataset.id); };
+
 function newComments(t) {
   const f = fb[t.id];
   if (!f) return 0;
@@ -2999,6 +3083,7 @@ async function pullFeedback(t = T()) {
     fb[t.id] = { comments: d.comments || [], likes: d.likes || [] };
     if (t.id === ui.tripId) {
       renderTripHeader(t);
+      if ($('#trip-layout') && !document.activeElement?.matches?.('input, textarea')) renderPanel();
       if ($('#share-modal')) renderShareModal();
       if ($('#lb-thread')) renderLbThread();
     }

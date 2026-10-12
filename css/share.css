@@ -242,3 +242,8 @@
 .shx-welcome.out { animation: shxWelcomeOut .3s ease both; }
 @keyframes shxWelcome { from { opacity: 0; transform: translateY(-40%) scale(.9); } }
 @keyframes shxWelcomeOut { to { opacity: 0; transform: translateY(-60%) scale(.96); } }
+.shx-sub-h { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; font: 700 14.5px var(--font-display); color: #10231f; }
+.shx-sub-h .ico { width: 18px; height: 18px; color: #0b6f69; }
+.shx-sub-h small { margin-left: auto; font: 500 10.5px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.shx-here.live { color: #5fd0c8; font-weight: 700; }
+.shx-here.live .ico { animation: vehBob 1.6s ease-in-out infinite; }
