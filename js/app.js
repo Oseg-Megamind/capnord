@@ -2360,6 +2360,8 @@ A['item-ics'] = (el) => {
   const dt = (s) => s.replace(/[-:]/g, '').slice(0, 13) + '00';
   const end = new Date(new Date(it.due).getTime() + 30 * 60000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   const icsEsc = (s) => String(s || '').replace(/[\\;,]/g, (c) => '\\' + c).replace(/\n/g, '\\n');
+  // Aucun emoji dans l'agenda : texte seul
+  const noEmo = (x) => String(x || '').replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\uFE0F\u200D]/gu, '').replace(/\s{2,}/g, ' ').trim();
   const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Voyage//FR', 'BEGIN:VEVENT', `UID:${it.id}@voyage`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
     `DTSTART:${dt(it.due)}`, `DTEND:${dt(end)}`, `SUMMARY:${icsEsc('⏰ ' + it.text)}`, it.note ? `DESCRIPTION:${icsEsc(it.note)}` : '',
     'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(it.text)}`, 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].filter(Boolean).join('\r\n');
@@ -3491,26 +3493,28 @@ A['export-ics'] = () => {
   const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
   const dt = (s) => s.replace(/[-:]/g, '').slice(0, 13) + '00';
   const icsEsc = (s) => String(s || '').replace(/[\\;,]/g, (c) => '\\' + c).replace(/\n/g, '\\n');
+  // Aucun emoji dans l'agenda : texte seul
+  const noEmo = (x) => String(x || '').replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\uFE0F\u200D]/gu, '').replace(/\s{2,}/g, ' ').trim();
   const ev = [];
   const push = (id, summary, start, end, allDay, desc = '', loc = '') => ev.push([
     'BEGIN:VEVENT', `UID:${id}@voyage`, `DTSTAMP:${stamp}`,
     allDay ? `DTSTART;VALUE=DATE:${start.replace(/-/g, '')}` : `DTSTART:${dt(start)}`,
     allDay ? `DTEND;VALUE=DATE:${end.replace(/-/g, '')}` : `DTEND:${dt(end)}`,
-    `SUMMARY:${icsEsc(summary)}`, desc && `DESCRIPTION:${icsEsc(desc)}`, loc && `LOCATION:${icsEsc(loc)}`, 'END:VEVENT',
+    `SUMMARY:${icsEsc(noEmo(summary))}`, desc && `DESCRIPTION:${icsEsc(noEmo(desc))}`, loc && `LOCATION:${icsEsc(loc)}`, 'END:VEVENT',
   ].filter(Boolean).join('\r\n'));
   t.steps.forEach((s, i) => {
-    if (s.arrival) push(s.id, `${t.emoji} ${s.name}`, s.arrival, addDays(s.departure && s.departure > s.arrival ? s.departure : s.arrival, s.departure > s.arrival ? 0 : 1), true, s.notes, s.place?.label);
+    if (s.arrival) push(s.id, s.name || 'Étape', s.arrival, addDays(s.departure && s.departure > s.arrival ? s.departure : s.arrival, s.departure > s.arrival ? 0 : 1), true, s.notes, s.place?.label);
     const tr = s.transport;
     if (tr.mode && tr.depart) {
       const end = tr.arrive || new Date(new Date(tr.depart).getTime() + 3600_000).toISOString().slice(0, 16);
-      push(s.id + '-tr', `${MODES[tr.mode].icon} ${t.steps[i - 1]?.name || ''} → ${s.name}`, tr.depart, end, false, [tr.company, tr.ref && 'Réf. ' + tr.ref, tr.notes].filter(Boolean).join('\n'));
+      push(s.id + '-tr', `${MODES[tr.mode].label} · ${t.steps[i - 1]?.name || ''} → ${s.name}`, tr.depart, end, false, [tr.company, tr.ref && 'Réf. ' + tr.ref, tr.notes].filter(Boolean).join('\n'));
     }
     s.stays.forEach((st) => {
-      if (st.checkIn && st.checkOut) push(st.id, `🛏️ ${st.name || 'Hébergement'}`, st.checkIn, st.checkOut, true, [st.confirmation && 'Confirmation : ' + st.confirmation, st.phone, st.notes].filter(Boolean).join('\n'), st.place?.label);
+      if (st.checkIn && st.checkOut) push(st.id, `Nuit · ${st.name || 'Hébergement'}`, st.checkIn, st.checkOut, true, [st.confirmation && 'Confirmation : ' + st.confirmation, st.phone, st.notes].filter(Boolean).join('\n'), st.place?.label);
     });
     s.subs.forEach((x) => {
-      if (x.date && x.time) push(x.id, `${SUB_TYPES[x.type]?.icon || ''} ${x.name}`, `${x.date}T${x.time}`, new Date(new Date(`${x.date}T${x.time}`).getTime() + 5400_000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16), false, x.notes, x.place?.label);
-      else if (x.date) push(x.id, `${SUB_TYPES[x.type]?.icon || ''} ${x.name}`, x.date, addDays(x.date, 1), true, x.notes, x.place?.label);
+      if (x.date && x.time) push(x.id, x.name, `${x.date}T${x.time}`, new Date(new Date(`${x.date}T${x.time}`).getTime() + 5400_000 - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16), false, x.notes, x.place?.label);
+      else if (x.date) push(x.id, x.name, x.date, addDays(x.date, 1), true, x.notes, x.place?.label);
     });
   });
   download(`${slug(t.name)}.ics`, ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Voyage//FR', 'CALSCALE:GREGORIAN', ...ev, 'END:VCALENDAR'].join('\r\n'), 'text/calendar');
@@ -3520,14 +3524,14 @@ A.print = () => {
   const t = T();
   const c = tripCosts(t);
   $('#print-root').innerHTML = `
-    <h1>${esc(t.emoji)} ${esc(t.name)}</h1>
+    <h1>${esc(t.name)}</h1>
     <p>${fmtRange(tripStart(t), tripEnd(t))} · ${plural(t.steps.length, 'étape')} · ${plural(totalNights(t), 'nuit')} · ${fmtMoney(c.total, t.currency)}</p>
     ${t.steps.map((s, i) => { const tr = s.transport; return `<section>
-      ${tr.mode ? `<p class="p-tr">${MODES[tr.mode].icon} ${MODES[tr.mode].label}${tr.depart ? ' · ' + fmtDateTime(tr.depart) : ''}${tr.arrive ? ' → ' + fmtTime(tr.arrive) : ''}${tr.company ? ' · ' + esc(tr.company) : ''}${tr.ref ? ' · Réf. ' + esc(tr.ref) : ''}</p>` : ''}
+      ${tr.mode ? `<p class="p-tr">${MODES[tr.mode].label}${tr.depart ? ' · ' + fmtDateTime(tr.depart) : ''}${tr.arrive ? ' → ' + fmtTime(tr.arrive) : ''}${tr.company ? ' · ' + esc(tr.company) : ''}${tr.ref ? ' · Réf. ' + esc(tr.ref) : ''}</p>` : ''}
       <h2>${i + 1}. ${esc(s.name)} <small>${s.arrival ? fmtRange(s.arrival, s.departure) + ' · ' + n2(s) : ''}</small></h2>
       ${s.place ? `<p class="muted">${esc(s.place.label)}</p>` : ''}
-      ${s.stays.map((st) => `<p>🛏️ <b>${esc(st.name)}</b>${st.place ? ' — ' + esc(shortLabel(st.place.label)) : ''}${st.confirmation ? ' · Conf. ' + esc(st.confirmation) : ''}${st.phone ? ' · ' + esc(st.phone) : ''}${st.checkInTime ? ' · check-in ' + st.checkInTime : ''}</p>`).join('')}
-      ${s.subs.length ? `<ul>${s.subs.map((x) => `<li>${x.date ? fmtDay(x.date) + ' ' : ''}${x.time || ''} ${SUB_TYPES[x.type]?.icon || ''} ${esc(x.name)}${x.notes ? ' — ' + esc(x.notes) : ''}</li>`).join('')}</ul>` : ''}
+      ${s.stays.map((st) => `<p>Nuit : <b>${esc(st.name)}</b>${st.place ? ' — ' + esc(shortLabel(st.place.label)) : ''}${st.confirmation ? ' · Conf. ' + esc(st.confirmation) : ''}${st.phone ? ' · ' + esc(st.phone) : ''}${st.checkInTime ? ' · check-in ' + st.checkInTime : ''}</p>`).join('')}
+      ${s.subs.length ? `<ul>${s.subs.map((x) => `<li>${x.date ? fmtDay(x.date) + ' ' : ''}${x.time || ''} ${esc(x.name)}${x.notes ? ' — ' + esc(x.notes) : ''}</li>`).join('')}</ul>` : ''}
       ${s.notes ? `<p class="p-notes">${esc(s.notes)}</p>` : ''}
     </section>`; }).join('')}
     ${t.notes ? `<h2>Notes</h2><p class="p-notes">${esc(t.notes)}</p>` : ''}`;
