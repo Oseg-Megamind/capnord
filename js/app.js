@@ -147,12 +147,12 @@ function tripWarnings(t) {
     if (!stayForNight(t, d)) missing.push({ d, s });
   }
   if (missing.length) {
-    w.push({ icon: '🛏️', text: `${plural(missing.length, 'nuit')} sans hébergement : ${missing.slice(0, 4).map((m) => `${fmtDay(m.d)} (${esc(m.s.name || 'étape')})`).join(', ')}${missing.length > 4 ? '…' : ''}`, act: 'open-step', id: missing[0].s.id, focus: 'stays' });
+    w.push({ icon: '🛏️', text: `${plural(missing.length, 'nuit')} sans hébergement`, ...(missing.length > 1 ? { act: 'warn-list', kind: 'nights' } : { act: 'open-step', id: missing[0].s.id, focus: `night:${missing[0].d}` }) });
   }
   const todo = t.steps.flatMap((s) => s.stays.filter((x) => x.status === 'todo').map((x) => ({ s, x })));
-  if (todo.length) w.push({ icon: '⏳', text: `${plural(todo.length, 'hébergement')} encore à réserver`, act: 'open-step', id: todo[0].s.id, focus: 'stays' });
+  if (todo.length) w.push({ icon: '⏳', text: `${plural(todo.length, 'hébergement')} encore à réserver`, ...(todo.length > 1 ? { act: 'warn-list', kind: 'stays' } : { act: 'open-step', id: todo[0].s.id, focus: `stay:${todo[0].x.id}` }) });
   const ttodo = t.steps.filter((s) => s.transport.status === 'todo');
-  if (ttodo.length) w.push({ icon: '🎫', text: `${plural(ttodo.length, 'trajet')} encore à réserver`, act: 'open-leg', id: ttodo[0].id });
+  if (ttodo.length) w.push({ icon: '🎫', text: `${plural(ttodo.length, 'trajet')} encore à réserver`, ...(ttodo.length > 1 ? { act: 'warn-list', kind: 'legs' } : { act: 'open-leg', id: ttodo[0].id }) });
   for (let i = 1; i < t.steps.length; i++) {
     const p = t.steps[i - 1], s = t.steps[i];
     if (p.departure && s.arrival && s.arrival < p.departure) { w.push({ icon: '📅', text: `Dates qui se chevauchent entre « ${esc(p.name)} » et « ${esc(s.name)} »`, act: 'chain-dates', btn: 'Réaligner' }); break; }
@@ -648,7 +648,7 @@ function renderItin(t) {
       ${isRoad(t) ? '' : `<div><b>${km ? fmtKm(km) : '—'}</b><span>distance</span></div>`}
       <div><b>${fmtMoney(tripCosts(t).total, t.currency)}</b><span>coût</span></div>
     </div>
-    ${w.length ? `<div class="warns">${w.map((x) => `<button class="warn" data-act="${x.act}" data-id="${x.id || ''}" data-focus="${x.focus || ''}" data-tab="${x.tab || ''}"><span>${x.icon}</span><span>${x.text}</span>${x.btn ? `<b>${x.btn}</b>` : '<b>›</b>'}</button>`).join('')}</div>` : ''}
+    ${w.length ? `<div class="warns">${w.map((x) => `<button class="warn" data-act="${x.act}" data-id="${x.id || ''}" data-focus="${x.focus || ''}" data-tab="${x.tab || ''}" data-kind="${x.kind || ''}"><span>${x.icon}</span><span>${x.text}</span>${x.btn ? `<b>${x.btn}</b>` : '<b>›</b>'}</button>`).join('')}</div>` : ''}
     <div class="steps" id="steps">
       ${t.steps.map((s, i) => `${i ? connectorHTML(t, i) : ''}${stepCardHTML(t, s, i, cur, today)}`).join('')}
     </div>
@@ -728,6 +728,36 @@ function mountItin(t, p) {
 }
 
 A['open-step'] = (el) => openStepDrawer(el.dataset.id, el.dataset.focus || null);
+
+// Récap d'une alerte : on choisit la nuit, l'hébergement ou le trajet à compléter
+A['warn-list'] = (el) => {
+  const t = T();
+  const kind = el.dataset.kind;
+  let title = '', rows = [];
+  if (kind === 'nights') {
+    title = 'Nuits sans hébergement';
+    for (const s of t.steps) for (let k = 0; k < nights(s); k++) {
+      const d = addDays(s.arrival, k);
+      if (!stayForNight(t, d)) rows.push({ act: 'open-step', id: s.id, focus: `night:${d}`, main: `Nuit du ${fmtDay(d, { weekday: 'long', day: 'numeric', month: 'long' })}`, sub: `${s.name || 'Étape'} · jour ${tripDayNo(t, d)}`, ic: 'bed' });
+    }
+  } else if (kind === 'stays') {
+    title = 'Hébergements à réserver';
+    for (const s of t.steps) for (const x of s.stays.filter((y) => y.status === 'todo')) rows.push({ act: 'open-step', id: s.id, focus: `stay:${x.id}`, main: x.name || 'Hébergement', sub: `${s.name || 'Étape'}${x.checkIn ? ` · ${fmtDay(x.checkIn)}` : s.arrival ? ` · ${fmtDay(s.arrival)}` : ''}`, ic: 'bed' });
+  } else if (kind === 'legs') {
+    title = 'Trajets à réserver';
+    t.steps.forEach((s, i) => { if (i && s.transport.status === 'todo') rows.push({ act: 'open-leg', id: s.id, focus: '', main: `${t.steps[i - 1].name || 'Étape'} → ${s.name || 'Étape'}`, sub: `${MODES[s.transport.mode]?.label || 'Trajet'}${s.arrival ? ` · ${fmtDay(s.arrival)}` : ''}`, ic: 'route' }); });
+  }
+  openModal(`
+    <h2>${title}</h2>
+    <p class="hint">Touchez celle que vous voulez compléter.</p>
+    <div class="warn-recap">${rows.map((r) => `<button class="wr-row" data-act="warn-go" data-go="${r.act}" data-id="${r.id}" data-focus="${r.focus}"><span class="wr-ic">${icon(r.ic)}</span><span class="wr-txt"><b>${esc(r.main)}</b><small>${esc(r.sub)}</small></span><span class="wr-chev">›</span></button>`).join('')}</div>
+    <div class="actions"><button class="btn" data-act="close-modal">Fermer</button></div>`);
+};
+A['warn-go'] = (el) => {
+  closeModal();
+  if (el.dataset.go === 'open-leg') openLegDrawer(el.dataset.id);
+  else openStepDrawer(el.dataset.id, el.dataset.focus || null);
+};
 A['add-step'] = (el) => newStepModal(el.dataset.index != null ? +el.dataset.index : undefined);
 
 function newStepModal(index) {
@@ -858,7 +888,9 @@ function openStepDrawer(id, focus = null) {
   if (ui.drawer?.id !== id || ui.drawer?.type !== 'step') ui.dday = days0.includes(todayStr()) ? todayStr() : days0[0] || 'all';
   if (ui.dday === 'all' && days0.length) ui.dday = days0.includes(todayStr()) ? todayStr() : days0[0];
   // Raccourcis : « nuit à trouver » ouvre la Nuit, le lieu ouvre l'onglet Lieu
-  if (days0.length && (focus === 'stays' || focus?.startsWith('stay:'))) ui.dtab = 'night';
+  if (days0.length && (focus === 'stays' || focus?.startsWith('stay:') || focus?.startsWith('night:'))) ui.dtab = 'night';
+  if (focus?.startsWith('night:') && days0.includes(focus.slice(6))) ui.dday = focus.slice(6);
+  if (focus?.startsWith('stay:')) { const st = st0.stays.find((x) => x.id === focus.slice(5)); if (st?.checkIn && days0.includes(st.checkIn)) ui.dday = st.checkIn; }
   ui.drawer = { type: 'step', id };
   renderDrawer(true);
   refresh({ header: false });
