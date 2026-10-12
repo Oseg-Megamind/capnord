@@ -735,10 +735,19 @@ function newStepModal(index) {
   if (ui.addMode) setAddMode(false);
   const first = !t.steps.length;
   const tmp = { place: null };
+  const prevStep = t.steps[(index ?? t.steps.length) - 1];
+  const prevEnd = prevStep ? prevStep.departure || prevStep.arrival : '';
   openModal(`
     <h2>${first ? '🚩 Point de départ' : '📍 Nouvelle étape'}</h2>
     <div class="form" data-scope id="ns-form">
       ${placeFieldHTML(null, first ? 'D’où partez-vous ?' : 'Où allez-vous ?')}
+      <div class="ns-row">
+        ${first || !prevEnd ? `<label class="fld"><span>Arrivée le</span><input type="date" id="ns-arrival" value="${prevEnd || t.start || todayStr()}"></label>` : `<div class="fld"><span>Arrivée le</span><b class="ns-date">${fmtDayLong(prevEnd)}</b></div>`}
+        <div class="fld"><span>Jours sur place</span>
+          <div class="ns-days"><button type="button" class="ns-step" data-d="-1" aria-label="Un jour de moins">−</button><b id="ns-days">${first ? 0 : 1}</b><button type="button" class="ns-step" data-d="1" aria-label="Un jour de plus">＋</button></div>
+          <small class="hint" id="ns-days-h"></small>
+        </div>
+      </div>
       <div class="ns-quick">
         <button type="button" class="btn" data-act="ns-here">◎ Ma position actuelle</button>
         <button type="button" class="btn" data-act="ns-map">🗺️ Toucher la carte</button>
@@ -748,10 +757,19 @@ function newStepModal(index) {
     </div>
     <div class="actions"><button class="btn" data-act="close-modal">Annuler</button></div>`, (m) => {
     ui.nsIndex = index;
+    let days = first ? 0 : 1;
+    const showDays = () => {
+      $('#ns-days', m).textContent = days;
+      $('#ns-days-h', m).textContent = days === 0 ? 'De passage, sans nuit sur place' : `${plural(days, 'nuit')} sur place`;
+    };
+    $$('.ns-step', m).forEach((b) => (b.onclick = () => { days = Math.max(0, days + +b.dataset.d); showDays(); }));
+    showDays();
     const create = (p) => {
       const at = $('#ns-after', m) ? +$('#ns-after', m).value : t.steps.length;
+      const arrival = $('#ns-arrival', m)?.value || undefined;
+      ui.nsOpts = { days, arrival };
       closeModal();
-      const st = addStep(at, p);
+      const st = addStep(at, p, { days, arrival });
       ensureCurrency(T(), stepCurrency(st));
     };
     mountPlaceFields($('#ns-form', m), tmp, (p) => create(p));
@@ -769,6 +787,7 @@ function newStepModal(index) {
     };
     $('[data-act="ns-map"]', m).onclick = () => {
       ui.nsIndex = $('#ns-after', m) ? +$('#ns-after', m).value : undefined;
+      ui.nsOpts = { days, arrival: $('#ns-arrival', m)?.value || undefined };
       closeModal();
       if (isMobile() && ui.tab !== 'map') go(`#/trip/${ui.tripId}/map`);
       setTimeout(() => setAddMode(true), 150);
@@ -776,12 +795,13 @@ function newStepModal(index) {
   });
 }
 
-function addStep(index, place = null) {
+function addStep(index, place = null, opts = {}) {
   const t = T();
   const idx = index ?? t.steps.length;
   const prev = t.steps[idx - 1];
-  const arrival = prev ? prev.departure || prev.arrival : t.start || '';
-  const s = newStep({ arrival, departure: arrival ? addDays(arrival, 1) : '', place: place ? { lat: place.lat, lng: place.lng, label: place.label } : null, name: place?.name || '' });
+  const arrival = opts.arrival || (prev ? prev.departure || prev.arrival : t.start || '');
+  const nights = opts.days ?? 1; // autant de nuits que de jours sur place ; 0 = de passage
+  const s = newStep({ arrival, departure: arrival ? addDays(arrival, nights) : '', place: place ? { lat: place.lat, lng: place.lng, label: place.label, ...(place.cc ? { cc: place.cc } : {}) } : null, name: place?.name || '' });
   if (isRoad(t)) s.transport.mode = t.vehicle;
   else if (prev && idx > 0) s.transport.mode = prev.transport.mode || '';
   t.steps.splice(idx, 0, s);
@@ -793,8 +813,9 @@ function addStep(index, place = null) {
 async function addStepAt(latlng) {
   setAddMode(false);
   const p = await svc.reverse(latlng.lat, latlng.lng);
-  const s = addStep(ui.nsIndex, p);
+  const s = addStep(ui.nsIndex, p, ui.nsOpts || {});
   ui.nsIndex = undefined;
+  ui.nsOpts = undefined;
   toast(`Étape « ${esc(p.name)} » ajoutée`);
   ensureCurrency(T(), stepCurrency(s));
 }
@@ -920,7 +941,7 @@ function stepDrawerHTML(t, s) {
   </div>
   </div>
   ${days.length ? `<div class="dayline" role="tablist" aria-label="Jours de l’étape">
-    ${days.map((d, k) => `<button class="dl-day ${D === d ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="dday" data-d="${d}" role="tab" ${d === today ? 'aria-label="Aujourd’hui"' : ''}><small>Jour ${k + 1}</small><b>${fmtDay(d, { day: 'numeric' })}</b><small>${fmtDay(d, { weekday: 'short' })}</small></button>`).join('')}
+    ${days.map((d, k) => `<button class="dl-day ${D === d ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="dday" data-d="${d}" role="tab" ${d === today ? 'aria-label="Aujourd’hui"' : ''}><small>Jour ${tripDayNo(t, d)}</small><b>${fmtDay(d, { day: 'numeric' })}</b><small>${fmtDay(d, { weekday: 'short' })}</small></button>`).join('')}
   </div>` : ''}
   <nav class="dtabs" role="tablist">
     ${tabs
@@ -1032,6 +1053,9 @@ function stayHTML(t, s, st) {
 }
 
 // Jours d'une étape : Jour 1 = jour d'arrivée, autant de jours que de nuits (au moins 1)
+// Numéro du jour dans le voyage entier : Béziers jours 1-3, puis Agde jour 4…
+const tripDayNo = (t, d) => { const st = tripStart(t); return st ? diffDays(st, d) + 1 : 1; };
+
 function stepDays(s) {
   if (!s.arrival) return [];
   const n = Math.max(1, nights(s));
@@ -1050,7 +1074,7 @@ function subsGroupHTML(t, s, key, title, sub, list, ph) {
 }
 // Vue d'une journée : ses activités, puis les idées pas encore placées (à glisser dans la journée)
 function subsOfDayHTML(t, s, d) {
-  const k = stepDays(s).indexOf(d) + 1;
+  const k = tripDayNo(t, d);
   const byTime = (a, b) => (a.time || '99:99').localeCompare(b.time || '99:99');
   return subsGroupHTML(t, s, d, `Jour ${k}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), 'Ajouter une activité à cette journée…');
 }
@@ -1066,7 +1090,7 @@ function subsByDayHTML(t, s) {
   const inDays = new Set(days);
   const loose = s.subs.filter((x) => !x.date);
   const other = s.subs.filter((x) => x.date && !inDays.has(x.date));
-  return days.map((d, k) => group(d, `Jour ${k + 1}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), `Ajouter une activité au jour ${k + 1}…`)).join('')
+  return days.map((d) => group(d, `Jour ${tripDayNo(t, d)}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), `Ajouter une activité au jour ${tripDayNo(t, d)}…`)).join('')
     + (other.length ? `<div class="day-group other"><div class="day-h"><span class="day-n">Autres dates</span><small>en dehors de l’étape</small></div><div class="subs" data-subs-day="${other[0].date}">${other.map((x) => subHTML(t, s, x)).join('')}</div></div>` : '');
 }
 

@@ -1148,3 +1148,11 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 .drawer.dest .dayline { padding-top: 4px; }
 /* Jour sélectionné : tout le texte en blanc */
 .dayline button.on small, .dayline button.on.today small { color: rgba(255, 255, 255, .9) !important; }
+
+/* Nouvelle étape : arrivée + nombre de jours */
+.ns-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start; }
+.ns-date { font-size: 15px; padding: 10px 0; display: block; }
+.ns-date::first-letter { text-transform: uppercase; }
+.ns-days { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); height: 44px; }
+.ns-days b { font-size: 20px; min-width: 32px; text-align: center; }
+.ns-step { width: 44px; height: 42px; border: 0; background: none; font-size: 20px; font-weight: 700; color: var(--brand); }
