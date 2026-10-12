@@ -452,22 +452,21 @@ function featuredCard(t) {
   const st = tripStatus(t), c = tripCosts(t);
   const idx = currentStepIdx(t), s = t.steps[idx];
   const pct = st.tot ? Math.min(100, (st.day / st.tot) * 100) : 0;
-  return `<button class="feat-card" data-act="open-trip" data-id="${t.id}" data-tab="map" style="--c:${t.color}">
+  return `<div class="trip-wrap tw-feat"><button class="trip-more" data-act="trip-settings" data-id="${t.id}" aria-label="Paramètres du voyage ${esc(t.name)}">⋯</button><button class="feat-card" data-act="open-trip" data-id="${t.id}" data-tab="map" style="--c:${t.color}">
     <div class="fc-top"><span class="chip live-chip">● En cours</span><span class="fc-day">Jour ${st.day}${st.tot ? ' / ' + st.tot : ''}</span></div>
     <div class="fc-main"><span class="fc-emoji trip-badge light">${MARK}</span><div><h2>${esc(t.name)}</h2><p>${s ? `Vous êtes à <b>${esc(s.name)}</b>` : fmtRange(tripStart(t), tripEnd(t))}</p></div></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <div class="fc-meta"><span>📍 ${t.steps.length} étapes</span><span>🌙 ${totalNights(t)} nuits</span>${c.total ? `<span>💶 ${fmtMoney(c.total, t.currency)}</span>` : ''}<span class="fc-go">Ouvrir ›</span></div>
-  </button>`;
+  </button></div>`;
 }
 
 function tripRow(t) {
   const st = tripStatus(t), a = tripStart(t), b = tripEnd(t);
-  return `<button class="trip-row" data-act="open-trip" data-id="${t.id}" style="--c:${t.color}">
+  return `<div class="trip-wrap row"><button class="trip-row" data-act="open-trip" data-id="${t.id}" style="--c:${t.color}">
     <span class="tr-emoji trip-badge" style="--c:${t.color}">${MARK}</span>
     <span class="tr-main"><b>${esc(t.name)}</b><small>${isRoad(t) ? `${VEHICLES[t.vehicle].icon} Road trip · ` : ''}${a ? fmtRange(a, b) : 'Dates à définir'} · ${plural(t.steps.length, 'étape')}</small></span>
     <span class="chip st-${st.key}">${st.label}</span>
-    <span class="tr-chev">›</span>
-  </button>`;
+  </button><button class="trip-more" data-act="trip-settings" data-id="${t.id}" aria-label="Paramètres du voyage ${esc(t.name)}">⋯</button></div>`;
 }
 
 A['open-trip'] = (el) => go(`#/trip/${el.dataset.id}/${el.dataset.tab || 'itin'}`);
@@ -610,12 +609,11 @@ function renderTripHeader(t) {
   document.title = `${t.name} · Etapa`;
   $('#trip-layout').style.setProperty('--trip', t.color);
   el.innerHTML = `
-    <div class="trip-title" data-act="trip-settings" title="Options du voyage">
+    <div class="trip-title" data-act="trip-settings" role="button" tabindex="0" title="Paramètres du voyage">
       <span class="trip-badge" style="--c:${t.color}">${MARK}</span>
       <div><h1>${esc(t.name)}</h1><small>${t.collab ? `<span class="with">avec ${esc((t.collab.members || []).filter((m) => !m.me).map((m) => m.name).join(', ') || 'vos compagnons')}</span> · ` : ''}${tripStart(t) ? fmtRange(tripStart(t), tripEnd(t)) + ' · ' : ''}<span class="st-${st.key}">${st.label}</span></small></div>
     </div>
     <button class="icon-btn share-btn ${isShared(t) ? 'on' : ''}" data-act="share" aria-label="Partager le voyage" title="Partager avec vos proches">📤${newComments(t) ? `<i class="nb">${newComments(t)}</i>` : ''}</button>
-    <button class="icon-btn" data-act="trip-settings" aria-label="Options du voyage">⋯</button>
     <button class="btn sm my-trips" data-act="home"><span class="mt-ic">🧳</span><span>Mes voyages</span></button>`;
 }
 
@@ -3354,10 +3352,12 @@ A['share-stop'] = async () => {
 // =====================================================================
 // Options du voyage, export, import, impression, agenda
 // =====================================================================
-A['trip-settings'] = () => {
+A['trip-settings'] = (el) => {
+  if (el?.dataset?.id) ui.tripId = el.dataset.id; // depuis « Mes voyages »
   const t = T();
+  if (!t) return;
   openModal(`
-    <h2>Options du voyage</h2>
+    <h2>Paramètres du voyage</h2>
     <div class="form" data-scope id="f-trip">
       <label class="fld"><span>Nom du voyage</span><input data-f="name" placeholder="Nom du voyage"></label>
       <div class="grid2">
@@ -3399,6 +3399,7 @@ A['trip-settings'] = () => {
       if (path === 'vehicle' && prev) t.steps.forEach((s) => { if (s.transport.mode === prev) s.transport.mode = val; });
       if (path === 'kind' || path === 'vehicle') { $('.road-opts', m).classList.toggle('hidden', !isRoad(t)); $('[data-f=conso]', m).placeholder = VEHICLES[t.vehicle].conso; }
       refresh();
+      if (!$('#trip-layout')) renderHome(); // ouvert depuis « Mes voyages »
     });
   });
 };
