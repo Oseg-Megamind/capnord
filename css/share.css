@@ -382,9 +382,11 @@ body.kb-open .shx-sheet, body.kb-open .shx-sheet.peek, body.kb-open .shx-sheet.h
   position: fixed; top: var(--vvt, 0px); bottom: auto; height: var(--vvh, 100dvh); transform: none; border-radius: 0; transition: none;
 }
 body.kb-open .shx-sheet .shx-body { padding-bottom: 12px; }
-body.kb-open .shx-viewer { inset: auto 0 auto 0; top: var(--vvt, 0px); height: var(--vvh, 100dvh); }
-body.kb-open .shx-viewer .shx-v-media { flex: 0 1 28%; min-height: 0; }
-body.kb-open .shx-viewer .shx-v-info { flex: 1 1 auto; max-height: none; padding-bottom: 10px; }
+/* Visionneuse : rien ne change de taille, le contenu glisse simplement vers le haut au-dessus du clavier */
+body.kb-open .shx-viewer { overflow-y: auto; overscroll-behavior: contain; }
+body.kb-open .shx-viewer .shx-v-top, body.kb-open .shx-viewer .shx-v-dots { flex: none; }
+body.kb-open .shx-viewer .shx-v-media { flex: none; height: var(--media-h, 55vh); }
+body.kb-open .shx-viewer .shx-v-info { flex: none; max-height: none; overflow: visible; padding-bottom: calc(var(--kb, 0px) + 16px); }
 body.kb-open .sx-bar { display: none; }
 .cm-form input { font-size: 16px; }
 body.kb-open .shx-welcome { display: none; }

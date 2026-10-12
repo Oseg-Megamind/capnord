@@ -706,10 +706,18 @@ else {
   const sync = () => {
     const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
     const open = kb > 80 && document.activeElement?.matches?.('input, textarea');
+    // On mémorise la taille de la photo avant l'ouverture du clavier : elle ne doit pas rétrécir
+    if (open && !document.body.classList.contains('kb-open')) { const m = document.querySelector('.shx-viewer .shx-v-media'); if (m) root.style.setProperty('--media-h', `${m.offsetHeight}px`); }
     root.style.setProperty('--vvh', `${vv.height}px`);
     root.style.setProperty('--vvt', `${vv.offsetTop}px`);
+    root.style.setProperty('--kb', `${kb}px`);
     document.body.classList.toggle('kb-open', !!open);
-    if (open) requestAnimationFrame(() => document.activeElement?.scrollIntoView?.({ block: 'nearest' }));
+    if (open) requestAnimationFrame(() => {
+      const a = document.activeElement, v = a?.closest?.('.shx-viewer');
+      if (v) { const r = a.getBoundingClientRect(), limit = vv.offsetTop + vv.height - 12; if (r.bottom > limit) v.scrollTop += r.bottom - limit; }
+      else a?.scrollIntoView?.({ block: 'nearest' });
+    });
+    else document.querySelector('.shx-viewer')?.scrollTo?.(0, 0);
   };
   vv.addEventListener('resize', sync);
   vv.addEventListener('scroll', sync);
