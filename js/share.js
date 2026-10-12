@@ -178,26 +178,54 @@ function renderTop() {
 function renderSheet() {
   const body = $('#sheet-body');
   const keep = body.scrollTop;
+  const strip0 = $('#strip')?.scrollLeft;
   body.innerHTML = ui.view === 'step' && stepById(ui.stepId) ? stepView(stepById(ui.stepId)) : homeView();
   body.scrollTop = ui.first ? 0 : keep;
+  const strip = $('#strip');
+  if (strip) {
+    if (strip0 != null && !ui.first && !ui.centerStrip) strip.scrollLeft = strip0;
+    else { const c = $('.shx-cw.now, .shx-cw.go', strip) || $$('.shx-cw.done', strip).at(-1); if (c) strip.scrollLeft = c.offsetLeft - (strip.clientWidth - c.offsetWidth) / 2; }
+    ui.centerStrip = false;
+  }
 }
 
 function homeView() {
   const D = S.data, steps = D.steps || [], idx = currentIdx(steps), today = todayStr();
   const photos = photosAll();
   const recent = photos.slice().reverse().slice(0, 12);
+  const ld = lastDone(steps, today), live = liveLeg(steps);
+  // État de chaque étape : visitée, en cours (ou en route vers), à venir
+  const stateOf = (i) => (live && i === live.i ? 'go' : i === idx && !live ? 'now' : i <= ld ? 'done' : 'todo');
+  const label = { done: 'Visitée', now: 'Ici maintenant', go: 'En route', todo: 'À venir' };
   const card = (s, i) => {
-    const c = coverOf(s), n = stepPhotos(s.id).length, done = i <= lastDone(steps, today);
+    const c = coverOf(s), n = stepPhotos(s.id).length, st = stateOf(i);
     const t = `step:${s.id}`;
-    return `<button class="shx-card ${i === idx ? 'now' : ''} ${done ? '' : 'todo'}" data-step="${s.id}" style="--i:${i}">
+    return `<div class="shx-cw ${st}" style="--i:${i}">
+      <span class="shx-rail"><i></i><em>${label[st]}</em></span>
+      <button class="shx-card ${st === 'now' || st === 'go' ? 'now' : ''} ${st === 'todo' ? 'todo' : ''}" data-step="${s.id}">
       <span class="shx-card-img">${c ? `<img src="${urlOf(c.path, true)}" alt="" loading="lazy">` : `<span class="shx-card-ph">${icon('pin')}</span>`}
-        <em class="shx-num">${i + 1}</em>${i === idx ? '<em class="shx-nowtag">Ici maintenant</em>' : ''}</span>
+        <em class="shx-num">${st === 'done' ? '✓' : i + 1}</em></span>
       <span class="shx-card-txt"><b>${esc(s.name)}</b><small>${i === 0 && !s.arrival ? 'Départ' + (D.start ? ' · ' + stepDate(s, i, D) : '') : stepDate(s, i, D)}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</small>
         <span class="shx-mini">${n ? `<span>${icon('camera')}${n}</span>` : ''}${likesOf(t).length ? `<span>${P.heart}${likesOf(t).length}</span>` : ''}${commentsOf(t).length ? `<span>${P.chat}${commentsOf(t).length}</span>` : ''}</span></span>
-    </button>`;
+      </button></div>`;
   };
+  // Encart « où en est-on » : maintenant, ensuite, et une frise avec une case par étape
+  const curI = live ? live.i : idx >= 0 ? idx : -1;
+  const next = steps[(live ? live.i : idx) + 1] || (curI < 0 ? steps[ld + 1] : null);
+  const st0 = status(D);
+  const where = st0.key === 'soon' ? `<b>Départ ${esc(st0.label.toLowerCase().replace('départ ', ''))}</b><small>Première étape : ${esc(steps[0]?.name || '')}</small>`
+    : st0.key === 'past' ? `<b>Voyage terminé</b><small>${plural(steps.length, 'étape')} · ${plural(photos.length, 'photo')}</small>`
+      : live ? `<b>En route vers ${esc(steps[live.i].name)}</b><small>Depuis ${esc(steps[live.i - 1]?.name || '')} · ${Math.round(live.f * 100)} % du trajet</small>`
+        : curI >= 0 ? `<b>À ${esc(steps[curI].name)}</b><small>Étape ${curI + 1} sur ${steps.length}${nights(steps[curI]) ? ` · jusqu’au ${fmtDay(steps[curI].departure, { day: 'numeric', month: 'short' })}` : ''}</small>`
+          : `<b>Entre deux étapes</b><small>Dernière : ${esc(steps[ld]?.name || '')}</small>`;
+  const prog = `<div class="shx-where">
+      <div class="shx-where-top"><span class="shx-where-ic ${live ? 'go' : ''}">${live ? icon(steps[live.i].mode || 'route') : icon('pin')}</span><span class="shx-where-txt">${where}</span>${curI >= 0 ? `<button class="shx-where-go" data-step="${steps[curI].id}">Voir ›</button>` : ''}</div>
+      <div class="shx-segs">${steps.map((s, i) => `<button class="shx-seg ${stateOf(i)}" data-step="${s.id}" aria-label="${esc(s.name)}" title="${esc(s.name)}"><i></i></button>`).join('')}</div>
+      <div class="shx-segs-lbl"><span>${esc(steps[0]?.name || '')}</span>${next ? `<span class="nx">Ensuite : <b>${esc(next.name)}</b>${next.arrival ? ' · ' + fmtDay(next.arrival, { weekday: 'short', day: 'numeric', month: 'short' }) : ''}</span>` : ''}<span>${esc(steps.at(-1)?.name || '')}</span></div>
+    </div>`;
   return `
-    <div class="shx-sec-h"><h2>Étapes</h2><small>${steps.length} étapes · ${photos.length} photos</small></div>
+    ${prog}
+    <div class="shx-sec-h"><h2>Étapes</h2><small>${Math.max(0, ld + 1)} / ${steps.length} visitées · ${plural(photos.length, 'photo')}</small></div>
     <div class="shx-strip" id="strip">${steps.map(card).join('')}</div>
 
     ${recent.length ? `<div class="shx-sec-h"><h2>Derniers moments</h2><small>Touchez pour aimer et commenter</small></div>
@@ -316,7 +344,7 @@ function drawMap() {
     else map.setView([30, 0], 2);
   }
 }
-const sheetPad = () => (innerWidth >= 900 ? 0 : Math.round(innerHeight * 0.38));
+const sheetPad = () => (innerWidth >= 900 ? 0 : Math.round(innerHeight * 0.48));
 // Vole jusqu'à un lieu en le gardant au-dessus du tiroir
 function flyTo(place, zoom = 11) {
   if (!place) return;
@@ -370,7 +398,7 @@ function openStep(id) {
   flyTo(s.place, 12);
 }
 function goHome() {
-  ui.view = 'home'; ui.stepId = null;
+  ui.view = 'home'; ui.stepId = null; ui.centerStrip = true;
   const body = $('#sheet-body');
   body.classList.remove('slide-in'); void body.offsetWidth; body.classList.add('slide-in');
   renderSheet();

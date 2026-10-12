@@ -60,7 +60,7 @@
 /* Tiroir */
 .shx-sheet { --h: 92dvh; position: absolute; z-index: 700; left: 0; right: 0; bottom: 0; height: var(--h); background: #f3f5f0; border-radius: 22px 22px 0 0; box-shadow: 0 -10px 40px rgba(16, 35, 31, .22); display: flex; flex-direction: column;
   transform: translateY(calc(var(--h) - var(--peek) + var(--drag, 0px))); transition: transform .45s cubic-bezier(.2, .9, .25, 1.05); }
-.shx-sheet.peek { --peek: 40dvh; }
+.shx-sheet.peek { --peek: 50dvh; }
 .shx-sheet.half { --peek: 60dvh; }
 .shx-sheet.full { --peek: calc(var(--h) - 0px); }
 .shx-sheet.full { transform: translateY(calc(var(--drag, 0px))); }
@@ -245,3 +245,42 @@
 .shx-sub-h small { margin-left: auto; font: 500 10.5px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .shx-here.live { color: #5fd0c8; font-weight: 700; }
 .shx-here.live .ico { animation: vehBob 1.6s ease-in-out infinite; }
+
+/* « Où en est-on » : maintenant, ensuite, une case par étape */
+.shx-where { background: #10231f; color: #e6ece6; border-radius: 18px; padding: 14px; margin: 2px 0 6px; display: flex; flex-direction: column; gap: 10px; animation: shxUp .5s both; }
+.shx-where-top { display: flex; align-items: center; gap: 10px; }
+.shx-where-ic { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #5fd0c8; color: #10231f; animation: shxPulse 2.4s infinite; }
+.shx-where-ic.go { animation: vehPulse 1.8s infinite, vehBob 2.4s ease-in-out infinite; }
+.shx-where-ic .ico { width: 20px; height: 20px; }
+.shx-where-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.shx-where-txt b { font: 800 18px/1.15 var(--font-display); font-stretch: 112%; color: #fff; }
+.shx-where-txt small { font: 500 10.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: #9fb3ad; }
+.shx-where-go { flex: none; border: 1.5px solid rgba(230, 236, 230, .3); background: none; color: #5fd0c8; border-radius: 99px; padding: 6px 12px; font-weight: 700; cursor: pointer; }
+.shx-segs { display: flex; gap: 3px; }
+.shx-seg { flex: 1; height: 22px; border: 0; padding: 0; background: none; cursor: pointer; display: grid; align-items: center; }
+.shx-seg i { display: block; height: 6px; border-radius: 3px; background: rgba(230, 236, 230, .16); transition: transform .2s; }
+.shx-seg.done i { background: #e6ece6; }
+.shx-seg.now i, .shx-seg.go i { background: #5fd0c8; height: 10px; box-shadow: 0 0 0 3px rgba(95, 208, 200, .3); animation: shxBlink 1.6s infinite; }
+.shx-seg.go i { background: repeating-linear-gradient(90deg, #5fd0c8 0 6px, transparent 6px 10px); background-size: 20px 10px; animation: segFlow .8s linear infinite; }
+@keyframes segFlow { to { background-position: 20px 0; } }
+.shx-seg:hover i { transform: scaleY(1.4); }
+.shx-segs-lbl { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; color: #9fb3ad; }
+.shx-segs-lbl span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shx-segs-lbl .nx { flex: 1; text-align: center; color: #c9d6d1; }
+.shx-segs-lbl .nx b { color: #fff; }
+
+/* Frise des étapes reliées par un rail */
+.shx-strip { gap: 0; padding-top: 4px; }
+.shx-cw { flex: 0 0 158px; scroll-snap-align: center; display: flex; flex-direction: column; gap: 8px; padding-right: 10px; animation: shxUp .5s cubic-bezier(.2, .8, .3, 1) both; animation-delay: calc(var(--i) * 60ms); }
+.shx-cw .shx-card { flex: none; width: 100%; animation: none; }
+.shx-rail { position: relative; height: 26px; display: flex; align-items: center; gap: 6px; }
+.shx-rail::before { content: ''; position: absolute; left: 0; right: -10px; top: 8px; height: 3px; background: #10231f; }
+.shx-cw.todo .shx-rail::before, .shx-cw.now .shx-rail::before { background: repeating-linear-gradient(90deg, #9fb3ad 0 5px, transparent 5px 10px); }
+.shx-cw.go .shx-rail::before { background: repeating-linear-gradient(90deg, #5fd0c8 0 8px, transparent 8px 14px); background-size: 28px 3px; animation: segFlow .8s linear infinite; }
+.shx-cw:last-child .shx-rail::before { right: auto; width: 20px; }
+.shx-rail i { position: relative; z-index: 1; width: 16px; height: 16px; border-radius: 50%; background: #10231f; border: 3px solid #10231f; flex: none; align-self: flex-start; }
+.shx-cw.now .shx-rail i, .shx-cw.go .shx-rail i { background: #5fd0c8; animation: shxPulse 2.4s infinite; }
+.shx-cw.todo .shx-rail i { background: #f3f5f0; border: 2.5px dashed #9fb3ad; }
+.shx-rail em { position: relative; z-index: 1; align-self: flex-start; margin-top: -1px; font: 700 9.5px var(--mono); font-style: normal; letter-spacing: .05em; text-transform: uppercase; color: #4e6660; background: #f3f5f0; padding: 0 5px; }
+.shx-cw.now .shx-rail em, .shx-cw.go .shx-rail em { color: #0b6f69; }
+.shx-cw.done .shx-num { background: #10231f; color: #ecefe8; }
