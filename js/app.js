@@ -2889,6 +2889,7 @@ function photosPaneHTML(t, s, leg = false, day = null) {
 }
 
 // ---------- Visionneuse plein écran
+const GEAR = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 function viewPhoto(id) {
   const t = T();
   const p = t.photos.find((x) => x.id === id);
@@ -2903,21 +2904,26 @@ function viewPhoto(id) {
       ${i > 0 ? `<button class="lb-nav prev" data-act="view-photo" data-id="${list[i - 1].id}" aria-label="Photo précédente">‹</button>` : ''}
       ${i < list.length - 1 ? `<button class="lb-nav next" data-act="view-photo" data-id="${list[i + 1].id}" aria-label="Photo suivante">›</button>` : ''}
       <button class="lb-close" data-act="close-modal" aria-label="Fermer">✕</button>
+      <button class="lb-gear" id="lb-gear" aria-label="Paramètres de la photo" aria-expanded="false">${GEAR}</button>
+      <div class="lb-menu hidden" id="lb-menu" role="menu">
+        <label class="lb-mi"><span>${icon('pin')} Étape</span><select id="lb-step" aria-label="Étape">${t.steps.map((x) => `<option value="${x.id}" ${x.id === p.stepId ? 'selected' : ''}>${esc(x.name || 'Étape')}</option>`).join('')}</select></label>
+        <button class="lb-mi" data-act="photo-cover" data-id="${p.id}">${icon('camera')}<span>${s?.coverId === p.id ? 'Photo de couverture (choisie)' : 'Mettre en photo de couverture'}</span></button>
+        <button class="lb-mi danger" data-act="del-photo" data-id="${p.id}">${icon('trash')}<span>Supprimer ${isVideo(p) ? 'la vidéo' : 'la photo'}</span></button>
+      </div>
       <div class="lb-info" data-scope id="lb-info">
         <div class="lb-meta">${i + 1}/${list.length} · ${when}${s ? ` · ${p.onLeg ? '🛣️ trajet vers' : '📍'} ${esc(s.name)}` : ''}${p.approx ? ' <small>(position approximative)</small>' : ''}</div>
         <input class="lb-caption" data-f="caption" placeholder="Ajouter une légende…" aria-label="Légende">
-        <div class="lb-actions">
-          <select id="lb-step" aria-label="Étape">${t.steps.map((x) => `<option value="${x.id}" ${x.id === p.stepId ? 'selected' : ''}>${esc(x.name || 'Étape')}</option>`).join('')}</select>
-          <button class="btn sm" data-act="photo-cover" data-id="${p.id}">${s?.coverId === p.id ? '★ Couverture' : '☆ Couverture'}</button>
-          <button class="btn sm danger" data-act="del-photo" data-id="${p.id}">Supprimer</button>
-        </div>
         ${isShared(t) ? `<div id="lb-thread" class="lb-thread" data-id="${p.id}"></div>` : ''}
       </div>
     </div>`, async (m) => {
     m.closest('#modal-root').classList.add('dark');
     renderLbThread();
     bindFields($('#lb-info', m), p, () => refresh({ map: false, header: false }));
-    $('#lb-step', m).onchange = (e) => { p.stepId = e.target.value; commit(); viewPhoto(p.id); if (ui.drawer) renderDrawer(); };
+    $('#lb-step', m).onchange = (e) => { p.stepId = e.target.value; commit(); viewPhoto(p.id); if (ui.drawer) renderDrawer(); toast('Photo déplacée'); };
+    // Molette : ouvre / ferme le petit menu de la photo
+    const gear = $('#lb-gear', m), menu = $('#lb-menu', m);
+    gear.onclick = (e) => { e.stopPropagation(); const open = menu.classList.toggle('hidden') === false; gear.setAttribute('aria-expanded', open); };
+    m.addEventListener('click', (e) => { if (!menu.classList.contains('hidden') && !e.target.closest('#lb-menu, #lb-gear')) { menu.classList.add('hidden'); gear.setAttribute('aria-expanded', 'false'); } });
     const media = $('.lb-img img, .lb-img video', m);
     const th = await getFile(p.thumbId).catch(() => null);
     if (th) media[isVideo(p) ? 'poster' : 'src'] = URL.createObjectURL(th);

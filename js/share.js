@@ -195,14 +195,14 @@ function homeView() {
   const recent = photos.slice().reverse().slice(0, 12);
   const ld = lastDone(steps, today), live = liveLeg(steps);
   // État de chaque étape : visitée, en cours (ou en route vers), à venir
-  const stateOf = (i) => (live && i === live.i ? 'go' : i === idx && !live ? 'now' : i <= ld ? 'done' : 'todo');
-  const label = { done: 'Visitée', now: 'Ici maintenant', go: 'En route', todo: 'À venir' };
+  const stateOf = (i) => (live && i === live.i ? 'go' : i === idx && !live ? 'now' : i <= ld ? 'done' : i === ld + 1 && !live ? 'next' : 'todo');
+  const label = { done: 'Visitée', now: 'Ici maintenant', go: 'En route', next: 'Ensuite', todo: 'À venir' };
   const card = (s, i) => {
     const c = coverOf(s), n = stepPhotos(s.id).length, st = stateOf(i);
     const t = `step:${s.id}`;
     return `<div class="shx-cw ${st}" style="--i:${i}">
       <span class="shx-rail"><i></i><em>${label[st]}</em></span>
-      <button class="shx-card ${st === 'now' || st === 'go' ? 'now' : ''} ${st === 'todo' ? 'todo' : ''}" data-step="${s.id}">
+      <button class="shx-card ${st === 'now' || st === 'go' ? 'now' : ''} ${st === 'todo' || st === 'next' ? 'todo' : ''} ${st === 'next' ? 'nextc' : ''}" data-step="${s.id}">
       <span class="shx-card-img">${c ? `<img src="${urlOf(c.path, true)}" alt="" loading="lazy">` : `<span class="shx-card-ph">${icon('pin')}</span>`}
         <em class="shx-num">${st === 'done' ? '✓' : i + 1}</em></span>
       <span class="shx-card-txt"><b>${esc(s.name)}</b><small>${i === 0 && !s.arrival ? 'Départ' + (D.start ? ' · ' + stepDate(s, i, D) : '') : stepDate(s, i, D)}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</small>
@@ -326,7 +326,7 @@ function drawMap() {
         : { color: '#10231f', weight: 2.5, opacity: 0.55, dashArray: '2 8', lineCap: 'round', interactive: false }).addTo(layer);
     }
     prev = p;
-    const cls = i === idx && !live ? 'now' : done ? 'past' : 'todo';
+    const cls = i === idx && !live ? 'now' : done ? 'past' : i === lastDone(steps, today) + 1 ? 'todo next' : 'todo';
     L.marker(p, { zIndexOffset: i === idx ? 3000 : 0, icon: L.divIcon({ className: 'mk-wrap', iconSize: [34, 34], iconAnchor: [17, 17],
       html: `<div class="shx-st ${cls} ${anim ? 'in' : ''}" style="--d:${k++ * 90}ms"><span>${i + 1}</span>${i === idx && !live ? `<b>${esc(D.author || 'Ici')} est ici</b>` : ''}</div>` }) })
       .on('click', () => openStep(s.id)).addTo(layer);
