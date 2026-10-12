@@ -589,7 +589,8 @@ function renderPanel() {
   const top = changed ? 0 : p.scrollTop;
   ui.panelTab = tab;
   p.innerHTML = { itin: renderItin, budget: renderBudget, lists: renderLists, docs: renderDocs }[tab](t);
-  ({ itin: mountItin, budget: null, lists: mountLists, docs: mountDocs })[tab]?.(t, p);
+  ui.panelFresh = changed;
+  ({ itin: mountItin, budget: mountBudget, lists: mountLists, docs: mountDocs })[tab]?.(t, p);
   if (changed) p.firstElementChild?.classList.add('fresh');
   loadThumbs(p);
   p.scrollTop = top;
@@ -1696,59 +1697,72 @@ A.prefetch = async (el) => {
 // =====================================================================
 // Onglet Budget
 // =====================================================================
+// Monnaies utiles au voyage : celle du voyage + celles des pays visités et des taux connus
+function budgetCurs(t) {
+  const known = Object.keys(t.rates).filter((k) => t.rates[k] > 0);
+  return [...new Set([t.currency, ...t.steps.map(stepCurrency).filter((k) => k && known.includes(k)), ...known])];
+}
+// Convertit d'une monnaie à une autre en passant par la monnaie du voyage
+const convTo = (t, amount, from, to) => {
+  const base = conv(t, amount, from);
+  if (to === t.currency) return base;
+  return t.rates[to] ? base / t.rates[to] : null;
+};
+function quickCurs(t) {
+  const curs = budgetCurs(t);
+  const cs = t.steps[currentStepIdx(t)];
+  const local = [stepCurrency(cs), ...t.steps.map(stepCurrency)].find((k) => k && k !== t.currency && curs.includes(k)) || curs.find((k) => k !== t.currency) || t.currency;
+  ui.qa ||= {};
+  if (!ui.qa.from || !curs.includes(ui.qa.from)) ui.qa.from = local;
+  const to = ui.qa.from === t.currency ? (local !== t.currency ? local : null) : t.currency;
+  return { curs, from: ui.qa.from, to };
+}
+
 function renderBudget(t) {
   const c = tripCosts(t), cur = t.currency;
-  // Monnaies des pays visités (avec un taux connu) : le budget y est converti automatiquement
-  const localCurs = [...new Set(t.steps.map(stepCurrency))].filter((k) => k && k !== cur && t.rates[k] > 0);
   const pct = t.budget ? Math.min(100, (c.total / t.budget) * 100) : 0;
   const over = t.budget && c.total > t.budget;
   const days = tripStart(t) && tripEnd(t) ? diffDays(tripStart(t), tripEnd(t)) + 1 : null;
-  const maxCat = Math.max(1, ...Object.values(c.cats));
-  const exps = [...t.expenses].sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.t - a.t);
-  const byDay = {};
-  exps.forEach((e) => (byDay[e.date || ''] ||= []).push(e));
-  const foreign = [...new Set(t.expenses.map((e) => e.currency).filter((x) => x && x !== cur))];
-  return `
-  <div class="budget">
-    <div class="card budget-hero">
-      <div class="bh-top">
-        <div><small class="eyebrow">Coût total</small><div class="big">${fmtMoney(c.total, cur)}</div></div>
-        <div class="right"><small class="eyebrow">Budget</small><div class="mid">${t.budget ? fmtMoney(t.budget, cur) : `<button class="link" data-act="trip-settings">Définir</button>`}</div></div>
+  const { curs, from, to } = quickCurs(t);
+  const local = from !== cur ? from : to;
+  const inLocal = (v) => (local && t.rates[local] ? fmtMoney(v / t.rates[local], local) : '');
+  const tab = ui.btab || 'exp';
+  const rate = (k) => (t.rates[k] ? (1 / t.rates[k]).toLocaleString('fr-FR', { maximumSignificantDigits: 4 }) : '?');
+  const catIc = (k) => EXP_CATS[k]?.icon || '💼';
+
+  // ----- Contenu des sous-onglets
+  let pane = '';
+  if (tab === 'exp') {
+    const exps = [...t.expenses].sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.t - a.t);
+    const byDay = {};
+    exps.forEach((e) => (byDay[e.date || ''] ||= []).push(e));
+    pane = Object.entries(byDay).map(([d, list]) => `<div class="exp-day"><div class="exp-dh"><small class="eyebrow">${d ? fmtDay(d, { weekday: 'long', day: 'numeric', month: 'long' }) : 'Sans date'}</small><b>${fmtMoney(list.reduce((n, e) => n + conv(t, e.amount, e.currency), 0), cur)}</b></div>
+      ${list.map((e) => `<button class="exp ${e.id === ui.qaLast ? 'just' : ''}" data-act="edit-expense" data-id="${e.id}"><span class="exp-ic">${catIc(e.category)}</span><span class="exp-l">${esc(e.label || EXP_CATS[e.category]?.label || 'Dépense')}<small>${esc([EXP_CATS[e.category]?.label, t.steps.find((s) => s.id === e.stepId)?.name].filter(Boolean).join(' · '))}</small></span><b>${fmtMoney(e.amount, e.currency || cur)}${e.currency && e.currency !== cur ? `<small>${fmtMoney(conv(t, e.amount, e.currency), cur)}</small>` : ''}</b></button>`).join('')}
+    </div>`).join('') || '<p class="bg-empty">Aucune dépense pour l’instant. Tapez un montant au-dessus, puis touchez sa catégorie.</p>';
+  } else if (tab === 'cats') {
+    const rows = Object.entries(EXP_CATS).filter(([k]) => c.cats[k] > 0).sort((a, b) => c.cats[b[0]] - c.cats[a[0]]);
+    const max = Math.max(1, ...rows.map(([k]) => c.cats[k]));
+    pane = rows.map(([k, v], i) => `<div class="bg-row" style="--i:${i}"><span class="bg-ic">${v.icon}</span><span class="bg-l"><b>${v.label}</b><small>${Math.round((c.cats[k] / (c.total || 1)) * 100)} % du total</small></span><b class="bg-v">${fmtMoney(c.cats[k], cur)}</b><span class="bg-bar"><i style="--w:${(c.cats[k] / max) * 100}%"></i></span></div>`).join('')
+      || '<p class="bg-empty">Les prix des hébergements, trajets, activités et vos dépenses apparaîtront ici.</p>';
+  } else if (tab === 'steps') {
+    const rows = t.steps.map((s) => [s, stepCost(t, s)]).filter(([, v]) => v > 0);
+    const max = Math.max(1, ...rows.map(([, v]) => v));
+    pane = rows.map(([s, v], i) => `<button class="bg-row" style="--i:${i}" data-act="open-step" data-id="${s.id}"><span class="bg-ic num-ic">${t.steps.indexOf(s) + 1}</span><span class="bg-l"><b>${esc(s.name || 'Étape')}</b><small>${n2(s)}${nights(s) ? ` · ${fmtMoney(v / nights(s), cur)} / nuit` : ''}</small></span><b class="bg-v">${fmtMoney(v, cur)}</b><span class="bg-bar"><i style="--w:${(v / max) * 100}%"></i></span></button>`).join('')
+      || '<p class="bg-empty">Aucun coût saisi sur les étapes.</p>';
+  } else {
+    const foreign = [...new Set(t.expenses.map((e) => e.currency).filter((x) => x && x !== cur))];
+    const stat = (v, l) => `<div class="bg-stat"><b>${v}</b><small>${l}</small></div>`;
+    pane = `<div class="bg-stats">
+        ${stat(fmtMoney(c.booked, cur), 'Réservations')}
+        ${stat(fmtMoney(c.paid, cur), 'Déjà payé')}
+        ${stat(fmtMoney(c.spent, cur), 'Dépenses sur place')}
+        ${isRoad(t) ? stat(fmtMoney(c.fuelLeft, cur), 'Carburant à prévoir') : ''}
+        ${t.travelers > 1 ? stat(fmtMoney(c.total / t.travelers, cur), 'Par personne') : ''}
+        ${days ? stat(fmtMoney(c.total / days, cur), 'Par jour') : ''}
+        ${t.expenses.length ? stat(fmtMoney(c.spent / Math.max(1, new Set(t.expenses.map((e) => e.date)).size), cur), 'Sur place, par jour') : ''}
+        ${stat(String(t.expenses.length), 'Dépenses notées')}
       </div>
-      ${t.budget ? `<div class="bar lg ${over ? 'over' : ''}"><i style="width:${pct}%"></i></div><p class="${over ? 'warn-txt' : 'muted'}">${over ? `Dépassement de ${fmtMoney(c.total - t.budget, cur)}` : `Reste ${fmtMoney(t.budget - c.total, cur)}`}</p>` : ''}
-      ${localCurs.length ? `<div class="fx">${localCurs.map((k) => `<div class="fx-row"><span class="fx-cur"><b>${k}</b><small>${esc(curName(k))}</small></span>
-        ${t.budget ? `<span><small>Budget</small><b>${fmtMoney(t.budget / t.rates[k], k)}</b></span><span><small>${over ? 'Dépassement' : 'Reste'}</small><b class="${over ? 'warn-txt' : ''}">${fmtMoney(Math.abs(t.budget - c.total) / t.rates[k], k)}</b></span>` : `<span><small>Dépensé</small><b>${fmtMoney(c.total / t.rates[k], k)}</b></span>`}
-        <span><small>1 ${cur}</small><b>${(1 / t.rates[k]).toLocaleString('fr-FR', { maximumSignificantDigits: 4 })} ${k}</b></span></div>`).join('')}</div>` : ''}
-      <div class="stats">
-        <div><b>${fmtMoney(c.booked, cur)}</b><span>réservations</span></div>
-        <div><b>${fmtMoney(c.spent, cur)}</b><span>dépenses sur place</span></div>
-        ${isRoad(t) ? `<div><b>${fmtMoney(c.fuelLeft, cur)}</b><span>⛽ carburant à prévoir</span></div>` : ''}
-        ${t.travelers > 1 ? `<div><b>${fmtMoney(c.total / t.travelers, cur)}</b><span>par personne</span></div>` : ''}
-        ${days ? `<div><b>${fmtMoney(c.total / days, cur)}</b><span>par jour</span></div>` : ''}
-      </div>
-    </div>
-
-    <button class="btn primary full lg" data-act="add-expense">＋ Ajouter une dépense</button>
-
-    <div class="card">
-      <h4>Par catégorie</h4>
-      ${Object.entries(EXP_CATS).filter(([k]) => c.cats[k]).map(([k, v]) => `<div class="cat-row"><span>${v.icon} ${v.label}</span><div class="bar"><i style="width:${(c.cats[k] / maxCat) * 100}%;background:${v.color}"></i></div><b>${fmtMoney(c.cats[k], cur)}</b></div>`).join('') || '<p class="muted">Les prix des hébergements, trajets, activités et vos dépenses apparaîtront ici.</p>'}
-    </div>
-
-    <div class="card">
-      <h4>Par étape</h4>
-      ${t.steps.map((s) => { const v = stepCost(t, s); return v ? `<button class="cost-row" data-act="open-step" data-id="${s.id}"><span>${esc(s.name || 'Étape')}</span><small>${n2(s)}</small><b>${fmtMoney(v, cur)}</b></button>` : ''; }).join('') || '<p class="muted">Aucun coût saisi.</p>'}
-    </div>
-
-    <div class="card">
-      <h4>Dépenses</h4>
-      ${Object.entries(byDay).map(([d, list]) => `<div class="exp-day"><small class="eyebrow">${d ? fmtDayLong(d) : 'Sans date'} · ${fmtMoney(list.reduce((n, e) => n + conv(t, e.amount, e.currency), 0), cur)}</small>
-        ${list.map((e) => `<button class="exp" data-act="edit-expense" data-id="${e.id}"><span class="exp-ic">${EXP_CATS[e.category]?.icon || '💼'}</span><span class="exp-l">${esc(e.label || EXP_CATS[e.category]?.label || 'Dépense')}${e.stepId ? `<small>${esc(t.steps.find((s) => s.id === e.stepId)?.name || '')}</small>` : ''}</span><b>${fmtMoney(e.amount, e.currency || cur)}${e.currency && e.currency !== cur ? `<small>${fmtMoney(conv(t, e.amount, e.currency), cur)}</small>` : ''}</b></button>`).join('')}
-      </div>`).join('') || '<p class="muted">Notez vos dépenses au fil de l’eau : resto, essence, souvenirs…</p>'}
-    </div>
-
-    <div class="card">
-      <h4>💱 Taux de change <small>1 unité = x ${cur}</small></h4>
+      <h4 class="bg-h">Taux de change <small>valeur en ${cur}</small></h4>
       <div class="rates">
         ${[...new Set([...Object.keys(t.rates), ...foreign])].map((k) => `<label class="rate"><span title="${esc(curName(k))}">1 ${k} =<small>${esc(curName(k))}</small></span><input type="number" step="any" min="0" value="${t.rates[k] ?? ''}" data-rate="${k}" inputmode="decimal"><span>${cur}</span><button class="icon-btn sm" data-act="del-rate" data-k="${k}" aria-label="Retirer">✕</button></label>`).join('')}
       </div>
@@ -1756,8 +1770,104 @@ function renderBudget(t) {
         <select id="new-rate"><option value="">＋ Devise…</option>${CURRENCIES.filter((x) => x !== cur && !(x in t.rates)).map((x) => `<option>${x}</option>`).join('')}</select>
         <button class="btn sm" data-act="update-rates">↻ Taux du jour</button>
       </div>
+      <small class="hint">${t.ratesAt ? `Taux mis à jour le ${new Date(t.ratesAt).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : 'Taux mis à jour automatiquement quand vous êtes en ligne.'}</small>`;
+  }
+
+  return `
+  <div class="budget bg2">
+    <div class="bg-hero">
+      <div class="bgh-top">
+        <div><small class="eyebrow">Coût du voyage</small><div class="bgh-total" data-count="${c.total}" data-cur="${cur}">${fmtMoney(c.total, cur)}</div>${local && c.total ? `<small class="bgh-loc">≈ ${inLocal(c.total)}</small>` : ''}</div>
+        <button class="bgh-budget" data-act="trip-settings"><small class="eyebrow">Budget</small><b>${t.budget ? fmtMoney(t.budget, cur) : 'Définir'}</b></button>
+      </div>
+      ${t.budget ? `<div class="bgh-bar ${over ? 'over' : ''}"><i style="--w:${pct}%"></i></div>
+        <p class="bgh-left ${over ? 'over' : ''}">${over ? 'Dépassement de' : 'Il reste'} <b>${fmtMoney(Math.abs(t.budget - c.total), cur)}</b>${local ? ` · ${inLocal(Math.abs(t.budget - c.total))}` : ''}</p>` : ''}
     </div>
+
+    <section class="qa" aria-label="Convertir et noter une dépense">
+      <div class="qa-amount">
+        <input id="qa-amount" type="text" inputmode="decimal" placeholder="0" value="${esc(ui.qa.amount || '')}" aria-label="Montant" autocomplete="off">
+        <button class="qa-cur" data-act="qa-cycle" aria-label="Changer de devise">${from}</button>
+      </div>
+      <div class="qa-conv" id="qa-conv">${to ? `<span id="qa-out">= ${fmtMoney(convTo(t, parseFloat((ui.qa.amount || '0').replace(',', '.')) || 0, from, to) || 0, to)}</span><button class="qa-swap" data-act="qa-swap" aria-label="Inverser">⇄ ${to}</button>` : '<span class="muted">Ajoutez la devise du pays dans Stats pour convertir</span>'}</div>
+      ${to ? `<small class="qa-rate">1 ${cur} = ${rate(local)} ${local}${ui.ratesBusy ? ' · mise à jour…' : t.ratesAt ? ` · taux du ${new Date(t.ratesAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}` : ''}</small>` : ''}
+      <div class="qa-cats" role="group" aria-label="Noter en dépense">
+        ${Object.entries(EXP_CATS).filter(([k]) => k !== 'fuel' || isRoad(t)).map(([k, v]) => `<button class="qa-cat" data-act="qa-add" data-k="${k}"><span>${v.icon}</span><small>${v.label}</small></button>`).join('')}
+      </div>
+      <small class="qa-hint">Tapez un montant, puis touchez la catégorie pour l’enregistrer.</small>
+    </section>
+
+    <nav class="bg-seg" role="tablist" style="--n:4;--k:${['exp', 'cats', 'steps', 'stats'].indexOf(tab)}">
+      <i class="bg-seg-ind" aria-hidden="true"></i>
+      ${[['exp', 'Dépenses'], ['cats', 'Catégories'], ['steps', 'Étapes'], ['stats', 'Stats']].map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" data-act="btab" data-k="${k}" role="tab" aria-selected="${tab === k}">${l}</button>`).join('')}
+    </nav>
+    <div class="bg-pane ${ui.btabAnim ? 'anim' : ''}">${pane}</div>
+    <button class="btn ghost full" data-act="add-expense">Dépense détaillée (date, étape, description)</button>
   </div>`;
+}
+
+// ---------- Budget : saisie rapide, conversion, sous-onglets
+A.btab = (el) => { ui.btab = el.dataset.k; ui.btabAnim = true; renderPanel(); ui.btabAnim = false; };
+const qaVal = () => parseFloat(String(ui.qa?.amount || '').replace(/\s/g, '').replace(',', '.')) || 0;
+document.addEventListener('input', (e) => {
+  if (e.target.id !== 'qa-amount') return;
+  const t = T();
+  ui.qa.amount = e.target.value;
+  const { from, to } = quickCurs(t);
+  const out = $('#qa-out');
+  if (out && to) out.textContent = `= ${fmtMoney(convTo(t, qaVal(), from, to) || 0, to)}`;
+  $('.qa')?.classList.toggle('ready', qaVal() > 0);
+});
+A['qa-cycle'] = () => {
+  const t = T(), { curs, from } = quickCurs(t);
+  ui.qa.from = curs[(curs.indexOf(from) + 1) % curs.length];
+  renderPanel();
+};
+A['qa-swap'] = () => {
+  const t = T(), { from, to } = quickCurs(t);
+  if (!to) return;
+  // Inverse le sens : le montant converti devient le montant saisi
+  const v = convTo(t, qaVal(), from, to);
+  ui.qa.from = to;
+  if (qaVal()) ui.qa.amount = String(Math.round(v * 100) / 100).replace('.', ',');
+  renderPanel();
+};
+A['qa-add'] = (el) => {
+  const t = T();
+  const amount = qaVal();
+  if (!amount) { $('#qa-amount')?.focus(); $('.qa')?.classList.add('shake'); setTimeout(() => $('.qa')?.classList.remove('shake'), 400); return; }
+  const { from } = quickCurs(t);
+  const cs = t.steps[currentStepIdx(t)];
+  const notify = undoable(`${fmtMoney(amount, from)} · ${EXP_CATS[el.dataset.k].label}`);
+  const e = { id: uid(), t: Date.now(), amount, currency: from, label: '', category: el.dataset.k, date: todayStr(), stepId: cs?.id || '' };
+  t.expenses.push(e);
+  ui.qa.amount = '';
+  ui.qaLast = e.id;
+  ui.btab = 'exp';
+  commit({ map: false });
+  notify();
+  setTimeout(() => { ui.qaLast = null; }, 1500);
+};
+// Taux mis à jour tout seuls (au plus toutes les 6 h) pour les monnaies du voyage
+function autoRates(t) {
+  if (!t || ui.ratesBusy || !navigator.onLine) return;
+  t.steps.forEach((s) => ensureCurrency(t, stepCurrency(s), { quiet: true }));
+  const syms = Object.keys(t.rates);
+  if (!syms.length || (t.ratesAt && Date.now() - t.ratesAt < 6 * 3600e3)) return;
+  ui.ratesBusy = true;
+  svc.fetchRates(t.currency, syms).then((r) => { Object.assign(t.rates, r); t.ratesAt = Date.now(); ui.ratesBusy = false; commit({ map: false }); })
+    .catch(() => { ui.ratesBusy = false; });
+}
+function mountBudget(t, p) {
+  autoRates(t);
+  $('.qa', p)?.classList.toggle('ready', qaVal() > 0);
+  // Le total « défile » jusqu'à sa valeur à l'ouverture de l'onglet
+  const tot = $('.bgh-total', p);
+  if (tot && ui.panelFresh) {
+    const goal = +tot.dataset.count, curr = tot.dataset.cur, t0 = performance.now();
+    const step = (now) => { const k = Math.min(1, (now - t0) / 650); tot.textContent = fmtMoney(goal * (1 - Math.pow(1 - k, 3)), curr); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
 }
 
 document.addEventListener('change', (e) => {
@@ -1782,6 +1892,7 @@ A['update-rates'] = async () => {
   try {
     const r = await svc.fetchRates(t.currency, syms);
     Object.assign(t.rates, r);
+    t.ratesAt = Date.now();
     commit({ map: false });
     toast('Taux de change mis à jour');
   } catch {

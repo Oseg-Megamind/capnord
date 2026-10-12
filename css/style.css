@@ -253,7 +253,7 @@ body.show-map .trip-layout > .mapwrap { grid-column: 1 / -1; }
 .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
 .drag { display: grid; place-items: center; padding: 0 12px; color: var(--muted); cursor: grab; letter-spacing: -3px; font-weight: 800; touch-action: none; user-select: none; }
 .drag.sm { padding: 0 4px; }
-.ghost { opacity: .4; }
+.ghost:not(.btn) { opacity: .4; }
 .sorting .conn { opacity: .25; }
 .conn { display: flex; align-items: center; gap: 8px; padding: 2px 0 2px 26px; min-height: 44px; position: relative; }
 .conn-line { position: absolute; left: 26px; top: 0; bottom: 0; border-left: 3px dotted var(--mc); }
@@ -1354,3 +1354,97 @@ input, select, textarea { border-radius: 10px !important; }
 .nt-collab > input:checked + .ntc-box .ntc-check { background: var(--text); }
 .nt-collab > input:checked + .ntc-box .ntc-check::after { content: ''; width: 6px; height: 11px; border: solid var(--bg); border-width: 0 2.5px 2.5px 0; transform: translateY(-1px) rotate(45deg); }
 .nt-collab > input:focus-visible + .ntc-box { outline: 2px solid var(--brand-2); outline-offset: 2px; }
+
+/* =====================================================================
+   BUDGET : saisie rapide d'abord, détail rangé dans des sous-onglets
+   ===================================================================== */
+.bg2 { display: flex; flex-direction: column; gap: 12px; }
+.bg-hero { background: var(--c, #10231f); color: #e6ece6; border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.bg-hero .eyebrow { color: #9fb3ad; }
+.bgh-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.bgh-total { font: 800 32px/1.05 var(--font-display); font-stretch: 112%; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.bgh-loc { font: 500 12px var(--mono); color: #5fd0c8; }
+.bgh-budget { all: unset; cursor: pointer; text-align: right; display: flex; flex-direction: column; gap: 2px; }
+.bgh-budget b { font: 700 16px var(--font-display); }
+.bgh-bar { height: 8px; border-radius: 99px; background: rgba(230, 236, 230, .16); overflow: hidden; }
+.bgh-bar i { display: block; height: 100%; width: var(--w); background: #5fd0c8; border-radius: inherit; transform-origin: left; transition: width .6s var(--ease); }
+.bg2.fresh .bgh-bar i { animation: grow .8s var(--ease) both .1s; }
+.bgh-bar.over i { background: #ff7a66; }
+.bgh-left { margin: 0; font-size: 13.5px; color: #c9d6d1; }
+.bgh-left b { color: #e6ece6; }
+.bgh-left.over b { color: #ff7a66; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: none; } }
+
+/* Saisie rapide : un montant, une conversion, une catégorie = une dépense */
+.qa { background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 8px; transition: border-color .2s; }
+.qa.ready { border-color: var(--text); }
+.qa-amount { display: flex; align-items: center; gap: 8px; }
+.qa-amount input { flex: 1; min-width: 0; border: 0 !important; background: transparent !important; padding: 0 !important; font: 800 40px/1.1 var(--font-display) !important; font-stretch: 105%; letter-spacing: -.02em; color: var(--text); font-variant-numeric: tabular-nums; box-shadow: none !important; outline: none; }
+.qa-amount input::placeholder { color: var(--line); }
+.qa-cur { flex: none; border: 1.5px solid var(--text); background: var(--surface); color: var(--text); border-radius: 10px; padding: 8px 12px; font: 700 15px var(--mono); cursor: pointer; }
+.qa-cur:active, .qa-swap:active { transform: scale(.94); }
+.qa-conv { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; }
+.qa-conv #qa-out { font: 700 20px var(--font-display); color: var(--ok); font-variant-numeric: tabular-nums; }
+.qa-swap { border: 0; background: var(--surface-2); color: var(--text); border-radius: 99px; padding: 6px 12px; font: 600 13px var(--mono); cursor: pointer; }
+.qa-rate { font: 500 10.5px var(--mono); letter-spacing: .04em; color: var(--muted); }
+.qa-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+.qa-cat { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 2px 7px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--text); cursor: pointer; transition: transform .15s var(--spring), border-color .2s, background .2s; }
+.qa-cat span { font-size: 20px; line-height: 1; }
+.qa-cat .ico { width: 21px; height: 21px; }
+.qa-cat small { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.qa.ready .qa-cat { border-color: color-mix(in srgb, var(--text) 35%, var(--line)); background: var(--surface); }
+.qa-cat:active { transform: scale(.9); background: var(--brand); color: #5fd0c8; }
+.qa-hint { color: var(--muted); font-size: 12px; text-align: center; }
+.qa.ready .qa-hint { color: var(--ok); }
+.qa.shake { animation: shake .35s; }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+/* Sous-onglets avec indicateur qui glisse */
+.bg-seg { position: relative; display: grid; grid-template-columns: repeat(var(--n), 1fr); background: var(--surface-2); border-radius: 12px; padding: 4px; }
+.bg-seg-ind { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n)); border-radius: 9px; background: var(--brand); transform: translateX(calc(100% * var(--k))); transition: transform .35s var(--spring); }
+.bg-seg button { position: relative; z-index: 1; border: 0; background: none; padding: 9px 0; font: 600 13px var(--font); color: var(--muted); cursor: pointer; transition: color .25s; }
+.bg-seg button.on { color: var(--brand-ink); }
+.bg-pane { display: flex; flex-direction: column; gap: 8px; }
+.bg-empty { color: var(--muted); text-align: center; padding: 18px 10px; margin: 0; font-size: 14px; }
+
+/* Lignes catégories / étapes avec barre qui se remplit */
+.bg-row { display: grid; grid-template-columns: 38px 1fr auto; grid-template-rows: auto auto; column-gap: 10px; row-gap: 6px; align-items: center; padding: 12px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); text-align: left; color: var(--text); width: 100%; }
+button.bg-row { cursor: pointer; }
+.bg-ic { grid-row: 1 / 3; width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); font-size: 18px; }
+.bg-ic .ico { width: 20px; height: 20px; }
+.num-ic { font: 700 13px var(--mono); background: var(--surface); border: 2.5px solid var(--text); border-radius: 50%; width: 32px; height: 32px; justify-self: center; }
+.bg-l { display: flex; flex-direction: column; min-width: 0; }
+.bg-l b { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-l small { font: 500 10.5px var(--mono); letter-spacing: .04em; color: var(--muted); text-transform: uppercase; }
+.bg-v { font: 700 15px var(--font-display); font-variant-numeric: tabular-nums; }
+.bg-bar { grid-column: 2 / 4; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.bg-bar i { display: block; height: 100%; width: var(--w); background: var(--text); border-radius: inherit; transform-origin: left; }
+
+/* Dépenses par jour */
+.bg2 .exp-day { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+.exp-dh { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 2px 0; }
+.exp-dh b { font: 700 13px var(--mono); }
+.bg2 .exp { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); color: var(--text); text-align: left; cursor: pointer; }
+.bg2 .exp-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); font-size: 17px; flex: none; }
+.bg2 .exp-ic .ico { width: 19px; height: 19px; }
+.bg2 .exp-l { flex: 1; min-width: 0; display: flex; flex-direction: column; font-weight: 600; }
+.bg2 .exp-l small { font: 500 10.5px var(--mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.bg2 .exp > b { text-align: right; font: 700 15px var(--font-display); display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
+.bg2 .exp > b small { font: 500 11px var(--mono); color: var(--muted); }
+.bg2 .exp.just { animation: justIn .9s var(--spring); border-color: var(--text); box-shadow: 0 0 0 3px rgba(95, 208, 200, .45); }
+@keyframes justIn { 0% { transform: translateY(-14px) scale(.96); opacity: 0; } 60% { transform: none; opacity: 1; } }
+
+/* Stats */
+.bg-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bg-stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 2px; }
+.bg-stat b { font: 800 19px var(--font-display); font-variant-numeric: tabular-nums; }
+.bg-stat small { font: 500 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.bg-h { margin: 10px 0 0; font: 700 15px var(--font-display); display: flex; gap: 8px; align-items: baseline; }
+.bg-h small { font: 500 10.5px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .bg2 *, .bg2 *::before { animation: none !important; transition: none !important; } }
+.qa .qa-amount input#qa-amount { font-size: 40px !important; font-weight: 800 !important; line-height: 1.1 !important; height: auto !important; }
+.qa .qa-amount input#qa-amount::placeholder { color: color-mix(in srgb, var(--muted) 45%, transparent); }
+
+/* Animations du Budget : seulement à l'ouverture de l'onglet ou d'un sous-onglet */
+.bg2.fresh .bg-row, .bg-pane.anim .bg-row, .bg-pane.anim .bg-stat, .bg-pane.anim .exp-day { animation: rise .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.bg2.fresh .bg-bar i, .bg-pane.anim .bg-bar i { animation: grow .7s var(--ease) both; animation-delay: calc(var(--i, 0) * 60ms + .1s); }
