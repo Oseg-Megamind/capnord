@@ -1748,16 +1748,22 @@ const convTo = (t, amount, from, to) => {
   if (to === t.currency) return base;
   return t.rates[to] ? base / t.rates[to] : null;
 };
+// Devise du pays où l'on est (ou de la prochaine destination à l'étranger), même si son taux n'est pas encore chargé
+function destCurrency(t) {
+  const today = todayStr();
+  const cs = t.steps[currentStepIdx(t)];
+  const foreign = (s) => { const k = stepCurrency(s); return k && k !== t.currency ? k : null; };
+  return foreign(cs) || t.steps.filter((s) => s.arrival >= today).map(foreign).find(Boolean) || t.steps.map(foreign).find(Boolean) || null;
+}
 function quickCurs(t) {
   const curs = budgetCurs(t);
-  const cs = t.steps[currentStepIdx(t)];
-  const local = [stepCurrency(cs), ...t.steps.map(stepCurrency)].find((k) => k && k !== t.currency && curs.includes(k)) || curs.find((k) => k !== t.currency) || t.currency;
-  ui.qa ||= {};
-  const ok = (k) => k && (k === t.currency || k in t.rates);
-  if (!ok(ui.qa.from)) ui.qa.from = local;
-  const from = ui.qa.from;
-  let to = ok(ui.qa.to) && ui.qa.to !== from ? ui.qa.to : from === t.currency ? (local !== t.currency ? local : null) : t.currency;
-  return { curs, from, to, local };
+  const local = destCurrency(t);
+  if (ui.qa?.trip !== t.id) ui.qa = { trip: t.id, amount: '' };
+  // Par défaut : montant dans la devise du pays, converti dans la devise de départ du voyage
+  const from = ui.qa.from || local || t.currency;
+  let to = ui.qa.to || (from === t.currency ? local : t.currency);
+  if (to === from) to = from === t.currency ? local : t.currency;
+  return { curs, from, to: to || null, local: local || t.currency };
 }
 
 function renderBudget(t) {
@@ -1810,11 +1816,12 @@ function renderBudget(t) {
         <input id="qa-amount" type="text" inputmode="decimal" placeholder="0" value="${esc(ui.qa.amount || '')}" aria-label="Montant" autocomplete="off">
       </div>
       <div class="qa-conv" id="qa-conv">
-        <button class="qa-cur to" data-act="qa-pick" data-side="to" aria-label="Convertir en">${to || 'Devise'} <i aria-hidden="true">▾</i></button>
-        <span id="qa-out">${to ? fmtMoney(convTo(t, parseFloat((ui.qa.amount || '0').replace(',', '.')) || 0, from, to) || 0, to) : '—'}</span>
+        <button class="qa-cur to" data-act="qa-pick" data-side="to" aria-label="Convertir en">${to || 'Choisir'} <i aria-hidden="true">▾</i></button>
+        <span id="qa-out">${!to ? '—' : convTo(t, 1, from, to) == null ? 'taux en chargement…' : fmtMoney(convTo(t, parseFloat((ui.qa.amount || '0').replace(',', '.')) || 0, from, to) || 0, to)}</span>
         ${to ? '<button class="qa-swap" data-act="qa-swap" aria-label="Inverser les devises">⇅</button>' : ''}
       </div>
-      ${to ? `<small class="qa-rate">1 ${from} = ${(convTo(t, 1, from, to) || 0).toLocaleString('fr-FR', { maximumSignificantDigits: 4 })} ${to}${ui.ratesBusy ? ' · mise à jour…' : t.ratesAt ? ` · taux du ${new Date(t.ratesAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}` : ''}</small>` : ''}
+      ${to && convTo(t, 1, from, to) != null ? `<small class="qa-rate">1 ${from} = ${convTo(t, 1, from, to).toLocaleString('fr-FR', { maximumSignificantDigits: 4 })} ${to}${ui.ratesBusy ? ' · mise à jour…' : t.ratesAt ? ` · taux du ${new Date(t.ratesAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}` : ''}</small>` : ''}
+      <small class="qa-names">${[from, to].filter(Boolean).map((k) => `${k} · ${esc(curName(k))}${k === t.currency ? ' (départ)' : k === destCurrency(t) ? ' (pays)' : ''}`).join('   ⇄   ')}</small>
       <div class="qa-cats" role="group" aria-label="Noter en dépense">
         ${Object.entries(EXP_CATS).filter(([k]) => k !== 'fuel' || isRoad(t)).map(([k, v]) => `<button class="qa-cat" data-act="qa-add" data-k="${k}"><span>${v.icon}</span><small>${v.label}</small></button>`).join('')}
       </div>
@@ -1851,7 +1858,7 @@ document.addEventListener('input', (e) => {
   ui.qa.amount = e.target.value;
   const { from, to } = quickCurs(t);
   const out = $('#qa-out');
-  if (out && to) out.textContent = fmtMoney(convTo(t, qaVal(), from, to) || 0, to);
+  if (out && to) out.textContent = convTo(t, 1, from, to) == null ? 'taux en chargement…' : fmtMoney(convTo(t, qaVal(), from, to) || 0, to);
   $('.qa')?.classList.toggle('ready', qaVal() > 0);
 });
 // Choix d'une devise (montant saisi ou conversion) : celles du voyage d'abord, puis toutes
@@ -1859,7 +1866,7 @@ A['qa-pick'] = (el) => {
   const t = T(), side = el.dataset.side;
   const { curs, from, to } = quickCurs(t);
   const cur0 = side === 'from' ? from : to;
-  const mine = [...new Set([...curs, ...t.steps.map(stepCurrency).filter(Boolean)])];
+  const mine = [...new Set([destCurrency(t), t.currency, ...t.steps.map(stepCurrency), ...curs].filter(Boolean))];
   const btn = (k) => `<button class="cp-row ${k === cur0 ? 'on' : ''}" data-act="qa-set" data-side="${side}" data-k="${k}"><b>${k}</b><span>${esc(curName(k))}</span></button>`;
   openModal(`
     <h2>${side === 'from' ? 'Devise du montant' : 'Convertir en'}</h2>
@@ -1913,7 +1920,8 @@ function autoRates(t) {
   if (!t || ui.ratesBusy || !navigator.onLine) return;
   t.steps.forEach((s) => ensureCurrency(t, stepCurrency(s), { quiet: true }));
   const syms = Object.keys(t.rates);
-  if (!syms.length || (t.ratesAt && Date.now() - t.ratesAt < 6 * 3600e3)) return;
+  const missing = syms.some((k) => !(t.rates[k] > 0));
+  if (!syms.length || (!missing && t.ratesAt && Date.now() - t.ratesAt < 6 * 3600e3)) return;
   ui.ratesBusy = true;
   svc.fetchRates(t.currency, syms).then((r) => { Object.assign(t.rates, r); t.ratesAt = Date.now(); ui.ratesBusy = false; commit({ map: false }); })
     .catch(() => { ui.ratesBusy = false; });
