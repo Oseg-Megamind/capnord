@@ -9,7 +9,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#10231f",
-  "theme_color": "#ecefe8",
+  "theme_color": "#10231f",
   "icons": [
     { "src": "icons/etapa.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "icons/etapa-180.png", "sizes": "180x180", "type": "image/png" },

@@ -693,7 +693,6 @@ function renderMapProgress(t) {
   el.innerHTML = `
     <div class="mp-head" data-act="mp-toggle" title="Réduire / agrandir">${head}<span class="mp-count">${done}/${n} étapes faites</span></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
-    ${body}
     <div class="mp-legend"><span><i class="lgd done"></i>Fait</span><span><i class="lgd now"></i>Aujourd’hui</span><span><i class="lgd todo"></i>À venir</span></div>`;
 }
 
@@ -2916,7 +2915,8 @@ function viewPhoto(id, toComments = false) {
       </div>
       <div class="lb-info" data-scope id="lb-info">
         <div class="lb-meta">${i + 1}/${list.length} · ${when}${s ? ` · ${p.onLeg ? '🛣️ trajet vers' : '📍'} ${esc(s.name)}` : ''}${p.approx ? ' <small>(position approximative)</small>' : ''}</div>
-        <input class="lb-caption" data-f="caption" placeholder="Ajouter une légende…" aria-label="Légende">
+        <button class="lb-cap-view ${p.caption ? '' : 'empty'}" id="lb-cap-view" aria-label="Modifier la légende">${p.caption ? esc(p.caption) : 'Ajouter une légende…'}<i>${icon('note')}</i></button>
+        <textarea class="lb-caption hidden" id="lb-cap-edit" data-f="caption" rows="2" placeholder="Votre légende…" aria-label="Légende"></textarea>
         ${isShared(t) ? `<div id="lb-thread" class="lb-thread" data-id="${p.id}"></div>` : ''}
       </div>
     </div>`, async (m) => {
@@ -2924,6 +2924,17 @@ function viewPhoto(id, toComments = false) {
     renderLbThread();
     if (toComments) setTimeout(() => $('#lb-thread', m)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
     bindFields($('#lb-info', m), p, () => refresh({ map: false, header: false }));
+    // Légende : affichée comme un texte, on la touche pour la modifier
+    const cv = $('#lb-cap-view', m), ce = $('#lb-cap-edit', m);
+    cv.onclick = () => { cv.classList.add('hidden'); ce.classList.remove('hidden'); ce.focus(); ce.setSelectionRange(ce.value.length, ce.value.length); };
+    ce.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ce.blur(); } });
+    let capT = null;
+    ce.addEventListener('input', () => { p.caption = ce.value.trim(); clearTimeout(capT); capT = setTimeout(() => commit({ map: false, header: false }), 600); });
+    ce.addEventListener('blur', () => {
+      p.caption = ce.value.trim(); commit({ map: false, header: false });
+      cv.innerHTML = `${p.caption ? esc(p.caption) : 'Ajouter une légende…'}<i>${icon('note')}</i>`;
+      cv.classList.toggle('empty', !p.caption); cv.classList.remove('hidden'); ce.classList.add('hidden');
+    });
     $('#lb-step', m).onchange = (e) => { p.stepId = e.target.value; commit(); viewPhoto(p.id); if (ui.drawer) renderDrawer(); toast('Photo déplacée'); };
     // Molette : ouvre / ferme le petit menu de la photo
     const gear = $('#lb-gear', m), menu = $('#lb-menu', m);
@@ -3125,7 +3136,7 @@ function threadHTML(t, target, { compact = false } = {}) {
   const roots = list.filter((c) => !c.parent_id);
   const one = (c) => `<div class="cm ${c.is_owner ? 'own' : ''}">
     <div class="cm-b"><b>${esc(c.author)}${c.is_owner ? ' (vous)' : ''}</b><p>${esc(c.body)}</p></div>
-    <small>${ago(c.created_at)} · <button class="link" data-act="cm-reply" data-id="${c.id}" data-who="${esc(c.author)}">Répondre</button>${c.is_owner ? '' : ` · <button class="link muted" data-act="cm-del" data-id="${c.id}">Supprimer</button>`}</small>
+    <small>${ago(c.created_at)} · <button class="cm-reply-btn" data-act="cm-reply" data-id="${c.id}" data-who="${esc(c.author)}">Répondre</button>${c.is_owner ? '' : ` · <button class="link muted" data-act="cm-del" data-id="${c.id}">Supprimer</button>`}</small>
   </div>`;
   return `<div class="thread">
     ${roots.map((c) => `<div class="cm-th">${one(c)}${list.filter((r) => r.parent_id === c.id).map((r) => `<div class="cm-rep">${one(r)}</div>`).join('')}</div>`).join('') || (compact ? '' : '<p class="muted">Aucun commentaire pour l’instant.</p>')}
@@ -3156,13 +3167,19 @@ A['cm-reply'] = (el) => {
   form.dataset.parent = el.dataset.id;
   const r = $('.cm-replying', form);
   r.hidden = false;
-  r.textContent = `Réponse à ${el.dataset.who}`;
+  r.innerHTML = `Réponse à <b>${esc(el.dataset.who)}</b> · <button type="button" class="link" data-act="cm-reply-cancel">annuler</button>`;
+  form.classList.add('replying');
+  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   $('[data-body]', form).placeholder = `Répondre à ${el.dataset.who}…`;
   $('[data-body]', form).focus();
 };
+A['cm-reply-cancel'] = (el) => {
+  const form = el.closest('.cm-form');
+  delete form.dataset.parent; form.classList.remove('replying');
+  $('.cm-replying', form).hidden = true; $('[data-body]', form).placeholder = 'Écrire un commentaire…';
+};
 A['cm-del'] = async (el) => {
   const t = T();
-  if (!confirm('Supprimer ce commentaire ?')) return;
   try {
     await cloud.deleteComment(t.share.token, el.dataset.id);
     fb[t.id].comments = fb[t.id].comments.filter((c) => c.id !== el.dataset.id && c.parent_id !== el.dataset.id);
@@ -3655,7 +3672,7 @@ function applyTheme() {
   const th = state.settings.theme;
   if (th === 'auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.dataset.theme = th;
-  $('meta[name=theme-color]').content = isDark() ? '#0b1916' : '#ecefe8';
+  $('meta[name=theme-color]').content = isDark() ? '#0b1916' : '#10231f';
   applyBasemap();
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);

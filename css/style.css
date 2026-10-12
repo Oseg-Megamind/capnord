@@ -1821,3 +1821,36 @@ label.lb-mi select { width: 100%; margin-top: 4px; background: rgba(230, 236, 23
 .step .ph-strip { max-width: 100%; overflow-x: auto; overflow-y: visible; touch-action: pan-x pan-y; scroll-snap-type: x proximity; scrollbar-width: none; padding: 6px 2px 2px 0; }
 .step .ph-strip::-webkit-scrollbar { display: none; }
 .step .ph-strip .ph-mini { flex: 0 0 74px; }
+
+/* Visionneuse : légende sous la photo, modifiable au toucher */
+.lb-cap-view { display: flex; align-items: flex-start; gap: 8px; width: 100%; text-align: left; border: 0; background: none; color: #fff; font: 600 16.5px/1.4 var(--font); padding: 2px 0; cursor: text; }
+.lb-cap-view i { margin-left: auto; flex: none; opacity: .5; font-style: normal; }
+.lb-cap-view i .ico { width: 16px; height: 16px; }
+.lb-cap-view.empty { color: rgba(230, 236, 230, .5); font-weight: 500; font-style: italic; }
+textarea.lb-caption { resize: none; font-size: 16px; }
+/* Répondre : un vrai bouton, et un rappel au-dessus du champ */
+.cm-reply-btn { border: 0; background: rgba(95, 208, 200, .15); color: #0b6f69; font: 700 11.5px var(--font); padding: 3px 9px; border-radius: 99px; cursor: pointer; }
+.lb .cm-reply-btn, .shx-viewer .cm-reply-btn { color: #5fd0c8; }
+.cm-form.replying .cm-row input { box-shadow: 0 0 0 2px #5fd0c8 !important; }
+.cm-replying { font-size: 12.5px; padding: 0 4px 2px; }
+.lb .cm-replying { color: rgba(230, 236, 230, .75); }
+.lb .cm-replying b { color: #fff; }
+
+/* =====================================================================
+   Barres du haut et du bas en forêt foncé (look « app », pas « site »)
+   ===================================================================== */
+.trip-layout > .trip-top, .trip-top { background: #10231f; border-bottom: 0; color: #e6ece6; }
+.trip-top .trip-title h1 { color: #fff; }
+.trip-top .trip-title h1::after { color: #9fb3ad; }
+.trip-top .trip-title small, .trip-top .trip-title small span { color: #9fb3ad; }
+.trip-top .trip-title .st-now { color: #5fd0c8; }
+.trip-top .trip-badge { background: rgba(230, 236, 230, .1); }
+.trip-top .icon-btn { color: #e6ece6; background: transparent; }
+.trip-top .icon-btn:hover { background: rgba(230, 236, 230, .1); }
+.trip-top .notif-btn .nb { border-color: #10231f; }
+.bottomnav { background: #10231f; border-top: 0; }
+.bottomnav .bn { color: #9fb3ad; }
+.bottomnav .bn:not(.active) span { opacity: .8; }
+.bottomnav .bn.active { color: #10231f; }
+.bottomnav .bn.active::before { background: #5fd0c8; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .trip-top, :root:not([data-theme="light"]) .bottomnav { background: #0b1916; } }
