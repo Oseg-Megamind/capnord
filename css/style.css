@@ -1326,3 +1326,31 @@ input, select, textarea { border-radius: 10px !important; }
 .wr-txt b { font-weight: 700; font-size: 15px; }
 .wr-txt small { font: 500 10.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .wr-chev { font-size: 20px; color: var(--muted); }
+
+/* Nouveau voyage : choix du type (cartes simples, sans boîtes imbriquées) */
+.kind { position: relative; display: block; }
+.kind > input { position: absolute; opacity: 0; pointer-events: none; }
+.kind span { all: unset; }
+.kind .kind-box { display: flex; flex-direction: column; gap: 4px; height: 100%; box-sizing: border-box; padding: 14px; border-radius: var(--r); border: 1.5px solid var(--line); background: var(--surface); cursor: pointer; }
+.kind .kind-box b { font: 800 15px/1.2 var(--font-display); font-stretch: 110%; }
+.kind .kind-box small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.kind > input:checked + .kind-box { border-color: var(--text); box-shadow: 0 0 0 1.5px var(--text); }
+.kind > input:focus-visible + .kind-box { outline: 2px solid var(--brand-2); outline-offset: 2px; }
+.kind-ic { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--text); font-style: normal; margin-bottom: 4px; flex: none; }
+.kind-ic .ico { width: 20px; height: 20px; }
+.kind > input:checked + .kind-box .kind-ic { background: var(--brand); color: #5fd0c8; }
+
+/* Nouveau voyage : ajouter des compagnons */
+.nt-collab { position: relative; display: block; }
+.nt-collab > input { position: absolute; opacity: 0; pointer-events: none; }
+.ntc-box { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--r); border: 1.5px dashed var(--line); background: var(--surface); cursor: pointer; }
+.ntc-box > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ntc-box b { font: 800 15px/1.2 var(--font-display); font-stretch: 110%; }
+.ntc-box small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.ntc-box .kind-ic { margin: 0; }
+.ntc-check { width: 24px; height: 24px; flex: none; border-radius: 7px; border: 2px solid var(--text); font-style: normal; display: grid; place-items: center; }
+.nt-collab > input:checked + .ntc-box { border-style: solid; border-color: var(--text); }
+.nt-collab > input:checked + .ntc-box .kind-ic { background: var(--brand); color: #5fd0c8; }
+.nt-collab > input:checked + .ntc-box .ntc-check { background: var(--text); }
+.nt-collab > input:checked + .ntc-box .ntc-check::after { content: ''; width: 6px; height: 11px; border: solid var(--bg); border-width: 0 2.5px 2.5px 0; transform: translateY(-1px) rotate(45deg); }
+.nt-collab > input:focus-visible + .ntc-box { outline: 2px solid var(--brand-2); outline-offset: 2px; }

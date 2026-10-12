@@ -1,5 +1,5 @@
 // Service worker : app utilisable hors-ligne + cache des tuiles de carte consultées
-const APP = 'capnord-app-v44';
+const APP = 'capnord-app-v45';
 const TILES = 'voyage-tiles-v1';
 const SHELL = [
   './', 'index.html', 'css/style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png',

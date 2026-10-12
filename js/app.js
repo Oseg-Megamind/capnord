@@ -431,8 +431,8 @@ A['new-trip'] = () => openModal(`
   <form class="form" id="f-new">
     <div class="row"><input type="hidden" name="emoji" value=""><input name="name" placeholder="Nom du voyage (ex : Road trip Portugal)" required autofocus></div>
     <div class="kind-pick" role="radiogroup" aria-label="Type de voyage">
-      <label class="kind"><input type="radio" name="kind" value="roadtrip"><span><b>🚗 Road trip</b><small>Avec mon véhicule : voiture, van, moto</small></span></label>
-      <label class="kind"><input type="radio" name="kind" value="mixed" checked><span><b>✈️ Voyage multi-transports</b><small>Avion, train, bus, bateau… entre les étapes</small></span></label>
+      <label class="kind"><input type="radio" name="kind" value="roadtrip"><div class="kind-box"><i class="kind-ic">${icon('car')}</i><b>Road trip</b><small>Avec mon véhicule : voiture, van, moto</small></div></label>
+      <label class="kind"><input type="radio" name="kind" value="mixed" checked><div class="kind-box"><i class="kind-ic">${icon('plane')}</i><b>Multi-transports</b><small>Avion, train, bus, bateau… entre les étapes</small></div></label>
     </div>
     <div class="road-opts hidden">
       <div class="pills">${Object.entries(VEHICLES).map(([k, v], i) => `<label class="pill"><input type="radio" name="vehicle" value="${k}" ${i === 0 ? 'checked' : ''}><span>${v.icon} ${v.label}</span></label>`).join('')}</div>
@@ -451,6 +451,8 @@ A['new-trip'] = () => openModal(`
       <label class="fld"><span>Voyageurs</span><input type="number" name="travelers" value="1" min="1" inputmode="numeric"></label>
     </div>
     <div class="colors">${COLORS.map((c, i) => `<label class="color"><input type="radio" name="color" value="${c}" ${i === 0 ? 'checked' : ''}><span style="background:${c}"></span></label>`).join('')}</div>
+    ${cloud.cloudReady() ? `<label class="nt-collab"><input type="checkbox" name="withCompanions"><span class="ntc-box"><i class="kind-ic">${icon('users')}</i><span><b>Ajouter des compagnons de voyage</b><small>Ils complètent le carnet avec vous. Vous recevez un code à leur envoyer.</small></span><i class="ntc-check" aria-hidden="true"></i></span></label>
+    <label class="fld nt-me hidden"><span>Votre prénom</span><input name="me" value="${esc(state.settings.myName || '')}" placeholder="ex : Fanny" maxlength="40"></label>` : ''}
     <div class="actions"><button type="button" class="btn" data-act="close-modal">Annuler</button><button class="btn primary">Créer le voyage</button></div>
   </form>`, (m) => {
   const syncRoad = () => {
@@ -460,9 +462,13 @@ A['new-trip'] = () => openModal(`
     $('[name=conso]', m).placeholder = v.conso;
   };
   $$('[name=kind], [name=vehicle]', m).forEach((r) => (r.onchange = syncRoad));
-  $('form', m).onsubmit = (e) => {
+  const wc = $('[name=withCompanions]', m);
+  if (wc) wc.onchange = () => { $('.nt-me', m).classList.toggle('hidden', !wc.checked); if (wc.checked && !$('[name=me]', m).value) $('[name=me]', m).focus(); };
+  $('form', m).onsubmit = async (e) => {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(e.target));
+    const me = (f.me || '').trim();
+    if (f.withCompanions && !me) { $('[name=me]', m).focus(); return toast('Indiquez votre prénom pour inviter vos compagnons'); }
     const road = f.kind === 'roadtrip';
     const t = newTrip({ name: f.name.trim() || 'Nouveau voyage', emoji: f.emoji === '🌍' && road ? VEHICLES[f.vehicle].icon : f.emoji || '🌍', start: f.start, end: f.end, currency: f.currency, budget: f.budget ? +f.budget : null, travelers: +f.travelers || 1, color: f.color,
       kind: f.kind, vehicle: f.vehicle || 'car', conso: f.conso ? +f.conso : null, fuelPrice: f.fuelPrice ? +f.fuelPrice : null });
@@ -471,6 +477,20 @@ A['new-trip'] = () => openModal(`
     save();
     closeModal();
     go(`#/trip/${t.id}/itin`);
+    // Compagnons : on crée le carnet partagé et on affiche tout de suite le code à envoyer
+    if (f.withCompanions) {
+      state.settings.myName = me;
+      try {
+        await collab.createCollab(t, me);
+        save();
+        collab.watchCollab(t, () => collabSync(t));
+        await collabSync(t);
+        renderTripHeader(t);
+      } catch (err) { toast(`Invitation impossible pour l’instant : ${esc(err.message || 'réseau')}`); }
+      A.share();
+      ui.shareView = 'collab';
+      renderShareModal();
+    }
   };
 });
 
