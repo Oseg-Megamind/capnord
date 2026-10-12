@@ -317,7 +317,7 @@ function stepView(s) {
         <p>${i === 0 && !s.arrival ? 'Point de départ' + (D.start ? ' · ' + stepDate(s, i, D) : '') : stepDate(s, i, D, true) || 'Étape passée'}${nights(s) ? ' · ' + plural(nights(s), 'nuit') : ''}</p></div>
     </div>
     ${prev && (mode || s.legStory) ? `<div class="shx-leg">${mode ? icon(s.mode) : icon('route')}<span>${mode ? `En ${mode.label.toLowerCase()} depuis ${esc(prev.name)}` : `Depuis ${esc(prev.name)}`}${s.legStory ? `<em>${esc(s.legStory)}</em>` : ''}</span></div>` : ''}
-    ${s.story ? `<p class="shx-story">${esc(s.story)}</p>` : ''}
+    ${s.story ? `<figure class="shx-story-card"><figcaption><span class="shx-av">${esc((D.author || '?').slice(0, 1).toUpperCase())}</span><span><b>${esc(D.author || 'Le voyageur')}</b><small>Le mot du voyageur</small></span></figcaption><blockquote class="shx-story">${esc(s.story)}</blockquote></figure>` : ''}
     ${legPh.length ? `<div class="shx-sub-h">${mode ? icon(s.mode) : icon('route')}<span>Sur la route${prev ? ` depuis ${esc(prev.name)}` : ''}</span><small>${plural(legPh.length, legPh.some((p) => p.kind === 'video') ? 'moment' : 'photo')}</small></div>${grid(legPh)}` : ''}
     ${ph.length ? `${legPh.length ? `<div class="shx-sub-h">${icon('pin')}<span>À ${esc(s.name)}</span><small>${plural(ph.length, 'photo')}</small></div>` : ''}${grid(ph, legPh.length)}`
       : legPh.length ? '' : `<div class="shx-empty">${icon('camera')}<p>${i > lastDone(steps) ? 'Étape à venir : revenez pendant le voyage !' : 'Pas de photos sur cette étape.'}</p></div>`}
@@ -524,7 +524,7 @@ function renderViewer(enter = false) {
       ${k < list.length - 1 ? `<button class="shx-v-nav next" data-vgo="${list[k + 1].id}" aria-label="Suivante">›</button>` : ''}
     </div>
     <div class="shx-v-info">
-      ${p.caption ? `<p class="shx-v-cap">${esc(p.caption)}</p>` : ''}
+      ${p.caption ? `<div class="shx-v-capbox"><span class="shx-av">${esc((S.data.author || '?').slice(0, 1).toUpperCase())}</span><p class="shx-v-cap"><b>${esc(S.data.author || 'Le voyageur')}</b>${esc(p.caption)}</p></div>` : ''}
       <small class="shx-v-meta">${new Date(p.t).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</small>
       <div class="shx-v-react">${vReact(t)}</div>
       <div class="shx-v-thread">${thread(t)}</div>

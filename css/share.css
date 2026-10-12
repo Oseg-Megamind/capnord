@@ -388,3 +388,17 @@ body.kb-open .shx-viewer .shx-v-info { flex: 1 1 auto; max-height: none; padding
 body.kb-open .sx-bar { display: none; }
 .cm-form input { font-size: 16px; }
 body.kb-open .shx-welcome { display: none; }
+
+/* Récit de l'étape : mis en avant comme la légende du voyageur */
+.shx-story-card { margin: 4px 0 14px; padding: 12px 14px 14px; background: #fff; border-radius: 16px; border-left: 3px solid #5fd0c8; box-shadow: 0 2px 10px rgba(16, 35, 31, .06); }
+.shx-story-card figcaption { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+.shx-story-card figcaption .shx-av { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #10231f; color: #5fd0c8; font: 800 13px var(--font-display); }
+.shx-story-card figcaption b { display: block; font: 700 14px var(--font-display); color: #10231f; }
+.shx-story-card figcaption small { display: block; font: 600 10px var(--mono, 'JetBrains Mono', monospace); letter-spacing: .08em; text-transform: uppercase; color: #5b6b66; }
+.shx-story-card .shx-story { margin: 0; font-size: 15.5px; font-style: italic; line-height: 1.6; color: #10231f; white-space: pre-wrap; }
+.shx-story-card .shx-story::before { content: '« '; color: #9A5222; font-style: normal; font-weight: 700; }
+.shx-story-card .shx-story::after { content: ' »'; color: #9A5222; font-style: normal; font-weight: 700; }
+.shx-v-capbox { display: flex; gap: 9px; align-items: flex-start; }
+.shx-v-capbox .shx-av { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #5fd0c8; color: #10231f; font: 800 12px var(--font-display); }
+.shx-v-capbox .shx-v-cap { margin: 0; font-style: italic; }
+.shx-v-capbox .shx-v-cap b { display: block; font: 700 13px var(--font-display); font-style: normal; color: #5fd0c8; margin-bottom: 1px; }
