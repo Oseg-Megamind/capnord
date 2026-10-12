@@ -2115,28 +2115,59 @@ function manageTemplates() {
   const tp = templates();
   const names = Object.keys(tp);
   openModal(`
-    <h2>⚙️ Mes modèles de listes</h2>
+    <h2>Mes modèles de listes</h2>
     <p class="hint">Vos modèles servent à créer une liste en un geste dans n’importe quel voyage.</p>
     <div class="tpl-list">${names.map((n, i) => `<div class="tpl-row">
       <div><b>${esc(n)}</b><small>${plural(tp[n].length, 'élément')}</small></div>
       <button class="btn sm" data-act="tpl-edit" data-i="${i}">Modifier</button>
-      <button class="icon-btn sm" data-act="tpl-del" data-i="${i}" aria-label="Supprimer le modèle">🗑</button>
+      <button class="icon-btn sm tpl-trash" data-act="tpl-del" data-i="${i}" aria-label="Supprimer le modèle">🗑</button>
     </div>`).join('') || '<p class="muted">Aucun modèle.</p>'}</div>
     <div class="actions"><button class="btn" data-act="tpl-new">＋ Nouveau modèle</button><span class="spacer"></span><button class="btn primary" data-act="close-modal">Terminé</button></div>`);
 }
 function editTemplate(name) {
   const tp = templates();
+  const row = (v = '') => `<li class="tpl-item"><span class="tpl-grip" aria-hidden="true">⋮⋮</span><input value="${esc(v)}" aria-label="Élément" enterkeyhint="next"><button type="button" class="tpl-del" aria-label="Retirer">✕</button></li>`;
   openModal(`
     <h2>${name ? 'Modifier le modèle' : 'Nouveau modèle'}</h2>
     <form class="form" id="tpl-form">
       <label class="fld"><span>Nom du modèle</span><input id="tpl-name" value="${esc(name || '')}" placeholder="ex : Ski, Plage, Bébé à bord…" required></label>
-      <label class="fld"><span>Éléments (un par ligne)</span><textarea id="tpl-items" rows="10" placeholder="Passeport&#10;Chargeur&#10;Crème solaire">${esc((tp[name] || []).join('\n'))}</textarea></label>
+      <div class="fld"><span>Éléments <b class="tpl-count"></b></span>
+        <ul class="tpl-items" id="tpl-items">${(tp[name] || []).map((x) => row(x)).join('')}</ul>
+        <div class="tpl-add"><span class="tpl-plus" aria-hidden="true">＋</span><input id="tpl-new" placeholder="Ajouter un élément" enterkeyhint="done" aria-label="Ajouter un élément"></div>
+      </div>
       <div class="actions"><button type="button" class="btn" data-act="tpl-manage">‹ Retour</button><span class="spacer"></span><button class="btn primary">Enregistrer</button></div>
     </form>`, (m) => {
+    const list = $('#tpl-items', m), add = $('#tpl-new', m);
+    const count = () => { const n = $$('.tpl-item input', list).filter((i) => i.value.trim()).length; $('.tpl-count', m).textContent = n ? `· ${n}` : ''; };
+    const push = (text, focus = false) => {
+      list.insertAdjacentHTML('beforeend', row(text));
+      const li = list.lastElementChild;
+      li.classList.add('new');
+      if (focus) $('input', li).focus();
+      count();
+    };
+    // Ajouter : Entrée valide et laisse le curseur prêt pour le suivant ; un collage de plusieurs lignes crée plusieurs éléments
+    add.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); const v = add.value.trim(); if (v) { push(v); add.value = ''; list.lastElementChild.scrollIntoView({ block: 'nearest' }); } } });
+    add.addEventListener('paste', (e) => {
+      const lines = (e.clipboardData?.getData('text') || '').split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+      if (lines.length < 2) return;
+      e.preventDefault();
+      lines.forEach((x) => push(x));
+    });
+    list.addEventListener('click', (e) => { const d = e.target.closest('.tpl-del'); if (!d) return; const li = d.closest('li'); li.classList.add('out'); setTimeout(() => { li.remove(); count(); }, 180); });
+    list.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || !e.target.matches('input')) return;
+      e.preventDefault();
+      const next = e.target.closest('li').nextElementSibling;
+      (next ? $('input', next) : add).focus();
+    });
+    list.addEventListener('input', count);
+    if (window.Sortable) Sortable.create(list, { handle: '.tpl-grip', animation: 160 });
+    count();
     $('#tpl-form', m).onsubmit = (e) => {
       e.preventDefault();
       const nn = $('#tpl-name', m).value.trim();
-      const items = $('#tpl-items', m).value.split('\n').map((x) => x.trim()).filter(Boolean);
+      const items = [...$$('.tpl-item input', list).map((i) => i.value.trim()), add.value.trim()].filter(Boolean);
       if (!nn) return;
       if (name && name !== nn) delete tp[name];
       tp[nn] = items;
@@ -2150,14 +2181,23 @@ function editTemplate(name) {
 A['tpl-manage'] = () => manageTemplates();
 A['tpl-new'] = () => editTemplate('');
 A['tpl-edit'] = (el) => editTemplate(Object.keys(templates())[+el.dataset.i]);
+// Suppression immédiate, avec « Annuler » (pas de fenêtre de confirmation, peu fiable dans l'app installée)
 A['tpl-del'] = (el) => {
   const tp = templates();
   const n = Object.keys(tp)[+el.dataset.i];
-  if (!confirm(`Supprimer le modèle « ${n} » ?`)) return;
+  if (n == null) return;
+  const before = { ...tp };
   delete tp[n];
   save();
   manageTemplates();
   if (ui.tab === 'lists') renderPanel();
+  toast(`Modèle « ${esc(n)} » supprimé`, { undo: () => {
+    for (const k of Object.keys(tp)) delete tp[k];
+    Object.assign(tp, before);
+    save();
+    if ($('.tpl-list')) manageTemplates();
+    if (ui.tab === 'lists') renderPanel();
+  } });
 };
 A['list-save-tpl'] = (el) => {
   const l = findList(el.dataset.id);
