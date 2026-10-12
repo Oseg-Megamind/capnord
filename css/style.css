@@ -1126,3 +1126,9 @@ h1, h2, h3, .home-top h1, .trip-title h1, .step-top h3, .fc-main h2, .sh-hero h1
 .home-btns { margin-left: auto; }
 .brandmark { white-space: nowrap; }
 @media (max-width: 480px) { .home-top { align-items: center; } .home-top > div:first-child { flex-basis: 100%; } .home-btns { width: 100%; justify-content: flex-end; } }
+
+/* Jours de l'étape : tous de la même taille ; aujourd'hui = point doré */
+.dayline .dl-day { flex: 0 0 64px; width: 64px; min-width: 0; position: relative; transform: none !important; }
+.dayline .dl-day.today::after { content: ''; position: absolute; top: 6px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.dayline button.today { border-color: var(--line); }
+.dayline .dl-day.on.today::after { background: #fff; }

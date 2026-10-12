@@ -847,9 +847,11 @@ function openStepDrawer(id, focus = null) {
   if (focus) ui.dtab = tabFor[focus.split(':')[0]] || ui.dtab;
   const st0 = t.steps.find((x) => x.id === id);
   const days0 = stepDays(st0);
+  if (days0.length && st0.subs.some((x) => !x.date)) { st0.subs.forEach((x) => { if (!x.date) x.date = days0[0]; }); touch(t); save(); }
   if (ui.drawer?.id !== id || ui.drawer?.type !== 'step') ui.dday = days0.includes(todayStr()) ? todayStr() : days0[0] || 'all';
-  if (focus === 'stays' || focus?.startsWith('stay:') || focus === 'place' || focus === 'notes') ui.dday = 'all';
-  if ((focus === 'subs' || focus === 'photos') && ui.dday === 'all' && days0.length) ui.dday = days0.includes(todayStr()) ? todayStr() : days0[0];
+  if (ui.dday === 'all' && days0.length) ui.dday = days0.includes(todayStr()) ? todayStr() : days0[0];
+  // Raccourcis : « nuit à trouver » ouvre la Nuit, le lieu ouvre l'onglet Lieu
+  if (days0.length && (focus === 'stays' || focus?.startsWith('stay:'))) ui.dtab = 'night';
   ui.drawer = { type: 'step', id };
   renderDrawer(true);
   refresh({ header: false });
@@ -892,7 +894,7 @@ function stepDrawerHTML(t, s) {
   if (ui.dday !== 'all' && !days.includes(ui.dday)) ui.dday = days[0] || 'all';
   const D = ui.dday;
   const dayMode = D !== 'all';
-  const okTabs = dayMode ? ['subs', 'photos', 'night', 'notes'] : ['place', 'stays', 'subs', 'photos', 'notes'];
+  const okTabs = dayMode ? ['subs', 'photos', 'night', 'notes', 'place'] : ['place', 'stays', 'subs', 'photos', 'notes'];
   if (!okTabs.includes(ui.dtab)) ui.dtab = dayMode ? 'subs' : 'place';
   const pane = (k) => (ui.dtab === k ? '' : 'hidden');
   const cover = t.photos.find((p) => p.id === s.coverId) || stepPhotos(t, s).at(-1);
@@ -901,7 +903,7 @@ function stepDrawerHTML(t, s) {
   const nightStays = dayMode ? s.stays.filter((st) => (st.checkIn && st.checkOut ? st.checkIn <= D && D < st.checkOut : true)) : s.stays;
   const tabs = dayMode
     ? [['subs', icon('list'), 'Activités', daySubs.length ? `${daySubs.filter((x) => x.done).length}/${daySubs.length}` : ''], ['photos', icon('camera'), 'Photos', dayPh.length || ''],
-      ['night', icon('bed'), 'Nuit', nightStays.length ? '✓' : (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.dayNotes?.[D] ? '•' : '']]
+      ['night', icon('bed'), 'Nuit', nightStays.length ? '✓' : (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.dayNotes?.[D] ? '•' : ''], ['place', icon('pin'), 'Lieu', '']]
     : [['place', icon('pin'), 'Lieu', ''], ['stays', icon('bed'), 'Hébergement', s.stays.length || (n ? '!' : '')],
       ['subs', icon('list'), 'Activités', s.subs.length ? `${done}/${s.subs.length}` : ''], ['photos', icon('camera'), 'Photos', stepPhotos(t, s).length || ''], ['notes', icon('note'), 'Notes', s.notes ? '•' : '']];
   const today = todayStr();
@@ -912,9 +914,8 @@ function stepDrawerHTML(t, s) {
     <div class="dh-title"><span class="pin" aria-hidden="true"><i class="pin-wave"></i><i class="pin-wave w2"></i><svg class="pin-svg" viewBox="0 0 48 60"><path class="pin-body" d="M24 2C12.4 2 3 11.2 3 22.6 3 37.4 24 58 24 58s21-20.6 21-35.4C45 11.2 35.6 2 24 2Z"/><circle class="pin-dot" cx="24" cy="22.5" r="8"/></svg></span><input class="title-input" data-f="name" placeholder="Nom de l’étape" autocomplete="off" aria-label="Nom de l’étape"></div>
     <p class="dh-sub">${s.arrival ? (n ? `Du ${fmtDay(s.arrival, { day: 'numeric', month: 'long' })} au ${fmtDay(s.departure, { day: 'numeric', month: 'long' })}` : fmtDayLong(s.arrival)) : 'Dates à définir'} · ${n ? plural(n, 'nuit') : 'de passage'} · étape ${i + 1} sur ${t.steps.length}</p>
   </div>
-  ${days.length > 1 || (days.length && n) ? `<div class="dayline" role="tablist" aria-label="Jours de l’étape">
-    <button class="dl-all ${!dayMode ? 'on' : ''}" data-act="dday" data-d="all" role="tab"><b>Étape</b><small>vue d’ensemble</small></button>
-    ${days.map((d, k) => `<button class="${D === d ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="dday" data-d="${d}" role="tab"><small>Jour ${k + 1}</small><b>${fmtDay(d, { day: 'numeric' })}</b><small>${fmtDay(d, { weekday: 'short' })}${d === today ? ' · auj.' : ''}</small></button>`).join('')}
+  ${days.length ? `<div class="dayline" role="tablist" aria-label="Jours de l’étape">
+    ${days.map((d, k) => `<button class="dl-day ${D === d ? 'on' : ''} ${d === today ? 'today' : ''}" data-act="dday" data-d="${d}" role="tab" ${d === today ? 'aria-label="Aujourd’hui"' : ''}><small>Jour ${k + 1}</small><b>${fmtDay(d, { day: 'numeric' })}</b><small>${fmtDay(d, { weekday: 'short' })}</small></button>`).join('')}
   </div>` : ''}
   <div class="drawer-nav">
     ${prev ? `<button class="btn sm" data-act="open-leg" data-id="${s.id}">‹ Trajet depuis ${esc(prev.name)}</button>` : '<button class="btn sm" disabled>‹ Départ</button>'}
@@ -954,6 +955,7 @@ function stepDrawerHTML(t, s) {
       <h4>Astuces des voyageurs <small>partagées avec tous</small></h4>
       <div id="tips" class="tips"></div>
     </section>` : ''}
+    ${dayMode ? `<section class="sec ${pane('place')}"><h4>Notes générales de l’étape</h4><textarea data-f="notes" rows="4" placeholder="Infos valables pour tout le séjour : codes, contacts, idées…"></textarea></section>` : ''}
     <div class="${pane('place')} del-step-row"><button class="link danger-link" data-act="del-step">Supprimer cette étape</button></div>
 
 
@@ -1050,8 +1052,7 @@ function subsGroupHTML(t, s, key, title, sub, list, ph) {
 function subsOfDayHTML(t, s, d) {
   const k = stepDays(s).indexOf(d) + 1;
   const byTime = (a, b) => (a.time || '99:99').localeCompare(b.time || '99:99');
-  return subsGroupHTML(t, s, d, `Jour ${k}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), 'Ajouter une activité à cette journée…')
-    + subsGroupHTML(t, s, '', 'Idées à placer', 'faites-les glisser dans la journée', s.subs.filter((x) => !x.date), 'Une idée à caser pendant l’étape…');
+  return subsGroupHTML(t, s, d, `Jour ${k}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), 'Ajouter une activité à cette journée…');
 }
 
 function subsByDayHTML(t, s) {
@@ -1066,7 +1067,6 @@ function subsByDayHTML(t, s) {
   const loose = s.subs.filter((x) => !x.date);
   const other = s.subs.filter((x) => x.date && !inDays.has(x.date));
   return days.map((d, k) => group(d, `Jour ${k + 1}`, fmtDayLong(d), s.subs.filter((x) => x.date === d).sort(byTime), `Ajouter une activité au jour ${k + 1}…`)).join('')
-    + group('', 'À planifier', 'sans jour précis', loose, 'Une idée à caser pendant l’étape…')
     + (other.length ? `<div class="day-group other"><div class="day-h"><span class="day-n">Autres dates</span><small>en dehors de l’étape</small></div><div class="subs" data-subs-day="${other[0].date}">${other.map((x) => subHTML(t, s, x)).join('')}</div></div>` : '');
 }
 

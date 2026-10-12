@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voyage · aperçu téléphone</title>
+<title>Cap Nord · aperçu téléphone</title>
 <style>
   :root { color-scheme: light dark; }
   html, body { margin: 0; height: 100%; }
@@ -13,7 +13,7 @@
   .seg { display: inline-flex; background: rgba(255, 255, 255, .7); border: 1px solid #cbd5e1; border-radius: 12px; padding: 3px; gap: 2px; }
   @media (prefers-color-scheme: dark) { .seg { background: #1a2438; border-color: #243049; } }
   .seg button { font: 600 13px -apple-system, system-ui, sans-serif; border: 0; background: none; color: inherit; padding: 7px 12px; border-radius: 9px; cursor: pointer; }
-  .seg button.on { background: #0f766e; color: #fff; }
+  .seg button.on { background: #7a2436; color: #fff; }
   .tool { font: 600 13px -apple-system, system-ui, sans-serif; padding: 7px 12px; border-radius: 10px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; cursor: pointer; }
   .stage { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: flex-start; gap: 24px; }
   .col { display: flex; flex-direction: column; align-items: center; gap: 6px; transform-origin: top center; }
@@ -30,19 +30,19 @@
 <body>
 <div class="bar">
   <div class="seg" role="tablist" aria-label="Écran affiché">
-    <button data-mode="app" role="tab">🧳 Mon voyage</button>
-    <button data-mode="friends" role="tab">👀 Vue de mes amis</button>
-    <button data-mode="both" role="tab">↔︎ Les deux</button>
+    <button data-mode="app" role="tab">Mon voyage</button>
+    <button data-mode="friends" role="tab">Vue de mes amis</button>
+    <button data-mode="both" role="tab">Les deux</button>
   </div>
-  <button class="tool" id="reload" title="Recharger pour voir les dernières modifications">↻ Recharger</button>
+  <button class="tool" id="reload" title="Recharger pour voir les dernières modifications">Recharger</button>
 </div>
 <div class="stage" id="stage">
   <div class="col" id="col-app">
-    <span class="label">🧳 Mon voyage</span>
+    <span class="label">Mon voyage</span>
     <div class="phone"><div class="screen"><div class="status"><span class="clock">9:41</span><span>●●● 5G ▮</span></div><iframe id="app" title="Mon voyage"></iframe></div></div>
   </div>
   <div class="col" id="col-friends">
-    <span class="label">👀 Ce que voient mes amis</span>
+    <span class="label">Ce que voient mes amis</span>
     <div class="phone"><div class="screen"><div class="status"><span class="clock">9:41</span><span>●●● 5G ▮</span></div><iframe id="friends" title="Vue des amis"></iframe></div></div>
   </div>
 </div>

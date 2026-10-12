@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trailbook · variantes du Marque-page</title>
+<style>
+  :root { --bordeaux: #7a2436; --or: #d9a441; --encre: #1b1517; --papier: #f5f3ef; --pierre: #8c8580; --sable: #e9e4dc;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; --display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--papier); color: var(--encre); font: 15px/1.5 var(--font); padding: 26px 18px 50px; }
+  h1 { margin: 0 0 4px; font: 700 28px var(--display); letter-spacing: -.04em; }
+  .lead { margin: 0 0 20px; color: var(--pierre); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; max-width: 1040px; }
+  .v { background: #fff; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .v h2 { margin: 0; font: 650 18px var(--display); letter-spacing: -.02em; display: flex; gap: 8px; align-items: baseline; }
+  .v h2 span { font: 700 11px var(--font); letter-spacing: .12em; color: var(--or); }
+  .v p { margin: 0; color: var(--pierre); font-size: 13.5px; }
+  .tiles { display: flex; align-items: flex-end; gap: 12px; }
+  .tiles svg { border-radius: 22%; }
+  .big { width: 128px; height: 128px; box-shadow: 0 12px 26px rgba(122, 36, 54, .25); }
+  .mid { width: 60px; height: 60px; }
+  .sm { width: 29px; height: 29px; }
+  .home { border-radius: 18px; padding: 14px 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #2b3a4a; }
+  .home div { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; font-size: 10px; }
+  .home i { width: 46px; height: 46px; border-radius: 11px; background: rgba(255, 255, 255, .22); display: block; }
+  .home svg { width: 46px; height: 46px; border-radius: 22%; }
+  .lock { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--papier); }
+  .lock svg { width: 40px; height: 40px; border-radius: 22%; flex: none; }
+  .wm { font: 700 30px/1 var(--display); letter-spacing: -.055em; display: inline-flex; align-items: baseline; }
+  .wm .i { position: relative; display: inline-block; }
+  .wm .i svg { position: absolute; left: 50%; top: -.1em; width: .36em; height: .36em; transform: translateX(-50%); border-radius: 0; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="star" viewBox="0 0 100 100"><path d="M50 0 C53 34 66 47 100 50 C66 53 53 66 50 100 C47 66 34 53 0 50 C34 47 47 34 50 0 Z"/></symbol>
+
+    <!-- A1 · Classique : marque-page papier, piste bordeaux, étoile or -->
+    <symbol id="a1" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#7a2436"/>
+      <path d="M160 64h192a14 14 0 0 1 14 14v370l-110-66-110 66V78a14 14 0 0 1 14-14Z" fill="#f5f3ef"/>
+      <path d="M214 318c0-50 84-50 84-100s-60-44-60-82" fill="none" stroke="#7a2436" stroke-width="18" stroke-linecap="round" stroke-dasharray="1 32"/>
+      <use href="#star" x="203" y="78" width="70" height="70" fill="#d9a441"/>
+    </symbol>
+
+    <!-- A2 · Or : marque-page doré sur bordeaux, piste bordeaux, étoile papier -->
+    <symbol id="a2" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#7a2436"/>
+      <path d="M168 0h176v432l-88-58-88 58Z" fill="#d9a441"/>
+      <path d="M222 330c0-46 70-48 70-94s-48-42-48-76" fill="none" stroke="#7a2436" stroke-width="17" stroke-linecap="round" stroke-dasharray="1 30"/>
+      <use href="#star" x="212" y="74" width="88" height="88" fill="#f5f3ef"/>
+    </symbol>
+
+    <!-- A3 · Trait : marque-page au trait (comme les pictogrammes), piste et étoile or -->
+    <symbol id="a3" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#7a2436"/>
+      <path d="M168 84h176a12 12 0 0 1 12 12v344l-100-62-100 62V96a12 12 0 0 1 12-12Z" fill="none" stroke="#f5f3ef" stroke-width="22" stroke-linejoin="round"/>
+      <path d="M220 314c0-46 76-46 76-92s-54-40-54-74" fill="none" stroke="#d9a441" stroke-width="17" stroke-linecap="round" stroke-dasharray="1 30"/>
+      <use href="#star" x="210" y="96" width="62" height="62" fill="#d9a441"/>
+    </symbol>
+  </defs>
+</svg>
+
+<h1>Le Marque-page · 3 variantes</h1>
+<p class="lead">Même idée : un marque-page (book) dont la piste (trail) mène à l’étoile du nord. Trois façons de la dessiner.</p>
+
+<div class="grid">
+  <section class="v">
+    <h2><span>A1</span>Classique</h2>
+    <div class="tiles"><svg class="big" viewBox="0 0 512 512"><use href="#a1"/></svg><svg class="mid" viewBox="0 0 512 512"><use href="#a1"/></svg><svg class="sm" viewBox="0 0 512 512"><use href="#a1"/></svg></div>
+    <div class="home"><div><i></i>Photos</div><div><svg viewBox="0 0 512 512"><use href="#a1"/></svg>Trailbook</div><div><i></i>Plans</div><div><i></i>Météo</div></div>
+    <div class="lock"><svg viewBox="0 0 512 512"><use href="#a1"/></svg><span class="wm">tra<span class="i">ı<svg viewBox="0 0 100 100" fill="#d9a441"><use href="#star"/></svg></span>lbook</span></div>
+    <p>Marque-page couleur papier, piste bordeaux, étoile dorée en haut. Le plus lisible et le plus « carnet ». Le contraste papier / bordeaux se repère tout de suite sur l’écran d’accueil.</p>
+  </section>
+
+  <section class="v">
+    <h2><span>A2</span>Ruban doré</h2>
+    <div class="tiles"><svg class="big" viewBox="0 0 512 512"><use href="#a2"/></svg><svg class="mid" viewBox="0 0 512 512"><use href="#a2"/></svg><svg class="sm" viewBox="0 0 512 512"><use href="#a2"/></svg></div>
+    <div class="home"><div><i></i>Photos</div><div><svg viewBox="0 0 512 512"><use href="#a2"/></svg>Trailbook</div><div><i></i>Plans</div><div><i></i>Météo</div></div>
+    <div class="lock"><svg viewBox="0 0 512 512"><use href="#a2"/></svg><span class="wm">tra<span class="i">ı<svg viewBox="0 0 100 100" fill="#d9a441"><use href="#star"/></svg></span>lbook</span></div>
+    <p>Un ruban doré qui « tombe » du haut de l’icône, comme le signet d’un vieux carnet relié, avec une étoile papier. Le plus luxueux, l’esprit « passeport ».</p>
+  </section>
+
+  <section class="v">
+    <h2><span>A3</span>Au trait</h2>
+    <div class="tiles"><svg class="big" viewBox="0 0 512 512"><use href="#a3"/></svg><svg class="mid" viewBox="0 0 512 512"><use href="#a3"/></svg><svg class="sm" viewBox="0 0 512 512"><use href="#a3"/></svg></div>
+    <div class="home"><div><i></i>Photos</div><div><svg viewBox="0 0 512 512"><use href="#a3"/></svg>Trailbook</div><div><i></i>Plans</div><div><i></i>Météo</div></div>
+    <div class="lock"><svg viewBox="0 0 512 512"><use href="#a3"/></svg><span class="wm">tra<span class="i">ı<svg viewBox="0 0 100 100" fill="#d9a441"><use href="#star"/></svg></span>lbook</span></div>
+    <p>Le marque-page dessiné au trait, dans le style des pictogrammes de l’app, avec la piste et l’étoile dorées. Le plus minimaliste et moderne.</p>
+  </section>
+</div>
+</body>
+</html>

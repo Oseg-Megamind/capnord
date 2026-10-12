@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trailbook · direction artistique</title>
+<style>
+  :root {
+    /* Trailbook : bordeaux passeport + or, encre et papier, aplats uniquement */
+    --bordeaux: #7a2436;
+    --or: #d9a441;
+    --encre: #1b1517;
+    --papier: #f5f3ef;
+    --pierre: #8c8580;
+    --sable: #e9e4dc;
+    --vert: #2f6f62;
+    --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    --display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--papier); color: var(--encre); font: 15px/1.5 var(--font); padding: 28px 18px 60px; }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  header h1 { margin: 0; font: 700 34px/1.05 var(--display); letter-spacing: -.04em; }
+  header p { margin: 6px 0 0; color: var(--pierre); max-width: 640px; }
+  .sec { background: #fff; border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; }
+  .sec > h2 { margin: 0; font: 700 13px/1 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--bordeaux); }
+  .sec > p.lead { margin: -6px 0 0; color: var(--pierre); font-size: 14px; }
+  .logos { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .logo { border: 1px solid var(--sable); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .logo h3 { margin: 0; font: 650 16px var(--display); letter-spacing: -.02em; display: flex; gap: 8px; align-items: baseline; }
+  .logo h3 span { font: 700 11px var(--font); color: var(--or); letter-spacing: .12em; }
+  .logo p { margin: 0; color: var(--pierre); font-size: 13.5px; }
+  .tiles { display: flex; gap: 10px; align-items: flex-end; }
+  .tiles svg { border-radius: 22%; }
+  .big { width: 112px; height: 112px; box-shadow: 0 10px 24px rgba(122, 36, 54, .25); }
+  .mid { width: 56px; height: 56px; }
+  .sm { width: 30px; height: 30px; }
+  .wordmark { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .wm { font: 700 52px/1 var(--display); letter-spacing: -.055em; color: var(--encre); display: inline-flex; align-items: baseline; }
+  .wm .i { position: relative; display: inline-block; }
+  .wm .i svg { position: absolute; left: 50%; top: -.12em; width: .36em; height: .36em; transform: translateX(-50%); }
+  .wm.light { color: #fff; }
+  .wm-box { padding: 18px 22px; border-radius: 16px; }
+  .wm-box.dark { background: var(--bordeaux); }
+  .wm-box.paper { background: var(--papier); }
+  .palette { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .sw { border-radius: 16px; overflow: hidden; border: 1px solid var(--sable); }
+  .sw i { display: block; height: 78px; }
+  .sw div { padding: 8px 10px 10px; display: flex; flex-direction: column; }
+  .sw b { font-size: 14px; }
+  .sw small { color: var(--pierre); font: 12px ui-monospace, Menlo, monospace; }
+  .sw em { font-style: normal; font-size: 12px; color: var(--pierre); }
+  .type { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .type .t1 { font: 700 40px/1.05 var(--display); letter-spacing: -.045em; }
+  .type .t2 { font: 650 22px/1.2 var(--display); letter-spacing: -.025em; }
+  .type .t3 { font: 400 15px/1.55 var(--font); color: #3b3436; }
+  .type .t4 { font: 700 11px var(--font); letter-spacing: .16em; text-transform: uppercase; color: var(--pierre); }
+  .pictos { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pictos span { width: 52px; height: 52px; border-radius: 14px; background: var(--papier); display: grid; place-items: center; color: var(--encre); }
+  .pictos svg { width: 24px; height: 24px; }
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .rule { background: var(--papier); border-radius: 14px; padding: 12px 14px; }
+  .rule b { display: block; margin-bottom: 2px; }
+  .rule span { color: #5b5356; font-size: 13.5px; }
+  .ui { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+  .dest { border-radius: 18px; overflow: hidden; background: var(--bordeaux); color: #fff; padding: 18px; }
+  .dest small { font: 700 10.5px var(--font); letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+  .dest b { display: block; font: 700 30px/1.05 var(--display); letter-spacing: -.04em; margin-top: 6px; }
+  .dest span { font-size: 13.5px; opacity: .9; }
+  .days { display: flex; gap: 6px; margin-top: 14px; }
+  .days div { flex: 1; border-radius: 12px; background: rgba(255,255,255,.12); text-align: center; padding: 6px 0; font-size: 11px; }
+  .days div b { font-size: 18px; margin: 0; }
+  .days .on { background: #fff; color: var(--bordeaux); }
+  .ticket { border-radius: 18px; background: #fff; border: 1px solid var(--sable); padding: 16px; display: grid; grid-template-columns: 1fr 1.3fr 1fr; align-items: center; gap: 6px; }
+  .ticket b { font: 700 28px/1 var(--display); letter-spacing: .02em; }
+  .ticket small { display: block; color: var(--pierre); font-size: 12px; }
+  .ticket .r { text-align: right; }
+  .ticket .mid { width: auto; height: auto; position: relative; display: flex; align-items: center; justify-content: center; }
+  .ticket .mid:before { content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 3px dashed var(--bordeaux); }
+  .ticket .mid i { position: relative; width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 2px solid var(--bordeaux); display: grid; place-items: center; color: var(--bordeaux); font-style: normal; }
+  .ticket .mid i svg { width: 18px; height: 18px; }
+  .btns { display: flex; flex-direction: column; gap: 10px; }
+  .b1 { background: var(--bordeaux); color: #fff; border-radius: 14px; padding: 13px; text-align: center; font-weight: 700; }
+  .b2 { background: #fff; color: var(--encre); border: 1.5px solid var(--sable); border-radius: 14px; padding: 12px; text-align: center; font-weight: 700; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { padding: 4px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 700; }
+  .c1 { background: var(--or); color: #3b2508; }
+  .c2 { background: #f3e6e9; color: var(--bordeaux); }
+  .c3 { background: var(--papier); color: var(--encre); }
+  .voice { font-size: 15px; display: flex; flex-direction: column; gap: 6px; }
+  .voice div { display: flex; gap: 10px; }
+  .voice .ok { color: var(--vert); font-weight: 700; width: 70px; flex: none; }
+  .voice .no { color: #b3261e; font-weight: 700; width: 70px; flex: none; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Étoile du nord (accent or) -->
+    <symbol id="star" viewBox="0 0 100 100"><path d="M50 0 C53 34 66 47 100 50 C66 53 53 66 50 100 C47 66 34 53 0 50 C34 47 47 34 50 0 Z" fill="#d9a441"/></symbol>
+    <!-- A · Le Marque-page : un marque-page dont la piste mène à l'étoile -->
+    <symbol id="logoA" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#7a2436"/>
+      <path d="M156 70h200a16 16 0 0 1 16 16v356l-116-70-116 70V86a16 16 0 0 1 16-16Z" fill="#f5f3ef"/>
+      <path d="M210 330c0-56 92-52 92-108s-70-48-70-96" fill="none" stroke="#7a2436" stroke-width="16" stroke-linecap="round" stroke-dasharray="2 30"/>
+      <use href="#star" x="196" y="84" width="72" height="72"/>
+    </symbol>
+    <!-- B · Le T-Route : la route forme le T, l'horizon sa barre, l'étoile au-dessus -->
+    <symbol id="logoB" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#7a2436"/>
+      <path d="M96 268h320" stroke="#f5f3ef" stroke-width="22" stroke-linecap="round"/>
+      <path d="M232 268h48l52 244H180Z" fill="#f5f3ef"/>
+      <path d="M256 310v26M256 372v32M256 444v50" stroke="#7a2436" stroke-width="10" stroke-linecap="round"/>
+      <use href="#star" x="214" y="92" width="84" height="84"/>
+    </symbol>
+    <!-- C · Le Carnet ouvert : la piste traverse les deux pages jusqu'à l'étoile -->
+    <symbol id="logoC" viewBox="0 0 512 512">
+      <rect width="512" height="512" fill="#7a2436"/>
+      <path d="M256 150c-40-26-92-34-150-30v262c58-4 110 4 150 30 40-26 92-34 150-30V120c-58-4-110 4-150 30Z" fill="#f5f3ef"/>
+      <path d="M256 150v262" stroke="#7a2436" stroke-width="6" opacity=".35"/>
+      <path d="M136 350c40 0 60-40 100-44s56 20 96-14 34-70 52-92" fill="none" stroke="#7a2436" stroke-width="13" stroke-linecap="round" stroke-dasharray="2 24"/>
+      <use href="#star" x="350" y="168" width="58" height="58"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <h1>Trailbook</h1>
+    <p>Direction artistique. Le carnet de route qu’on remplit à plusieurs. Une identité de « passeport » : bordeaux, or, papier, encre, en aplats, sans dégradé, avec une typographie sobre et des pictogrammes au trait.</p>
+  </header>
+
+  <section class="sec">
+    <h2>Logo · 3 pistes</h2>
+    <p class="lead">L’étoile dorée du nord est le fil rouge : c’est elle qui « guide » le voyage.</p>
+    <div class="logos">
+      <div class="logo"><h3><span>A</span>Le Marque-page</h3>
+        <div class="tiles"><svg class="big" viewBox="0 0 512 512"><use href="#logoA"/></svg><svg class="mid" viewBox="0 0 512 512"><use href="#logoA"/></svg><svg class="sm" viewBox="0 0 512 512"><use href="#logoA"/></svg></div>
+        <p>Un marque-page (le « book ») dont la piste en pointillés (le « trail ») mène à l’étoile. Lisible même en tout petit, unique.</p></div>
+      <div class="logo"><h3><span>B</span>Le T-Route</h3>
+        <div class="tiles"><svg class="big" viewBox="0 0 512 512"><use href="#logoB"/></svg><svg class="mid" viewBox="0 0 512 512"><use href="#logoB"/></svg><svg class="sm" viewBox="0 0 512 512"><use href="#logoB"/></svg></div>
+        <p>L’évolution du logo actuel : l’horizon et la route dessinent un « T » de Trailbook. Continuité avec Cap Nord.</p></div>
+      <div class="logo"><h3><span>C</span>Le Carnet ouvert</h3>
+        <div class="tiles"><svg class="big" viewBox="0 0 512 512"><use href="#logoC"/></svg><svg class="mid" viewBox="0 0 512 512"><use href="#logoC"/></svg><svg class="sm" viewBox="0 0 512 512"><use href="#logoC"/></svg></div>
+        <p>Un carnet ouvert, la piste traverse les deux pages jusqu’à l’étoile. Le plus explicite sur « carnet de voyage partagé ».</p></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Logotype</h2>
+    <p class="lead">Tout en minuscules, serré, et le point du « i » remplacé par l’étoile dorée.</p>
+    <div class="wordmark">
+      <div class="wm-box paper"><span class="wm">tra<span class="i">ı<svg viewBox="0 0 100 100"><use href="#star"/></svg></span>lbook</span></div>
+      <div class="wm-box dark"><span class="wm light">tra<span class="i">ı<svg viewBox="0 0 100 100"><use href="#star"/></svg></span>lbook</span></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Couleurs</h2>
+    <p class="lead">Aplats uniquement. Le bordeaux porte l’identité, l’or signale « maintenant / important ».</p>
+    <div class="palette">
+      <div class="sw"><i style="background:#7a2436"></i><div><b>Bordeaux passeport</b><small>#7A2436</small><em>Boutons, en-têtes, sélection</em></div></div>
+      <div class="sw"><i style="background:#d9a441"></i><div><b>Or étoile</b><small>#D9A441</small><em>Étape en cours, alertes douces</em></div></div>
+      <div class="sw"><i style="background:#1b1517"></i><div><b>Encre</b><small>#1B1517</small><em>Textes, pictogrammes</em></div></div>
+      <div class="sw"><i style="background:#f5f3ef"></i><div><b>Papier</b><small>#F5F3EF</small><em>Fond de l’app</em></div></div>
+      <div class="sw"><i style="background:#8c8580"></i><div><b>Pierre</b><small>#8C8580</small><em>Textes secondaires</em></div></div>
+      <div class="sw"><i style="background:#2f6f62"></i><div><b>Vert oasis</b><small>#2F6F62</small><em>Réservé, payé, validé</em></div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Typographie</h2>
+    <p class="lead">Une seule famille, celle du téléphone (SF Pro sur iPhone, Roboto sur Android) : nette, lisible, sans chargement.</p>
+    <div class="type">
+      <div><div class="t4">Titre · Display Bold, -4 %</div><div class="t1">Béziers</div></div>
+      <div><div class="t4">Sous-titre · Display Semibold</div><div class="t2">Du 11 au 13 octobre</div></div>
+      <div><div class="t4">Texte · Regular 15</div><div class="t3">Canal du Midi à vélo jusqu’aux écluses de Fonseranes, puis déjeuner aux Halles.</div></div>
+      <div><div class="t4">Étiquette · Bold 11, capitales espacées</div><div class="t4" style="color:var(--bordeaux)">Destination · jour 2</div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Pictogrammes</h2>
+    <p class="lead">Trait de 1,9 px, bouts arrondis, couleur de l’encre. Jamais d’emoji. Les véhicules regardent toujours vers la droite (sens de la marche).</p>
+    <div class="pictos">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" transform="rotate(45 12 12)"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4M2 6h4M2 10h4M2 14h4M2 18h4"/></svg></span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 6v12a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Dans l’app</h2>
+    <div class="ui">
+      <div class="dest"><small>Destination</small><b>Béziers</b><span>Du 11 au 13 octobre · 2 nuits</span>
+        <div class="days"><div><b>11</b>sam.</div><div class="on"><b>12</b>dim.</div><div><b>13</b>lun.</div></div></div>
+      <div class="ticket"><div><b>BÉZ</b><small>Béziers</small></div>
+        <div class="mid"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></i></div>
+        <div class="r"><b>CAR</b><small>Carcassonne</small></div></div>
+      <div class="btns"><div class="b1">Enregistrer</div><div class="b2">Inviter des compagnons</div>
+        <div class="chips"><span class="chip c1">Aujourd’hui</span><span class="chip c2">3 activités</span><span class="chip c3">Payé</span></div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Mouvement</h2>
+    <div class="rules">
+      <div class="rule"><b>Ressort, pas rebond</b><span>Les fiches montent du bas avec un léger ressort (0,45 s).</span></div>
+      <div class="rule"><b>Cascade</b><span>Les étapes apparaissent une à une, 40 ms d’écart.</span></div>
+      <div class="rule"><b>Sens de la marche</b><span>Le véhicule roule toujours du départ vers l’arrivée.</span></div>
+      <div class="rule"><b>L’étoile pulse</b><span>Seul l’élément « maintenant » bouge en continu, doucement.</span></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>Ton</h2>
+    <div class="voice">
+      <div><span class="ok">Oui</span><span>« Ajoute l’hôtel de cette nuit » · « Léa a ajouté une étape »</span></div>
+      <div><span class="no">Non</span><span>« Veuillez renseigner l’objet hébergement » · « Erreur 400 »</span></div>
+      <div><span class="ok">Oui</span><span>Phrases courtes, verbes d’action, le vocabulaire du voyageur.</span></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
