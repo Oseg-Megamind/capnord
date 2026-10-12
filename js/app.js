@@ -1072,10 +1072,10 @@ function stepDrawerHTML(t, s) {
   const dayPh = dayMode ? stepPhotos(t, s).filter((p) => photoDay(p) === D) : stepPhotos(t, s);
   const nightStays = dayMode ? s.stays.filter((st) => (st.checkIn && st.checkOut ? st.checkIn <= D && D < st.checkOut : true)) : s.stays;
   const tabs = dayMode
-    ? [['subs', icon('list'), 'Activités', daySubs.length ? `${daySubs.filter((x) => x.done).length}/${daySubs.length}` : ''], ['photos', icon('camera'), 'Photos', dayPh.length || ''],
-      ['night', icon('bed'), 'Nuit', nightStays.length ? '✓' : (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.dayNotes?.[D] ? '•' : ''], ['place', icon('pin'), 'Lieu', '']]
-    : [['place', icon('pin'), 'Lieu', ''], ['stays', icon('bed'), 'Hébergement', s.stays.length || (n ? '!' : '')],
-      ['subs', icon('list'), 'Activités', s.subs.length ? `${done}/${s.subs.length}` : ''], ['photos', icon('camera'), 'Photos', stepPhotos(t, s).length || ''], ['notes', icon('note'), 'Notes', s.notes ? '•' : '']];
+    ? [['subs', icon('list'), 'Activités', daySubs.length ? `${daySubs.filter((x) => x.done).length}/${daySubs.length}` : ''],
+      ['night', icon('bed'), 'Nuit', nightStays.length ? '✓' : (n ? '!' : '')], ['notes', icon('note'), 'Notes', s.dayNotes?.[D] ? '•' : ''], ['place', icon('pin'), 'Lieu', ''], ['photos', icon('camera'), 'Photos', dayPh.length || '']]
+    : [['subs', icon('list'), 'Activités', s.subs.length ? `${done}/${s.subs.length}` : ''], ['stays', icon('bed'), 'Hébergement', s.stays.length || (n ? '!' : '')],
+      ['notes', icon('note'), 'Notes', s.notes ? '•' : ''], ['place', icon('pin'), 'Lieu', ''], ['photos', icon('camera'), 'Photos', stepPhotos(t, s).length || '']];
   const today = todayStr();
   return `
   <div class="drawer-head dest-head ${cover ? 'has-cover' : ''}" data-scope>
