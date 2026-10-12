@@ -2702,6 +2702,7 @@ A.share = () => {
   const t = T();
   t.share ||= {};
   t.share.seenAt = Date.now();
+  ui.shareView = null;
   save();
   openModal('<div id="share-modal"></div>', () => { renderShareModal(); renderTripHeader(t); pullFeedback(t); });
 };
@@ -2713,57 +2714,69 @@ function renderShareModal() {
   const sh = t.share || {};
   const pos = sh.position || 'city';
   const ready = cloud.cloudReady();
+  const v = ui.shareView;
   const settings = `
     <label class="fld"><span>Votre prénom (affiché à vos amis)</span><input id="sh-author" value="${esc(sh.author || '')}" placeholder="ex : Fanny" maxlength="40"></label>
     <div class="fld"><span>Votre position</span>
-      <div class="pills">${[['off', '🙈 Masquée'], ['city', '🏙️ Ville de l’étape'], ['exact', '📍 Position GPS précise']].map(([k, l]) => `<label class="pill"><input type="radio" name="shpos" value="${k}" ${pos === k ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
-      <small class="hint">${pos === 'exact' ? 'Vos amis voient votre point bleu et votre tracé. À éviter si le lien circule largement.' : pos === 'city' ? 'Recommandé : vos amis voient la ville où vous êtes, jamais votre adresse exacte.' : 'Vos amis voient les étapes passées, sans savoir où vous êtes maintenant.'}</small>
+      <div class="pills">${[['off', 'Masquée'], ['city', 'Ville de l’étape'], ['exact', 'Position GPS précise']].map(([k, l]) => `<label class="pill"><input type="radio" name="shpos" value="${k}" ${pos === k ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
+      <small class="hint">${pos === 'exact' ? 'Vos amis voient votre point et votre tracé. À éviter si le lien circule largement.' : pos === 'city' ? 'Recommandé : vos amis voient la ville, jamais votre adresse exacte.' : 'Vos amis voient les étapes passées, sans savoir où vous êtes.'}</small>
     </div>`;
-  const companions = companionsHTML(t, ready);
+  const off = '<div class="note warn-box">Le service en ligne n’est pas connecté pour le moment.</div>';
+
+  // Amis et famille : ce qui se déroule sous le bouton
+  let friends;
   if (!isShared(t)) {
-    box.innerHTML = `
-      <h2>Partager le voyage</h2>
-      ${companions}
-      <h3 class="share-sec">Amis et famille <small>regardent et commentent</small></h3>
-      <p class="share-pitch">Vos proches suivent votre voyage depuis un simple lien : la carte, vos récits et vos photos. Ils peuvent <b>aimer</b> et <b>commenter</b>, et vous pouvez leur <b>répondre</b>. Ils n’ont <b>rien à installer</b> et aucun compte à créer.</p>
-      ${ready ? settings : '<div class="note warn-box">Le service de partage n’est pas encore connecté. Il le sera dès que le projet Supabase sera configuré.</div>'}
-      <a class="btn sm" href="share.html?demo=${t.id}" target="_blank" rel="noopener">👁 Voir ce que verront vos amis (aperçu)</a>
-      <div class="share-what"><b>Partagé :</b> étapes, dates, récits, photos et légendes.<br><b>Jamais partagé :</b> budget, documents, réservations, listes, notes personnelles.</div>
-      <div class="actions"><button class="btn" data-act="close-modal">Fermer</button><button class="btn primary" data-act="share-start" ${ready ? '' : 'disabled'}>Créer le lien pour les amis</button></div>`;
+    friends = `${ready ? settings : off}
+      <div class="share-what"><b>Partagé :</b> étapes, dates, récits, photos.<br><b>Jamais :</b> budget, documents, réservations, listes, notes.</div>
+      <div class="row-btns wrap"><a class="btn sm" href="share.html?demo=${t.id}" target="_blank" rel="noopener">${icon('eye')} Aperçu côté amis</a></div>
+      <button class="btn primary full" data-act="share-start" ${ready ? '' : 'disabled'}>Créer le lien à envoyer</button>`;
   } else {
     const url = cloud.shareUrl(sh.token);
     const f = fb[t.id] || { comments: [], likes: [] };
     const recent = f.comments.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 30);
     const label = (target) => {
-      if (target === 'trip') return '💬 Sur le voyage';
+      if (target === 'trip') return 'Sur le voyage';
       const [k, id] = target.split(':');
-      if (k === 'step') return `📍 ${esc(t.steps.find((s) => s.id === id)?.name || 'Étape')}`;
+      if (k === 'step') return esc(t.steps.find((s) => s.id === id)?.name || 'Étape');
       const p = t.photos.find((x) => x.id === id);
-      return p ? `📸 Photo${p.caption ? ' « ' + esc(p.caption.slice(0, 30)) + ' »' : ''}` : '📸 Photo';
+      return p ? `Photo${p.caption ? ' « ' + esc(p.caption.slice(0, 30)) + ' »' : ''}` : 'Photo';
     };
     const targets = [...new Set(recent.map((c) => c.target))];
-    box.innerHTML = `
-      <h2>Partager le voyage</h2>
-      ${companions}
-      <h3 class="share-sec">Amis et famille <small>regardent et commentent</small></h3>
+    friends = `
       <div class="share-link"><input id="share-url" value="${esc(url)}" readonly aria-label="Lien de partage"><button class="btn primary" data-act="share-copy">Copier</button></div>
       <div class="row-btns wrap">
-        ${navigator.share ? '<button class="btn sm" data-act="share-native">📲 Envoyer…</button>' : ''}
-        <a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">👁 Voir comme un ami</a>
+        ${navigator.share ? '<button class="btn sm" data-act="share-native">Envoyer…</button>' : ''}
+        <a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">${icon('eye')} Voir comme un ami</a>
       </div>
       <p class="hint" id="share-status"></p>
-      <div class="share-stats"><span>💬 <b>${f.comments.length}</b> commentaires</span><span>❤️ <b>${f.likes.length}</b> j’aime</span></div>
-      <h4 class="share-h">Conversations</h4>
-      ${targets.length ? targets.map((tg) => `<div class="share-conv"><small class="eyebrow">${label(tg)}</small>${threadHTML(t, tg, { compact: true })}</div>`).join('') : '<p class="muted">Pas encore de commentaires. Envoyez le lien à vos proches !</p>'}
+      <div class="share-stats"><span><b>${f.comments.length}</b> commentaires</span><span><b>${f.likes.length}</b> j’aime</span></div>
+      ${targets.length ? `<h4 class="share-h">Conversations</h4>${targets.map((tg) => `<div class="share-conv"><small class="eyebrow">${label(tg)}</small>${threadHTML(t, tg, { compact: true })}</div>`).join('')}` : ''}
       <details class="share-settings"><summary>Réglages du partage</summary>${settings}
         <button class="btn sm danger" data-act="share-stop">Arrêter le partage et supprimer le lien</button>
-      </details>
-      <div class="actions"><button class="btn primary" data-act="close-modal">Fermer</button></div>`;
-    renderShareStatus();
+      </details>`;
   }
+  const nMembers = (t.collab?.members || []).length;
+  const nCom = (fb[t.id]?.comments || []).length;
+  const choice = (k, ic, title, line, status) => `
+    <button class="share-choice ${v === k ? 'open' : ''}" data-act="share-view" data-k="${k}" aria-expanded="${v === k}">
+      <span class="sc-ic">${icon(ic)}</span>
+      <span class="sc-txt"><b>${title}</b><small>${line}</small>${status ? `<i class="sc-on">${status}</i>` : ''}</span>
+      <span class="sc-chev" aria-hidden="true">›</span>
+    </button>`;
+  box.innerHTML = `
+    <h2>Partager le voyage</h2>
+    <div class="share-choices">
+      ${choice('collab', 'users', 'Compagnons de voyage', 'Ils voyagent avec vous et complètent le carnet.', t.collab ? (nMembers ? plural(nMembers, 'membre') : 'Actif') : '')}
+      ${v === 'collab' ? `<div class="share-pane">${ready ? companionsHTML(t, ready) : off}</div>` : ''}
+      ${choice('friends', 'eye', 'Amis et famille', 'Ils suivent le voyage et commentent vos photos.', isShared(t) ? (nCom ? plural(nCom, 'commentaire') : 'Lien actif') : '')}
+      ${v === 'friends' ? `<div class="share-pane">${friends}</div>` : ''}
+    </div>
+    <div class="actions"><button class="btn" data-act="close-modal">Fermer</button></div>`;
+  if (v === 'friends' && isShared(t)) renderShareStatus();
   $('#sh-author', box)?.addEventListener('change', (e) => { t.share.author = e.target.value.trim(); save(); scheduleSync(t, 2000); });
   $$('[name=shpos]', box).forEach((r) => (r.onchange = () => { t.share.position = r.value; save(); scheduleSync(t, 2000); renderShareModal(); }));
 }
+A['share-view'] = (el) => { ui.shareView = ui.shareView === el.dataset.k ? null : el.dataset.k; renderShareModal(); };
 
 
 // =====================================================================
@@ -2809,16 +2822,13 @@ function companionsHTML(t, ready) {
   const c = t.collab;
   if (!ready) return '';
   if (!c) return `
-    <h3 class="share-sec">Compagnons de voyage <small>modifient le carnet avec vous</small></h3>
     <div class="collab-card">
-      <p>Les personnes qui voyagent avec vous ajoutent elles aussi des étapes, des hébergements, des activités, des dépenses et des photos. Tout se met à jour chez chacun.</p>
       <label class="fld"><span>Votre prénom</span><input id="collab-me" value="${esc(state.settings.myName || t.share?.author || '')}" placeholder="ex : Fanny" maxlength="40"></label>
-      <button class="btn primary full" data-act="collab-start">Inviter des compagnons de voyage</button>
+      <button class="btn primary full" data-act="collab-start">Créer le code d’invitation</button>
       <small class="hint">Vos documents marqués « Visible uniquement par moi » (passeport…) ne sont jamais partagés.</small>
     </div>`;
   const members = (c.members || []).map((m) => `<span class="member ${m.me ? 'me' : ''}">${esc(m.name)}${m.me ? ' (vous)' : ''}</span>`).join('');
   return `
-    <h3 class="share-sec">Compagnons de voyage <small>modifient le carnet avec vous</small></h3>
     <div class="collab-card on">
       <div class="collab-code"><small>Code d’invitation</small><b>${c.code.slice(0, 3)}-${c.code.slice(3)}</b></div>
       <div class="row-btns wrap">
@@ -2847,7 +2857,7 @@ A['collab-start'] = async (el) => {
     toast('Carnet partagé créé : envoyez le code à vos compagnons');
   } catch (e) {
     el.disabled = false;
-    el.textContent = 'Inviter des compagnons de voyage';
+    el.textContent = 'Créer le code d’invitation';
     toast(`Impossible : ${esc(e.message || 'réseau')}`);
   }
 };

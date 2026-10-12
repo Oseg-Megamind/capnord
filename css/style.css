@@ -1300,3 +1300,19 @@ input, select, textarea { border-radius: 10px !important; }
 .bn::before { z-index: 0; }
 .bn { isolation: isolate; }
 .bn::before { z-index: -1; }
+
+/* Partage : deux gros boutons, le détail se déroule dessous */
+.share-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.share-choice { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 16px; border-radius: var(--r); border: 1.5px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; transition: border-color .2s, background .2s; }
+.share-choice:active { transform: scale(.98); }
+.share-choice.open { border-color: var(--text); background: var(--surface); }
+.share-choice .sc-ic { width: 46px; height: 46px; flex: none; border-radius: 12px; display: grid; place-items: center; background: var(--brand); color: #5fd0c8; }
+.share-choice .sc-ic .ico { width: 24px; height: 24px; }
+.share-choice .sc-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.share-choice .sc-txt b { font: 800 17px/1.2 var(--font-display); font-stretch: 110%; }
+.share-choice .sc-txt small { color: var(--muted); font-size: 13.5px; line-height: 1.35; }
+.share-choice .sc-on { align-self: flex-start; margin-top: 4px; font: 700 10px var(--mono); letter-spacing: .06em; text-transform: uppercase; font-style: normal; color: var(--ok); background: var(--ok-bg); padding: 2px 7px; border-radius: 6px; }
+.share-choice .sc-chev { font-size: 22px; color: var(--muted); transition: transform .25s var(--ease); }
+.share-choice.open .sc-chev { transform: rotate(90deg); color: var(--text); }
+.share-pane { display: flex; flex-direction: column; gap: 12px; padding: 4px 4px 10px; animation: rise .35s var(--ease) both; }
+.share-pane .collab-card { margin: 0; }
