@@ -1680,3 +1680,17 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .ph-rx span { display: inline-flex; align-items: center; gap: 2px; }
 .ph-rx svg { width: 10px; height: 10px; fill: #fff; }
 .ph-rx.new { background: #ff5a43; }
+
+/* Nouvelles réactions : cœur rouge et stylo, en haut à droite */
+.step-top { position: relative; }
+.step-rx { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; }
+.step-rx span, .ph-rx span { position: relative; display: inline-grid; place-items: center; width: 26px; height: 26px; animation: rxPop .5s var(--spring) both; }
+.step-rx svg, .ph-rx svg { width: 22px; height: 22px; }
+.rx-l svg { fill: #ff4d3a; }
+.rx-c svg { fill: #5fd0c8; stroke: #10231f; stroke-width: 1.6; stroke-linejoin: round; }
+.step-rx b, .ph-rx b { position: absolute; top: -5px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #10231f; color: #fff; font: 700 9.5px/16px var(--mono); text-align: center; }
+.rx-l b { background: #ff4d3a; }
+@keyframes rxPop { 0% { transform: scale(0); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.ph-rx { position: absolute; top: 4px; right: 6px; left: auto; bottom: auto; display: inline-flex; gap: 4px; padding: 0; background: none; }
+.ph-rx span { width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .92); }
+.ph-rx svg { width: 14px; height: 14px; }

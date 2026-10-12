@@ -747,13 +747,13 @@ function stepCardHTML(t, s, i, cur, today) {
   if (nph) chips.push(`<button class="chip" data-act="open-step" data-id="${s.id}" data-focus="photos">📸 ${nph}</button>`);
   if (cost) chips.push(`<span class="chip">💶 ${fmtMoney(cost, t.currency)}</span>`);
   const rx = reactions(t, [`step:${s.id}`, ...stepPhotos(t, s).map((p) => `photo:${p.id}`), ...t.photos.filter((p) => p.stepId === s.id && p.onLeg).map((p) => `photo:${p.id}`)]);
-  if (rx) chips.unshift(`<button class="chip rx ${rx.fresh ? 'new' : ''}" data-act="open-step" data-id="${s.id}" data-focus="photos" aria-label="Réactions de vos proches">${rxHTML(rx)}${rx.fresh ? '<em>nouveau</em>' : ''}</button>`);
   return `<article class="step ${status} ${ui.drawer?.type === 'step' && ui.drawer.id === s.id ? 'sel' : ''}" data-id="${s.id}">
     <div class="step-rail"><span class="num">${status === 'past' ? '✓' : i + 1}</span></div>
     <div class="step-main" data-act="open-step" data-id="${s.id}" tabindex="0">
       <div class="step-top">
         <h3>${esc(s.name || 'Étape sans nom')}</h3>
         ${status === 'now' ? '<span class="now-badge">Vous êtes ici</span>' : ''}
+        ${rx ? `<span class="step-rx">${rxHTML(rx)}</span>` : ''}
       </div>
       <div class="step-dates">${s.arrival ? `${fmtWeekday(s.arrival)}${n ? ' → ' + fmtWeekday(s.departure) : ''} · ${n ? plural(n, 'nuit') : 'de passage'}` : '<span class="muted">Dates à définir</span>'}${s.place ? '' : ' · <span class="muted">lieu à définir</span>'}</div>
       ${chips.length ? `<div class="chips">${chips.join('')}</div>` : ''}
@@ -2882,7 +2882,7 @@ function photosPaneHTML(t, s, leg = false, day = null) {
   return `
     <div class="ph-grid">
       <label class="ph add"><span>＋</span><small>Photo / vidéo</small><input type="file" accept="image/*,video/*" multiple data-ph-add data-step="${s.id}" data-leg="${leg ? 1 : 0}" data-day="${day || ''}" hidden></label>
-      ${ph.map((p) => `<button class="ph ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}" aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="${esc(p.caption)}">${isVideo(p) ? `<em>▶ ${fmtClip(p.duration)}</em>` : ''}${p.caption ? '<i>Aa</i>' : ''}${(() => { const r = reactions(t, [`photo:${p.id}`]); return r ? `<b class="ph-rx ${r.fresh ? 'new' : ''}">${rxHTML(r)}</b>` : ''; })()}</button>`).join('')}
+      ${ph.map((p) => `<button class="ph ${isVideo(p) ? 'vid' : ''}" data-act="view-photo" data-id="${p.id}" aria-label="${isVideo(p) ? 'Voir la vidéo' : 'Voir la photo'}"><img data-thumb="${p.thumbId}" alt="${esc(p.caption)}">${isVideo(p) ? `<em>▶ ${fmtClip(p.duration)}</em>` : ''}${p.caption ? '<i>Aa</i>' : ''}${(() => { const r = reactions(t, [`photo:${p.id}`]); return r ? `<span class="ph-rx">${rxHTML(r)}</span>` : ''; })()}</button>`).join('')}
     </div>
     <p class="hint">Touchez <b>＋</b> : choisissez dans votre photothèque, ou prenez une photo ou une vidéo.</p>
     <label class="fld"><span>${leg ? 'Récit du trajet' : 'Récit de l’étape'}</span><textarea data-f="${leg ? 'transport.story' : 'story'}" rows="6" placeholder="${leg ? 'La route, les paysages, les pauses, les galères…' : 'Racontez ce moment : ce que vous avez vu, mangé, ressenti…'} Vos amis le verront avec les photos."></textarea></label>`;
@@ -2988,10 +2988,13 @@ function reactions(t, targets) {
   const likes = f.likes.filter((l) => set.has(l.target));
   const comments = f.comments.filter((c) => set.has(c.target) && !c.is_owner);
   if (!likes.length && !comments.length) return null;
-  const fresh = [...likes, ...comments].some((x) => x.created_at && new Date(x.created_at).getTime() > seen);
-  return { likes: likes.length, comments: comments.length, fresh };
+  const isNew = (x) => x.created_at && new Date(x.created_at).getTime() > seen;
+  const nl = likes.filter(isNew).length, nc = comments.filter(isNew).length;
+  return nl || nc ? { likes: nl, comments: nc } : null;
 }
-const rxHTML = (r) => (r ? `${r.likes ? `<span>${RX_HEART}${r.likes}</span>` : ''}${r.comments ? `<span>${RX_CHAT}${r.comments}</span>` : ''}` : '');
+// Petit cœur rouge (nouveaux j'aime) et petit stylo (nouveaux commentaires), avec leur nombre
+const RX_PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>';
+const rxHTML = (r) => (r ? `${r.likes ? `<span class="rx-l" aria-label="${r.likes} nouveaux j’aime">${RX_HEART}<b>${r.likes}</b></span>` : ''}${r.comments ? `<span class="rx-c" aria-label="${r.comments} nouveaux commentaires">${RX_PEN}<b>${r.comments}</b></span>` : ''}` : '');
 
 // Notifications : j'aime et commentaires des proches, du plus récent au plus ancien
 const BELL = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
