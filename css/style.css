@@ -1292,3 +1292,11 @@ input, select, textarea { border-radius: 10px !important; }
 .dest-head .dh-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dest-head.has-cover::after { background: rgba(16, 35, 31, .66); }
 :root { accent-color: var(--text); }
+
+/* Onglets du bas : le picto sautille puis revient exactement à sa place ; le fond glacier reste derrière le texte */
+.bn.active span { transform: none; animation: hopBack .5s var(--spring); }
+@keyframes hopBack { 0% { transform: none; } 35% { transform: translateY(-5px) scale(1.12); } 100% { transform: none; } }
+.bn > * { position: relative; z-index: 1; }
+.bn::before { z-index: 0; }
+.bn { isolation: isolate; }
+.bn::before { z-index: -1; }
