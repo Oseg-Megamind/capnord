@@ -125,7 +125,7 @@ export class MapView {
     trip.steps.forEach((s, i) => {
       if (!s.place) return;
       const sel = s.id === selectedId;
-      const status = states[i] === 'done' ? 'past' : states[i] === 'now' ? 'now' : states.indexOf('todo') === i && states.includes('now') ? 'next' : '';
+      const status = states[i] === 'done' ? 'past' : states[i] === 'now' ? 'now' : '';
       const icon = L.divIcon({
         className: 'mk-wrap',
         html: `<div class="mk ${sel ? 'sel' : ''} ${status} ${live ? 'calm' : ''}" style="--c:${trip.color}"><span>${status === 'past' ? '✓' : i + 1}</span>${status === 'now' && !live ? '<b class="mk-here">Vous êtes ici</b>' : ''}</div>`,

@@ -1691,40 +1691,16 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .step-rx { margin-left: auto; display: inline-flex; gap: 6px; align-items: center; }
 .step-rx span, .ph-rx span { position: relative; display: inline-grid; place-items: center; width: 26px; height: 26px; animation: rxPop .5s var(--spring) both; }
 .step-rx svg, .ph-rx svg { width: 22px; height: 22px; }
-.rx-l svg { fill: #ff4d3a; }
-.rx-c svg { fill: #5fd0c8; stroke: #10231f; stroke-width: 1.6; stroke-linejoin: round; }
+.rx-l svg { fill: var(--soleil); }
+.rx-c svg { fill: var(--soleil); stroke: #10231f; stroke-width: 1.6; stroke-linejoin: round; }
 .step-rx b, .ph-rx b { position: absolute; top: -5px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #10231f; color: #fff; font: 700 9.5px/16px var(--mono); text-align: center; }
-.rx-l b { background: #ff4d3a; }
+.rx-l b, .rx-c b { background: var(--soleil); color: var(--soleil-ink); }
 @keyframes rxPop { 0% { transform: scale(0); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
 .ph-rx { position: absolute; top: 4px; right: 6px; left: auto; bottom: auto; display: inline-flex; gap: 4px; padding: 0; background: none; }
 .ph-rx span { width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .92); }
 .ph-rx svg { width: 14px; height: 14px; }
 
 
-/* =====================================================================
-   SOLEIL — la couleur des choses à mettre en avant
-   Glacier = ici / maintenant · Soleil = à voir, à venir, important · Bistre = à faire
-   ===================================================================== */
-.feat-card .fc-day { color: var(--soleil); opacity: 1; }
-.feat-card .bar i { background: var(--soleil); }
-.trip-title .st-now { color: var(--soleil-texte); }
-.mp-head b { color: var(--text); }
-.map-progress .bar i { background: var(--soleil); }
-.mp-row.next { background: var(--soleil-bg); }
-.mp-row.next .mp-dot { border: 0; background: var(--soleil); box-shadow: 0 0 0 3px color-mix(in srgb, var(--soleil) 30%, transparent); }
-.mp-row.next small { color: var(--soleil-texte); font-weight: 700; }
-/* Prochaine étape sur la carte : anneau soleil */
-.mk.next { border-color: var(--soleil); box-shadow: 0 0 0 4px rgba(233, 162, 59, .3), 0 1px 4px rgba(16, 35, 31, .3); }
-/* Photos posées sur la carte : cadre soleil */
-.mk-photo { border-color: var(--soleil) !important; }
-/* Astuces : l'étoile en soleil */
-.tips-title .ico, .tip-compose-btn .ico, .dest-head .dh-tips .ico { color: var(--soleil); }
-.dest-head .dh-tips.on { color: var(--soleil); }
-/* Stats clés du voyage */
-.stats > div:first-child b { color: var(--text); }
-/* Compte à rebours avant le départ */
-.chip.st-soon, .st-soon { background: var(--soleil-bg); color: var(--soleil-texte); }
-.lgd.next { background: var(--soleil); border: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--soleil) 30%, transparent); }
 
 /* Visionneuse : la photo ou la vidéo reste dans sa zone, sans déborder sur les infos */
 .lb-img { grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); overflow: hidden; }
