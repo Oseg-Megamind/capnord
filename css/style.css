@@ -1736,3 +1736,6 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .lb .cm-b b, .lb .cm-b p { color: #fff; }
 .lb .cm small { color: rgba(230, 236, 230, .6); }
 .lb .cm small .link { color: #5fd0c8; }
+/* Budget : « Définir » disparaît dès qu'on touche le champ */
+.bg-hero #bgh-budget:focus::placeholder { color: transparent; opacity: 0; }
+.bg-hero #bgh-budget:focus { min-width: 6.5ch; }
