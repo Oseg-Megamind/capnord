@@ -2816,7 +2816,8 @@ async function addPhotos(files, { stepId = null, onLeg = false, day = null } = {
       if (day && toDayStr(p.t) !== day) p.day = day; // ajoutée depuis une journée : rangée dans cette journée
       const s = stepId ? t.steps.find((x) => x.id === stepId) : stepForPhoto(t, p);
       p.stepId = s?.id || null;
-      if (p.lat == null && s?.place) { p.lat = s.place.lat; p.lng = s.place.lng; p.approx = true; }
+      // Sans GPS, ou GPS loin de l'étape choisie (photo prise ailleurs) : la photo est placée sur l'étape
+      if (s?.place && (p.lat == null || haversine({ lat: p.lat, lng: p.lng }, s.place) > 50)) { p.lat = s.place.lat; p.lng = s.place.lng; p.approx = true; }
       t.photos.push(p);
       added.push(p);
     } catch (e) {

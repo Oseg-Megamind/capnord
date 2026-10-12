@@ -141,14 +141,20 @@ export class MapView {
     }
 
     // Photos : regroupées par lieu, vignette + nombre
+    // Position d'une photo : son GPS s'il est cohérent avec l'étape choisie, sinon le lieu de l'étape
+    const R = Math.PI / 180;
+    const dist = (a, b) => 6371 * 2 * Math.asin(Math.sqrt(Math.sin((b.lat - a.lat) * R / 2) ** 2 + Math.cos(a.lat * R) * Math.cos(b.lat * R) * Math.sin((b.lng - a.lng) * R / 2) ** 2));
     const groups = new Map();
     for (const p of trip.photos || []) {
-      if (p.lat == null || p.approx) continue;
-      const k = `${p.lat.toFixed(3)},${p.lng.toFixed(3)}`;
-      if (!groups.has(k)) groups.set(k, []);
-      groups.get(k).push(p);
+      const st = trip.steps.find((x) => x.id === p.stepId);
+      let at = p.lat != null && !p.approx ? { lat: p.lat, lng: p.lng } : null;
+      if (st?.place && (!at || dist(at, st.place) > 50)) at = st.place;
+      if (!at) continue;
+      const k = `${at.lat.toFixed(3)},${at.lng.toFixed(3)}`;
+      if (!groups.has(k)) groups.set(k, { at, list: [] });
+      groups.get(k).list.push(p);
     }
-    for (const list of groups.values()) {
+    for (const { at, list } of groups.values()) {
       list.sort((a, b) => a.t - b.t);
       const p = list[0];
       const src = this.h.thumbUrl?.(p.thumbId, () => this.scheduleRerender()) || '';
@@ -157,7 +163,7 @@ export class MapView {
         html: `<div class="mk-photo" ${src ? `style="background-image:url('${src}')"` : ''}>${src ? '' : '📷'}${list.length > 1 ? `<b>${list.length}</b>` : ''}</div>`,
         iconSize: [44, 44], iconAnchor: [22, 22],
       });
-      L.marker([p.lat, p.lng], { icon, zIndexOffset: -100 })
+      L.marker([at.lat, at.lng], { icon, zIndexOffset: -100 })
         .bindTooltip(esc(p.caption || `${list.length} photo${list.length > 1 ? 's' : ''}`), { direction: 'top', offset: [0, -22] })
         .on('click', () => this.h.onPhotoClick?.(p.id))
         .addTo(photos);

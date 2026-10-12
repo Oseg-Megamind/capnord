@@ -235,3 +235,10 @@
 .shx-sheet.mini .shx-body > :not(.shx-hello):not(.shx-sec-h) { opacity: .0; }
 .shx-sheet.mini .shx-hello { display: none; }
 @media (min-width: 900px) { .shx-sheet.mini .shx-body > * { opacity: 1; } .shx-sheet.mini .shx-grip::after { display: none; } }
+.shx-welcome { position: fixed; z-index: 2600; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); max-width: 420px; margin: 0 auto; display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 16px; border: 0; border-radius: 18px; background: #10231f; color: #e6ece6; box-shadow: 0 20px 50px rgba(16, 35, 31, .45); cursor: pointer; animation: shxWelcome .6s cubic-bezier(.2, .9, .25, 1.15) both .9s; }
+.shx-welcome > span:last-child { display: flex; flex-direction: column; gap: 4px; }
+.shx-welcome b { font: 800 17px/1.25 var(--font-display); color: #fff; }
+.shx-welcome small { font-size: 13px; line-height: 1.4; color: #9fb3ad; }
+.shx-welcome.out { animation: shxWelcomeOut .3s ease both; }
+@keyframes shxWelcome { from { opacity: 0; transform: translateY(-40%) scale(.9); } }
+@keyframes shxWelcomeOut { to { opacity: 0; transform: translateY(-60%) scale(.96); } }

@@ -89,7 +89,9 @@ function photoClusters() {
   const out = [];
   for (const p of photosAll()) {
     const s = stepById(p.stepId);
-    const at = p.lat != null ? { lat: p.lat, lng: p.lng } : s?.place;
+    // GPS de la photo s'il est cohérent avec l'étape choisie (moins de 50 km), sinon le lieu de l'étape
+    let at = p.lat != null ? { lat: p.lat, lng: p.lng } : s?.place;
+    if (s?.place && at && km(at, s.place) > 50) at = s.place;
     if (!at) continue;
     const c = out.find((x) => x.stepId === p.stepId && km(x.at, at) < 0.6);
     if (c) c.photos.push(p); else out.push({ id: p.id, stepId: p.stepId, at, photos: [p] });
@@ -116,8 +118,22 @@ function render() {
   renderTop();
   renderSheet();
   drawMap();
+  if (ui.first) welcome(D);
   if (ui.viewer) renderViewer();
   ui.first = false;
+}
+
+// Message d'accueil flottant : affiché à la première visite seulement, il disparaît au toucher
+function welcome(D) {
+  const key = `etapa-hello-${token || DEMO}`;
+  try { if (!DEMO && localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch { /* privé */ }
+  const w = document.createElement('button');
+  w.className = 'shx-welcome';
+  w.innerHTML = `<span class="shx-av">${esc((D.author || '?').slice(0, 1).toUpperCase())}</span><span><b>${esc(D.author || 'On')} vous invite à suivre son voyage « ${esc(D.name)} »</b><small>Explorez la carte, ouvrez les étapes, aimez et commentez les photos. Touchez pour commencer.</small></span>`;
+  const bye = () => { w.classList.add('out'); setTimeout(() => w.remove(), 300); };
+  w.onclick = bye;
+  document.body.appendChild(w);
+  setTimeout(bye, 9000);
 }
 
 function renderTop() {
@@ -156,7 +172,6 @@ function homeView() {
     </button>`;
   };
   return `
-    <div class="shx-hello"><b>${esc(D.author || 'Vos proches')} vous invite à suivre son voyage « ${esc(D.name)} ».</b> Explorez la carte, ouvrez les étapes, et aimez ou commentez chaque photo.</div>
     <div class="shx-sec-h"><h2>Étapes</h2><small>${steps.length} étapes · ${photos.length} photos</small></div>
     <div class="shx-strip" id="strip">${steps.map(card).join('')}</div>
 
