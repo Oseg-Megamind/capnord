@@ -1725,3 +1725,14 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 /* Compte à rebours avant le départ */
 .chip.st-soon, .st-soon { background: var(--soleil-bg); color: var(--soleil-texte); }
 .lgd.next { background: var(--soleil); border: 0; box-shadow: 0 0 0 3px color-mix(in srgb, var(--soleil) 30%, transparent); }
+
+/* Visionneuse : la photo ou la vidéo reste dans sa zone, sans déborder sur les infos */
+.lb-img { grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); overflow: hidden; }
+.lb-img img, .lb-img video { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 6px; display: block; margin: auto; }
+.lb-img video { width: 100%; height: 100%; background: #000; }
+.lb-info { flex: none; max-height: 52dvh; overflow-y: auto; background: #050a09; }
+/* Commentaires dans la visionneuse : lisibles sur fond sombre */
+.lb-thread .cm.own .cm-b, .lb .cm.own .cm-b { background: rgba(95, 208, 200, .22); color: #fff; }
+.lb .cm-b b, .lb .cm-b p { color: #fff; }
+.lb .cm small { color: rgba(230, 236, 230, .6); }
+.lb .cm small .link { color: #5fd0c8; }
