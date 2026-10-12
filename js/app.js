@@ -439,7 +439,7 @@ function renderHome() {
         ${sec('À venir', groups.soon)}${sec('À planifier', groups.draft)}${sec('Passés', groups.past)}
         <p class="home-foot">${plural(all.length, 'voyage')} · ${plural(all.reduce((n, t) => n + t.steps.length, 0), 'étape')} · ${plural(all.reduce((n, t) => n + totalNights(t), 0), 'nuit')}${km ? ' · ' + fmtKm(km) + ' parcourus' : ''}</p>`
       : `<section class="home-empty">
-        <img class="empty-logo" src="icons/icon.svg" alt="" width="96" height="96">
+        <img class="empty-logo" src="icons/etapa.svg" alt="" width="96" height="96">
         <h2>Votre premier voyage commence ici</h2>
         <p>Itinéraire, trajets, hébergements, budget, documents et suivi GPS en direct. Gratuit, sans compte, fonctionne hors-ligne.</p>
         <div class="row-btns wrap center-row"><button class="btn primary lg" data-act="new-trip">＋ Créer un voyage</button><button class="btn lg" data-act="join-trip">Rejoindre un voyage</button><button class="btn lg ghost" data-act="demo">Voir un exemple</button></div>
@@ -497,7 +497,7 @@ A['new-trip'] = () => openModal(`
       <label class="fld"><span>Budget total</span><input type="number" name="budget" min="0" step="any" inputmode="decimal"></label>
       <label class="fld"><span>Voyageurs</span><input type="number" name="travelers" value="1" min="1" inputmode="numeric"></label>
     </div>
-    ${cloud.cloudReady() ? `<button type="button" class="nt-collab-btn" id="nt-collab"><i class="kind-ic">${icon('users')}</i><span><b>Ajouter des compagnons de voyage</b><small>Ils gèrent les infos du voyage avec vous.</small></span><span class="ntc-plus" aria-hidden="true">＋</span></button>` : ''}
+    ${cloud.cloudReady() ? `<label class="nt-collab"><input type="checkbox" name="withCompanions"><span class="ntc-box"><i class="kind-ic">${icon('users')}</i><span><b>Voyage à plusieurs</b><small>Vous recevrez un lien à envoyer à vos compagnons : chacun s’inscrit avec son prénom.</small></span><i class="ntc-check" aria-hidden="true"></i></span></label>` : ''}
     <div class="actions"><button type="button" class="btn" data-act="close-modal">Annuler</button><button class="btn primary">Créer le voyage</button></div>
   </form>`, (m) => {
   const syncRoad = () => {
@@ -507,16 +507,6 @@ A['new-trip'] = () => openModal(`
     $('[name=conso]', m).placeholder = v.conso;
   };
   $$('[name=kind], [name=vehicle]', m).forEach((r) => (r.onchange = syncRoad));
-  // Compagnons : petite fenêtre pour saisir leurs e-mails
-  let invite = null;
-  const nc = $('#nt-collab', m);
-  const showInvite = () => {
-    nc.classList.toggle('on', !!invite);
-    $('b', nc).textContent = invite ? plural(invite.names.length, 'compagnon') + ' à inviter' : 'Ajouter des compagnons de voyage';
-    $('small', nc).textContent = invite ? invite.names.join(', ') : 'Ils gèrent les infos du voyage avec vous.';
-    $('.ntc-plus', nc).textContent = invite ? '✎' : '＋';
-  };
-  if (nc) nc.onclick = () => namesPopup({ names: invite?.names, onDone: (r) => { invite = r.names.length ? r : null; showInvite(); } });
   $('form', m).onsubmit = async (e) => {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(e.target));
@@ -529,7 +519,7 @@ A['new-trip'] = () => openModal(`
     closeModal();
     go(`#/trip/${t.id}/itin`);
     // Compagnons : on crée le carnet partagé puis on prépare l'e-mail d'invitation
-    if (invite) await inviteNames(t, invite.names);
+    if (f.withCompanions) await inviteLinkModal(t);
   };
 });
 
@@ -611,7 +601,7 @@ function renderTripHeader(t) {
   el.innerHTML = `
     <div class="trip-title" data-act="trip-settings" role="button" tabindex="0" title="Paramètres du voyage">
       <span class="trip-badge" style="--c:${t.color}">${MARK}</span>
-      <div><h1>${esc(t.name)}</h1><small>${t.collab ? `<span class="with">avec ${esc((t.collab.members || []).filter((m) => !m.me).map((m) => m.name).join(', ') || 'vos compagnons')}</span> · ` : ''}${tripStart(t) ? fmtRange(tripStart(t), tripEnd(t)) + ' · ' : ''}<span class="st-${st.key}">${st.label}</span></small></div>
+      <div><h1>${esc(t.name)}</h1><small>${tripStart(t) ? fmtRange(tripStart(t), tripEnd(t)) + ' · ' : ''}<span class="st-${st.key}">${st.label}</span></small></div>
     </div>
     <button class="icon-btn share-btn ${isShared(t) ? 'on' : ''}" data-act="share" aria-label="Partager le voyage" title="Partager avec vos proches">📤${newComments(t) ? `<i class="nb">${newComments(t)}</i>` : ''}</button>
     <button class="btn sm my-trips" data-act="home"><span class="mt-ic">🧳</span><span>Mes voyages</span></button>`;
@@ -784,7 +774,64 @@ function mountItin(t, p) {
     });
   }
   $$('.step-main', p).forEach((el) => el.addEventListener('keydown', (e) => e.key === 'Enter' && openStepDrawer(el.dataset.id)));
+  // Appui long sur une étape : proposer de la supprimer
+  $$('.step', p).forEach((el) => longPress(el, () => stepActions(el.dataset.id)));
 }
+
+// Appui long (doigt immobile ~0,55 s) ; le clic qui suit est ignoré
+function longPress(el, fn) {
+  let timer = null, x0 = 0, y0 = 0;
+  const cancel = () => { clearTimeout(timer); timer = null; el.classList.remove('pressing'); };
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1 || e.target.closest('.drag, input, textarea, select')) return;
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    el.classList.add('pressing');
+    timer = setTimeout(() => {
+      timer = null;
+      el.classList.remove('pressing');
+      navigator.vibrate?.(12);
+      ui.lpFired = Date.now();
+      fn();
+    }, 550);
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => { if (timer && Math.hypot(e.touches[0].clientX - x0, e.touches[0].clientY - y0) > 10) cancel(); }, { passive: true });
+  el.addEventListener('touchend', cancel);
+  el.addEventListener('touchcancel', cancel);
+  el.addEventListener('contextmenu', (e) => { e.preventDefault(); if (!ui.lpFired || Date.now() - ui.lpFired > 800) fn(); });
+}
+// Le relâchement après un appui long ne doit pas ouvrir l'étape
+document.addEventListener('click', (e) => { if (ui.lpFired && Date.now() - ui.lpFired < 800) { e.stopPropagation(); e.preventDefault(); ui.lpFired = 0; } }, true);
+
+// Suppression d'une étape avec double confirmation
+function stepActions(id) {
+  const t = T(), s = t.steps.find((x) => x.id === id);
+  if (!s) return;
+  const i = t.steps.indexOf(s);
+  openModal(`
+    <h2>${esc(s.name || 'Étape')}</h2>
+    <p class="hint">Étape ${i + 1} sur ${t.steps.length}${s.arrival ? ` · ${fmtRange(s.arrival, s.departure)}` : ''}</p>
+    <div class="sa-list">
+      <button class="sa-row" data-act="open-step" data-id="${s.id}">${icon('pin')}<span>Ouvrir l’étape</span></button>
+      <button class="sa-row danger" id="sa-del">${icon('trash')}<span>Supprimer l’étape</span></button>
+    </div>
+    <div class="sa-confirm hidden" id="sa-confirm">
+      <p><b>Supprimer « ${esc(s.name || 'cette étape')} » ?</b><br>Ses activités, hébergements, notes et photos rattachées seront retirés du voyage.</p>
+      <button class="btn full sa-del2" data-act="step-del-confirm" data-id="${s.id}">Oui, supprimer définitivement</button>
+    </div>
+    <div class="actions"><button class="btn" data-act="close-modal">Annuler</button></div>`, (m) => {
+    $('#sa-del', m).onclick = () => { $('#sa-del', m).classList.add('hidden'); $('#sa-confirm', m).classList.remove('hidden'); };
+  });
+}
+A['step-del-confirm'] = (el) => {
+  const t = T(), s = t.steps.find((x) => x.id === el.dataset.id);
+  if (!s) return closeModal();
+  const notify = undoable(`Étape « ${esc(s.name || 'sans nom')} » supprimée`);
+  t.steps = t.steps.filter((x) => x.id !== s.id);
+  closeModal();
+  if (ui.drawer?.id === s.id) closeDrawer();
+  commit();
+  notify();
+};
 
 A['open-step'] = (el) => openStepDrawer(el.dataset.id, el.dataset.focus || null);
 
@@ -2416,8 +2463,8 @@ async function notify(title, body) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   try {
     const reg = await navigator.serviceWorker?.getRegistration();
-    if (reg) reg.showNotification(title, { body, icon: 'icons/icon-192.png', tag: title });
-    else new Notification(title, { body, icon: 'icons/icon-192.png' });
+    if (reg) reg.showNotification(title, { body, icon: 'icons/etapa-192.png', tag: title });
+    else new Notification(title, { body, icon: 'icons/etapa-192.png' });
   } catch { /* notification refusée */ }
 }
 function checkReminders() {
@@ -3143,93 +3190,51 @@ function companionsHTML(t, ready) {
   if (!ready) return '';
   if (!c) return `
     <div class="collab-card">
-      <button class="btn primary full" data-act="collab-names">Ajouter des compagnons</button>
-      <small class="hint">Vous ajoutez leurs prénoms, chacun reçoit son lien. Vos documents « Visible uniquement par moi » ne sont jamais partagés.</small>
+      <button class="btn primary full" data-act="collab-link">Créer le lien d’invitation</button>
+      <small class="hint">Un seul lien pour tous : chacun s’inscrit avec son prénom. Vos documents « Visible uniquement par moi » ne sont jamais partagés.</small>
     </div>`;
   const members = (c.members || []).filter((m) => !m.me);
-  const joinedNames = members.map((m) => m.name?.toLowerCase());
-  const pending = (c.invited || []).filter((n) => !joinedNames.includes(n.toLowerCase()));
   return `
     <div class="collab-card on">
-      <div class="inv-list">
-        ${members.map((m) => inviteRowHTML(t, m.name, true)).join('')}
-        ${pending.map((n) => inviteRowHTML(t, n)).join('')}
-        ${!members.length && !pending.length ? '<p class="muted">Personne pour l’instant.</p>' : ''}
-      </div>
-      <button class="btn ghost full" data-act="collab-names">＋ Ajouter quelqu’un</button>
+      <div class="share-link"><input id="invite-url" value="${esc(collab.inviteLink(t, appUrl()))}" readonly aria-label="Lien d’invitation"></div>
+      <div class="row-btns wrap">${navigator.share ? '<button class="btn primary" data-act="invite-send">Envoyer le lien</button>' : ''}<button class="btn" data-act="invite-copy">Copier le lien</button></div>
+      <div class="inv-list">${members.length ? members.map((m) => `<div class="inv-row joined"><span class="tip-av">${esc((m.name || '?').slice(0, 1).toUpperCase())}</span><b>${esc(m.name)}</b><small>a rejoint</small></div>`).join('') : '<p class="muted">Personne n’a encore rejoint le voyage.</p>'}</div>
       <small class="hint">${c.error ? `Synchronisation impossible (${esc(c.error)}). Nouvel essai automatique.` : c.syncedAt ? `Synchronisé à ${new Date(c.syncedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : 'Synchronisation…'}</small>
     </div>`;
 }
 
-function namesPopup({ names = [], onDone }) {
-  const list = [...(names || [])];
-  const needMe = !state.settings.myName;
-  const pop = document.createElement('div');
-  pop.className = 'mini-pop';
-  pop.innerHTML = `<div class="mp-back"></div><div class="mp-card" role="dialog" aria-modal="true" aria-label="Ajouter des compagnons"><div class="sheet-grip" aria-hidden="true"></div>
-    <h3>Ajouter des compagnons</h3>
-    <p class="hint">Ils pourront ajouter et modifier les infos du voyage avec vous. Chacun recevra son propre lien pour vous rejoindre.</p>
-    <div class="mp-chips"></div>
-    <div class="mp-add"><input placeholder="Prénom (ex : Léa)" maxlength="40" autocapitalize="words" aria-label="Prénom d’un compagnon" enterkeyhint="done"><button type="button" class="btn sm">Ajouter</button></div>
-    ${needMe ? '<label class="fld"><span>Votre prénom à vous</span><input class="mp-name" maxlength="40" placeholder="ex : Fanny"></label>' : ''}
-    <div class="actions"><button type="button" class="btn mp-cancel">Annuler</button><button type="button" class="btn primary mp-ok">Valider</button></div>
-  </div>`;
-  ($('#modal-root') || document.body).appendChild(pop);
-  const input = $('.mp-add input', pop), chips = $('.mp-chips', pop);
-  const draw = () => { chips.innerHTML = list.map((e, i) => `<span class="mp-chip">${esc(e)}<button type="button" data-i="${i}" aria-label="Retirer ${esc(e)}">✕</button></span>`).join(''); };
-  const add = () => {
-    input.value.split(/[,;\n]+/).map((x) => x.trim()).filter(Boolean).forEach((x) => { const n = x.charAt(0).toUpperCase() + x.slice(1); if (!list.some((y) => y.toLowerCase() === n.toLowerCase())) list.push(n); });
-    input.value = '';
-    draw();
-  };
-  const close = () => { pop.classList.remove('open'); setTimeout(() => pop.remove(), 200); };
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } });
-  $('.mp-add .btn', pop).onclick = () => { add(); input.focus(); };
-  chips.onclick = (e) => { const b = e.target.closest('button[data-i]'); if (b) { list.splice(+b.dataset.i, 1); draw(); } };
-  $('.mp-back', pop).onclick = close;
-  $('.mp-cancel', pop).onclick = close;
-  $('.mp-ok', pop).onclick = () => {
-    if (input.value.trim()) add();
-    const me = needMe ? $('.mp-name', pop).value.trim() : state.settings.myName;
-    if (list.length && !me) { $('.mp-name', pop).focus(); return toast('Indiquez votre prénom'); }
-    if (needMe && me) { state.settings.myName = me; save(); }
-    close();
-    onDone({ names: list });
-  };
-  draw();
-  requestAnimationFrame(() => { pop.classList.add('open'); input.focus(); });
-}
-// Crée le carnet partagé si besoin, puis affiche le lien personnel de chacun
-async function inviteNames(t, names) {
+// Un seul lien par voyage : chaque compagnon qui l'ouvre s'inscrit avec son prénom
+async function ensureCollab(t) {
+  if (t.collab) return true;
   try {
-    if (!t.collab) {
-      await collab.createCollab(t, state.settings.myName || 'Moi');
-      collab.watchCollab(t, () => collabSync(t));
-      collabSync(t);
-    }
-    t.collab.invited = [...new Set([...(t.collab.invited || []), ...names])];
+    await collab.createCollab(t, state.settings.myName || t.share?.author || 'Moi');
+    collab.watchCollab(t, () => collabSync(t));
+    collabSync(t);
     save();
     renderTripHeader(t);
-  } catch (err) { return toast(`Invitation impossible pour l’instant : ${esc(err.message || 'réseau')}`); }
-  openModal(`
-    <h2>Liens d’invitation</h2>
-    <p class="hint">Envoyez à chacun son lien : en le touchant, il arrive directement dans le voyage.</p>
-    <div class="inv-list">${names.map((n) => inviteRowHTML(t, n)).join('')}</div>
-    <div class="actions"><button class="btn primary" data-act="close-modal">Terminé</button></div>`);
+    return true;
+  } catch (err) { toast(`Lien impossible pour l’instant : ${esc(err.message || 'réseau')}`); return false; }
 }
-const inviteRowHTML = (t, n, joined = false) => `<div class="inv-row ${joined ? 'joined' : ''}"><span class="tip-av">${esc(n.slice(0, 1).toUpperCase())}</span><b>${esc(n)}</b>${joined ? '<small>a rejoint</small>' : `<button class="btn sm primary" data-act="invite-send" data-name="${esc(n)}">Envoyer le lien</button><button class="btn sm" data-act="invite-copy" data-name="${esc(n)}" aria-label="Copier le lien de ${esc(n)}">Copier</button>`}</div>`;
-A['invite-send'] = async (el) => {
-  const t = T(), n = el.dataset.name;
-  const text = collab.inviteText(t, appUrl(), n);
-  if (navigator.share) { try { await navigator.share({ title: `Voyage ${t.name}`, text }); return; } catch { /* annulé */ } }
-  A['invite-copy'](el);
-};
-A['invite-copy'] = async (el) => {
+async function inviteLinkModal(t) {
+  if (!(await ensureCollab(t))) return;
+  openModal(`
+    <h2>Lien pour vos compagnons</h2>
+    <p class="hint">Envoyez ce lien à toutes les personnes qui voyagent avec vous. En le touchant, chacune indique son prénom et arrive dans le voyage.</p>
+    <div class="share-link"><input id="invite-url" value="${esc(collab.inviteLink(t, appUrl()))}" readonly aria-label="Lien d’invitation"></div>
+    <div class="row-btns wrap" style="margin-top:10px">${navigator.share ? '<button class="btn primary" data-act="invite-send">Envoyer le lien</button>' : ''}<button class="btn" data-act="invite-copy">Copier le lien</button></div>
+    <div class="actions"><button class="btn" data-act="close-modal">Terminé</button></div>`);
+}
+A['invite-send'] = async () => {
   const t = T();
-  try { await navigator.clipboard.writeText(collab.inviteText(t, appUrl(), el.dataset.name)); toast(`Lien de ${esc(el.dataset.name)} copié`); }
-  catch { toast(collab.inviteLink(t, appUrl(), el.dataset.name)); }
+  if (navigator.share) { try { await navigator.share({ title: `Voyage ${t.name}`, text: collab.inviteText(t, appUrl()) }); return; } catch { /* annulé */ } }
+  A['invite-copy']();
 };
-A['collab-names'] = () => { const t = T(); namesPopup({ onDone: (r) => r.names.length && inviteNames(t, r.names) }); };
+A['invite-copy'] = async () => {
+  const t = T();
+  try { await navigator.clipboard.writeText(collab.inviteText(t, appUrl())); toast('Lien copié'); }
+  catch { const i = $('#invite-url'); i?.select(); toast('Lien sélectionné : copiez-le'); }
+};
+A['collab-link'] = () => inviteLinkModal(T());
 
 A['collab-start'] = async (el) => {
   const t = T();
@@ -3269,9 +3274,9 @@ function joinModal(code = '', name = '') {
   if (!cloud.cloudReady()) return toast('Service en ligne indisponible');
   openModal(`
     <h2>Rejoindre un voyage</h2>
-    <p class="hint">Un compagnon de voyage vous a envoyé un code ? Entrez-le ici : le voyage apparaîtra dans « Mes voyages » et vous pourrez le compléter ensemble.</p>
+    <p class="hint">${code ? 'Vous êtes invité à rejoindre un voyage. Indiquez votre prénom : vos compagnons le verront, et vous pourrez compléter le carnet ensemble.' : 'Un compagnon de voyage vous a envoyé un code ? Entrez-le ici : le voyage apparaîtra dans « Mes voyages ».'}</p>
     <form class="form" id="join-form">
-      <label class="fld"><span>Code d’invitation</span><input id="join-code" value="${esc(code)}" placeholder="ex : TUN-K7P" autocapitalize="characters" autocomplete="off" required></label>
+      <label class="fld ${code ? 'hidden' : ''}"><span>Code d’invitation</span><input id="join-code" value="${esc(code)}" placeholder="ex : TUN-K7P" autocapitalize="characters" autocomplete="off" required></label>
       <label class="fld"><span>Votre prénom</span><input id="join-name" value="${esc(name || state.settings.myName || '')}" placeholder="ex : Léa" maxlength="40" required></label>
       <div class="actions"><button type="button" class="btn" data-act="close-modal">Annuler</button><button class="btn primary">Rejoindre</button></div>
     </form>`, (m) => {
@@ -3365,6 +3370,9 @@ A['trip-settings'] = (el) => {
         <label class="fld"><span>Budget (${t.currency})</span><input type="number" step="any" min="0" inputmode="decimal" data-f="budget"></label>
         <label class="fld"><span>Voyageurs</span><input type="number" min="1" inputmode="numeric" data-f="travelers"></label>
       </div>
+      ${cloud.cloudReady() ? `<div class="fld"><span>Mes compagnons de voyage</span>
+        <div class="ts-mates">${(t.collab?.members || []).filter((m) => !m.me).map((m) => `<span class="ts-mate"><i>${esc((m.name || '?').slice(0, 1).toUpperCase())}</i>${esc(m.name)}</span>`).join('') || '<span class="muted">Personne pour l’instant</span>'}
+          <button type="button" class="btn sm" data-act="collab-link">${t.collab ? 'Lien d’invitation' : 'Inviter'}</button></div></div>` : ''}
       <div class="kind-pick">
         <label class="kind"><input type="radio" name="tkind" data-f="kind" value="roadtrip"><div class="kind-box"><i class="kind-ic">${icon('car')}</i><b>Road trip</b><small>Avec mon véhicule</small></div></label>
         <label class="kind"><input type="radio" name="tkind" data-f="kind" value="mixed"><div class="kind-box"><i class="kind-ic">${icon('plane')}</i><b>Multi-transports</b><small>Avion, train, bus…</small></div></label>

@@ -1600,3 +1600,17 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .inv-row small { font: 500 10.5px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ok); }
 .inv-row.joined { border-style: dashed; }
 .inv-row .tip-av { width: 30px; height: 30px; font-size: 13px; }
+
+/* Appui long sur une étape */
+.step { transition: transform .25s var(--ease), box-shadow .25s; -webkit-touch-callout: none; user-select: none; }
+.step.pressing { transform: scale(.97); box-shadow: 0 0 0 2px var(--text); transition-duration: .55s; }
+.sa-list { display: flex; flex-direction: column; gap: 8px; margin: 6px 0; }
+.sa-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); color: var(--text); font-weight: 700; font-size: 15px; text-align: left; cursor: pointer; }
+.sa-row .ico { width: 20px; height: 20px; }
+.sa-row.danger { color: var(--danger); }
+.sa-confirm { padding: 14px; border-radius: var(--r); border: 1.5px solid var(--danger); background: color-mix(in srgb, var(--danger) 7%, var(--surface)); display: flex; flex-direction: column; gap: 10px; animation: rise .3s var(--ease) both; }
+.sa-confirm p { margin: 0; font-size: 14px; line-height: 1.45; }
+.sa-del2 { background: var(--danger) !important; border-color: var(--danger) !important; color: #fff !important; }
+.ts-mates { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ts-mate { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.ts-mate i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 11px; background: var(--brand); color: #5fd0c8; }
