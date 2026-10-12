@@ -2387,21 +2387,20 @@ function renderDocs(t) {
   const end = tripEnd(t);
   return `<div class="docs">
     <div class="doc-add">
-      <label class="doc-btn primary"><span>📷</span><b>Scanner</b><small>avec l’appareil photo</small><input type="file" accept="image/*" capture="environment" data-doc-new="scan" hidden></label>
-      <label class="doc-btn"><span>📁</span><b>Fichiers</b><small>PDF, photos…</small><input type="file" accept="image/*,application/pdf" multiple data-doc-new="files" hidden></label>
-      <button class="doc-btn" data-act="add-doc"><span>✍️</span><b>Saisir</b><small>n°, date, note</small></button>
+      <label class="doc-btn primary"><span>${icon('camera')}</span><b>Prendre une photo</b><small>passeport, billet…</small><input type="file" accept="image/*" capture="environment" data-doc-new="scan" hidden></label>
+      <label class="doc-btn"><span>${icon('upload')}</span><b>Importer un fichier</b><small>PDF, photos</small><input type="file" accept="image/*,application/pdf" multiple data-doc-new="files" hidden></label>
     </div>
     ${t.documents.map((d) => { const ty = DOC_TYPES[d.type] || DOC_TYPES.other; const exp = d.expiry && end && d.expiry < addDays(end, d.type === 'passport' ? 180 : 0); const f = docFiles(d);
       return `<button class="card doc" data-act="edit-doc" data-id="${d.id}">
         ${f[0]?.type?.startsWith('image/') ? `<img class="doc-thumb" data-thumb="${f[0].id}" alt="">` : `<span class="doc-ic">${f[0] ? '📄' : ty.icon}</span>`}
         <span class="doc-main">
           <b>${esc(d.name || ty.label)}</b>
-          <small>${ty.icon} ${ty.label}${d.number ? ` · <span class="mono">${esc(d.number)}</span>` : ''}</small>
+          ${d.type !== 'other' || d.number ? `<small>${d.type !== 'other' ? ty.label : ''}${d.type !== 'other' && d.number ? ' · ' : ''}${d.number ? `<span class="mono">${esc(d.number)}</span>` : ''}</small>` : ''}
           ${d.stayId ? (() => { const s = t.steps.find((x) => x.stays.some((y) => y.id === d.stayId)); const st = s?.stays.find((y) => y.id === d.stayId); return st ? `<small>🛏️ ${esc(st.name || 'Hébergement')} · ${esc(s.name)}</small>` : ''; })() : ''}
           ${d.expiry ? `<small class="${exp ? 'warn-txt' : ''}">Expire le ${fmtDay(d.expiry, { day: 'numeric', month: 'short', year: 'numeric' })}${exp ? ' ⚠️' : ''}</small>` : ''}
         </span>
         ${f.length ? `<span class="chip">${plural(f.length, 'page')}</span>` : ''}
-      </button>`; }).join('') || '<div class="empty"><div class="empty-ic">🗂️</div><p>Scannez vos papiers ou ajoutez vos PDF : ils restent sur votre téléphone, consultables hors-ligne.</p></div>'}
+      </button>`; }).join('') || '<div class="empty"><div class="empty-ic">🗂️</div><p>Prenez vos papiers en photo ou importez vos PDF : ils restent consultables hors-ligne.</p></div>'}
   </div>`;
 }
 
@@ -2411,7 +2410,8 @@ function mountDocs(t, p) {
     input.value = '';
     if (!files.length) return;
     const scan = input.dataset.docNew === 'scan';
-    const d = { id: uid(), name: scan ? `Scan du ${fmtDay(todayStr(), { day: 'numeric', month: 'short' })}` : files[0].name.replace(/\.[^.]+$/, ''), type: 'other', number: '', expiry: '', notes: '', files: [] };
+    const nm = scan ? `Photo du ${fmtDay(todayStr(), { day: 'numeric', month: 'short' })}` : files[0].name.replace(/\.[^.]+$/, '');
+    const d = { id: uid(), name: nm, type: guessDocType(nm), number: '', expiry: '', notes: '', files: [] };
     await addDocFiles(d, files, scan);
     t.documents.unshift(d);
     commit({ map: false });

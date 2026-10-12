@@ -1534,3 +1534,8 @@ label.bgh-budget { display: flex; flex-direction: column; align-items: flex-end;
 .bg-hero #bgh-budget::placeholder { color: #5fd0c8; opacity: 1; }
 .bgh-bin i { font-style: normal; font: 600 12px var(--mono); color: #9fb3ad; }
 .qa-names { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Docs : deux gros boutons (photo / fichier) */
+.doc-add { grid-template-columns: 1fr 1fr; }
+.doc-btn .ico { width: 24px; height: 24px; }
+.doc-btn.primary .ico { color: #5fd0c8; }
